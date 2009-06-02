@@ -32,35 +32,64 @@ class BBM (object):
 
 class AreaNoticeCirclePt(object):
     area_type = 0
-    def __init__(self, lon=None, lat=None, radius = 0, payload=None):
+    def __init__(self, lon=None, lat=None, radius=0, bits=None):
         '''@param radius: 0 is a point, otherwise less than or equal to 409500m.  Scale factor is automatic
-       
+        @param bits: string of 1's and 0's or a BitVector
         '''
-        #assert scale_factor in (1,10,100,1000)
-        #self.scale_factor = scale_factor
-        assert lon >= -180. and lon <= 180.
-        self.lon = lon
-        assert lat >= -90. and lat <= 90.
-        self.lat = lat
+        if lon is not None:
+            assert lon >= -180. and lon <= 180.
+            self.lon = lon
+            assert lat >= -90. and lat <= 90.
+            self.lat = lat
 
-        assert radius >= 0 and radius < 409500
-        self.radius = radius
+            assert radius >= 0 and radius < 409500
+            self.radius = radius
 
-        if radius / 100. >= 4095:
-            self.radius_scaled = int( radius / 1000.)
-            self.scale_factor = 1000
-        elif radius / 10. > 4095:
-            self.radius_scaled = int( radius / 100. )
-            self.scale_factor = 100
-        elif radius > 4095:
-            self.radius_scaled = int( radius / 10. )
-            self.scale_factor = 10
-        else:
-            self.radius_scaled = radius
-            self.scale_factor = 1
+            if radius / 100. >= 4095:
+                self.radius_scaled = int( radius / 1000.)
+                self.scale_factor = 1000
+            elif radius / 10. > 4095:
+                self.radius_scaled = int( radius / 100. )
+                self.scale_factor = 100
+            elif radius > 4095:
+                self.radius_scaled = int( radius / 10. )
+                self.scale_factor = 10
+            else:
+                self.radius_scaled = radius
+                self.scale_factor = 1
 
+            return
 
+        elif bits is not None:
+            assert len(bits) == 90
+            if isinstance(bits,string):
+                bits = BitVector(bitstring = bits)
+            elif isinstance(bits, list) or isinstance(bits,tuple):
+                bits = BitVector ( bitlist = bits)
 
+            self.area_shape = int( bits[:3] )
+            self.scale_factor = int( bits[3:5] )
+            self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000
+            self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000
+            self.radius_scaled = int( bits[60:72] )
+
+            self.radius = self.radius_scaled * (1,10,100,1000)[self.scale_factor]
+
+            spare = int( bits[72:90] )
+            assert 0 == spare
+
+            return
+
+        # Return an empty object
+
+    def get_bits(self):
+        bvList = []
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # area_shape/type = 0
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor), 3 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lat*600000), 27 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.radius_scaled), 12 ) )
+        return binary.joinBV(bvList)
 
 class AreaNotice(BBM):
     dac = 1
