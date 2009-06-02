@@ -10,7 +10,6 @@ __contact__   = 'kurt at ccom.unh.edu'
 __doc__ ='''
 Trying to do a more sane design for AIS BBM message
 
-
 @requires: U{Python<http://python.org/>} >= 2.5
 @requires: U{epydoc<http://epydoc.sourceforge.net/>} >= 3.0.1
 
@@ -28,13 +27,15 @@ from BitVector import BitVector
 
 import binary #, aisstring
 
-class BBM:
+class BBM (object):
     pass
 
-class AreaNoticeCirclePt:
+class AreaNoticeCirclePt(object):
     area_type = 0
-    def __init__(self, lon, lat, radius = 0):
-        '''@param radius: 0 is a point, otherwise less than or equal to 409500m.  Scale factor is automatic'''
+    def __init__(self, lon=None, lat=None, radius = 0, payload=None):
+        '''@param radius: 0 is a point, otherwise less than or equal to 409500m.  Scale factor is automatic
+       
+        '''
         #assert scale_factor in (1,10,100,1000)
         #self.scale_factor = scale_factor
         assert lon >= -180. and lon <= 180.
@@ -57,6 +58,9 @@ class AreaNoticeCirclePt:
         else:
             self.radius_scaled = radius
             self.scale_factor = 1
+
+
+
 
 class AreaNotice(BBM):
     dac = 1
