@@ -477,7 +477,7 @@ def bitvectoais6(bv,doPadding=True):
 
     @param bv: message bits (must be already stuffed)
     @type bv: BitVector
-    @return: str6 ASCII that as it appears in the NMEA string
+    @return: str6 ASCII that as it appears in the NMEA string and the number of pad bits
     @rtype: str, pad
 
     @todo: make a test base for needing padding
@@ -492,10 +492,7 @@ def bitvectoais6(bv,doPadding=True):
 
     if pad!=0:
 	if doPadding:
-	    #print 'FIX: check padding to make sure it works right'
-            print 'pad befaore',len(bv)
 	    bv = bv + BitVector(size=pad)
-            print 'pad after',len(bv)
 	else:
 	    print 'ERROR: What are you doing with a non-align entity?  Let me pad it!'
 	    assert False
