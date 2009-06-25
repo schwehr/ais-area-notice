@@ -570,6 +570,16 @@ class AreaNoticeCirclePt(object):
     def __str__(self):
         return self.__unicode__()
 
+    @property
+    def __geo_interface__(self):
+        return {'area_shape':0, 
+                'type':'Point', 'coordinates': (self.lon, self.lat), 
+                'radius':self.radius, 'scale_factor':self.scale_factor}
+
+#    def __repr__(self):
+#        'Support JSON'
+#        return str({'area_shape':0, 'lon':self.lon, 'lat':self.lat, 'radius':self.radius, 'scale_factor':self.scale_factor})
+
 class AreaNotice(BBM):
     dac = 1
     fi = 22
