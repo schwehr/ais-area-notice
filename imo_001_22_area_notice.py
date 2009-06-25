@@ -517,7 +517,10 @@ class BbmMsgTest(BBM):
         print 'BbmMsgTest get_bits'
         return binary.ais6tobitvec('85OhdP020db0p')[:-2] # remove pad
 
-class AreaNoticeCirclePt(object):
+class AreaNoticeSubArea(object):
+    pass
+
+class AreaNoticeCirclePt(AreaNoticeSubArea):
     area_shape = 0
     def __init__(self, lon=None, lat=None, radius=0, bits=None):
         '''@param radius: 0 is a point, otherwise less than or equal to 409500m.  Scale factor is automatic
@@ -533,22 +536,16 @@ class AreaNoticeCirclePt(object):
             self.radius = radius
 
             if radius / 100. >= 4095:
-                self.radius_scaled = int( radius / 1000.)
-                self.scale_factor = 1000
                 self.scale_factor_raw = 3
             elif radius / 10. > 4095:
-                self.radius_scaled = int( radius / 100. )
-                self.scale_factor = 100
                 self.scale_factor_raw = 2
             elif radius > 4095:
-                self.radius_scaled = int( radius / 10. )
-                self.scale_factor = 10
                 self.scale_factor_raw = 1
             else:
-                self.radius_scaled = radius
-                self.scale_factor = 1
                 self.scale_factor_raw = 0
 
+            self.scale_factor = (1,10,100,100)[self.scale_factor_raw]
+            self.radius_scaled = radius / self.scale_factor
             return
 
         elif bits is not None:
@@ -579,6 +576,7 @@ class AreaNoticeCirclePt(object):
         
 
     def get_bits(self):
+        'Build a BitVector for this area'
         bvList = []
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # area_shape/type = 0
         #print self.scale_factor
@@ -600,7 +598,8 @@ class AreaNoticeCirclePt(object):
 
     @property
     def __geo_interface__(self):
-        # FIX: would be better if there was a GeoJSON Circle type!
+        'Provide a Geo Interface for GeoJSON serialization'
+        # Would be better if there was a GeoJSON Circle type!
         if self.radius == 0.:
             return {'area_shape': 0, 
                     'area_shape_name': 'point',
@@ -623,13 +622,11 @@ class AreaNoticeCirclePt(object):
                     'area_shape_name': 'circle',
                     'radius':self.radius,
                     'location': {'type': 'Polygon', 'coordinates': [pt for pt in circle.boundary.coords]},
+                    # Leaving out scale_factor
                 }
             return r
-            
-            #r['scale_factor'] = self.scale_factor # FIX: Should the scale factor be included?  Don't think so
-        #return r
 
-class AreaNoticeRectangle(object):
+class AreaNoticeRectangle(AreaNoticeSubArea):
     area_shape = 1
     def __init__(self, lon=None, lat=None, east_dim=0, north_dim=0, orientation=0, bits=None):
         '''
@@ -725,9 +722,62 @@ class AreaNoticeRectangle(object):
 
     @property
     def __geo_interface__(self):
+        '''Provide a Geo Interface for GeoJSON serialization
+        @todo: Write the code to build the polygon with rotation'''
         r = {'area_shape':1, 'type':'Polygon', 'coordinates': (self.lon, self.lat) }
+        sys.stderr.write('FIX: calculate the Polygon')
         return r
    
+class AreaNoticeSector(AreaNoticeSubArea):
+    area_shape = 2
+    def __init__(self, lon=None, lat=None, radius=0, left_bound=0, right_bound=0, bits=None):
+         '''
+        A pie slice
+
+        @param lon: WGS84 longitude
+        @param lat: WGS84 latitude
+        @param radius: width in meters
+        @param bound: Orientation of the left boundary.  CW from True North
+        @param orientation: degrees CW
+
+        @todo: great get/set for dimensions and allow for setting scale factor.
+        @todo: or just over rule the attribute get and sets
+        @todo: allow user to force the scale factor
+        @todo: Should this be raising a ValueError 
+        '''
+        if lon is not None:
+            assert lon >= -180. and lon <= 180.
+            self.lon = lon
+            assert lat >= -90. and lat <= 90.
+            self.lat = lat
+
+            assert 0 <=  radius and  radius <= 25500
+            assert 0 <= north_dim and north_dim <= 25500
+
+            assert 0 <=  left_bound and  left_bound < 360
+            assert 0 <= right_bound and right_bound < 360
+
+            assert left_bound <= right_bound
+
+            if radius / 100. >= 4095:
+                self.scale_factor_raw = 3
+            elif radius / 10. > 4095:
+                self.scale_factor_raw = 2
+            elif radius > 4095:
+                self.scale_factor_raw = 1
+            else:
+                self.scale_factor_raw = 0
+
+            self.scale_factor = (1,10,100,100)[self.scale_factor_raw]
+            self.radius_scaled = int( radius / self.scale_factor)
+
+            self.bound = bound
+
+        elif bits is not None:
+            self.decode_bits(bits)
+       
+
+        FIX: keep writing code here
 
 
 
@@ -757,7 +807,7 @@ class AreaNotice(BBM):
         self.dac = 1
         self.fi = 22
 
-        BBM.__init__(self, message_id = 8)
+        BBM.__init__(self, message_id = 8) # FIX: move to the beginning of this method
 
     def __unicode__(self,verbose=False):
         result = 'AreaNotice: type=%d  start=%s  duration=%d m  link_id=%d  sub-areas: %d' % (
