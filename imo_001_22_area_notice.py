@@ -27,10 +27,16 @@ import sys
 import datetime
 from operator import xor # for checksum
 
+from pyproj import Proj
+import shapely.geometry
+import geojson
+
 from BitVector import BitVector
 
 import binary #, aisstring
 
+def lon_to_utm_zone(lon):
+    return int(( lon + 180 ) / 6) + 1
 
 nmea_talkers = {
     'AG':'Autopilot - General',
@@ -315,12 +321,24 @@ notice_type = {
  chart == chart features'''
 
 
-class AisPackingException:
+class AisException(Exception):
+    pass
+
+class AisPackingException(AisException):
     def __init__(self, fieldname, value):
         self.fieldname = fieldname
         self.value = value
     def __repr__(self):
         return "Validation on %s failed (value %s) while packing" % (self.fieldname, self.value)
+
+class AisUnpackingException(AisException):
+    def __init__(self, fieldname, value):
+        self.fieldname = fieldname
+        self.value = value
+    def __repr__(self):
+        return "Validation on %s failed (value %s) while unpacking" % (self.fieldname, self.value)
+
+
 
 def nmea_checksum_hex(sentence):
     nmea = map(ord, sentence.split('*')[0])
@@ -517,51 +535,61 @@ class AreaNoticeCirclePt(object):
             if radius / 100. >= 4095:
                 self.radius_scaled = int( radius / 1000.)
                 self.scale_factor = 1000
+                self.scale_factor_raw = 3
             elif radius / 10. > 4095:
                 self.radius_scaled = int( radius / 100. )
                 self.scale_factor = 100
+                self.scale_factor_raw = 2
             elif radius > 4095:
                 self.radius_scaled = int( radius / 10. )
                 self.scale_factor = 10
+                self.scale_factor_raw = 1
             else:
                 self.radius_scaled = radius
                 self.scale_factor = 1
+                self.scale_factor_raw = 0
 
             return
 
         elif bits is not None:
-            assert len(bits) == 90
-            if isinstance(bits,str):
-                bits = BitVector(bitstring = bits)
-            elif isinstance(bits, list) or isinstance(bits,tuple):
-                bits = BitVector ( bitlist = bits)
-
-            self.area_shape = int( bits[:3] )
-            self.scale_factor = int( bits[3:5] )
-            self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000
-            self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000
-            self.radius_scaled = int( bits[60:72] )
-
-            self.radius = self.radius_scaled * (1,10,100,1000)[self.scale_factor]
-
-            spare = int( bits[72:90] )
-            assert 0 == spare
-
+            decode_bits(bits)
             return
 
-        # Return an empty object
+        return # Return an empty object
+
+
+    def decode_bits(bits):
+        if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        if isinstance(bits,str):
+            bits = BitVector(bitstring = bits)
+        elif isinstance(bits, list) or isinstance(bits,tuple):
+            bits = BitVector ( bitlist = bits)
+
+        self.area_shape = int( bits[:3] )
+        self.scale_factor_raw = int( bits[3:5] )
+        self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
+        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000
+        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000
+        self.radius_scaled = int( bits[60:72] )
+
+        self.radius = self.radius_scaled * self.scale_factor
+
+        spare = int( bits[72:90] )
+        #assert 0 == spare
+        
 
     def get_bits(self):
         bvList = []
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # area_shape/type = 0
         #print self.scale_factor
-        scale_factor = {1:0,10:1,100:2,1000:3}[self.scale_factor]
-        bvList.append( binary.setBitVectorSize( BitVector(intVal=scale_factor), 2 ) )
+        #scale_factor = {1:0,10:1,100:2,1000:3}[self.scale_factor]
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=scale_factor_raw), 2 ) )
         bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
         bvList.append( binary.bvFromSignedInt( int(self.lat*600000), 27 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.radius_scaled), 12 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 18 ) ) # spare
         bv = binary.joinBV(bvList)
+        assert 90==len(bv)
         return bv
 
     def __unicode__(self):
@@ -572,17 +600,138 @@ class AreaNoticeCirclePt(object):
 
     @property
     def __geo_interface__(self):
-        return {'area_shape':0, 
-                'type':'Point', 'coordinates': (self.lon, self.lat), 
-                'radius':self.radius, 'scale_factor':self.scale_factor}
+        # FIX: would be better if there was a GeoJSON Circle type!
+        if self.radius == 0.:
+            return {'area_shape': 0, 
+                    'area_shape_name': 'point',
+                    'type': 'Point', 'coordinates': (self.lon, self.lat) }
 
-#    def __repr__(self):
-#        'Support JSON'
-#        return str({'area_shape':0, 'lon':self.lon, 'lat':self.lat, 'radius':self.radius, 'scale_factor':self.scale_factor})
+        else: # self.radius > 0:
+
+            zone = lon_to_utm_zone(self.lon)
+            params = {'proj':'utm','zone':zone}
+            proj = Proj(params)
+
+            utm_center = proj(self.lon,self.lat)
+            pt = shapely.geometry.Point(utm_center)
+            circle_utm = pt.buffer(self.radius) #9260)
+
+            circle = shapely.geometry.Polygon( [ proj(pt[0],pt[1],inverse=True) for pt in circle_utm.boundary.coords])
+
+            r = {
+                    'area_shape': 0, 
+                    'area_shape_name': 'circle',
+                    'radius':self.radius,
+                    'location': {'type': 'Polygon', 'coordinates': [pt for pt in circle.boundary.coords]},
+                }
+            return r
+            
+            #r['scale_factor'] = self.scale_factor # FIX: Should the scale factor be included?  Don't think so
+        #return r
+
+class AreaNoticeRectangle(object):
+    area_shape = 1
+    def __init__(self, lon=None, lat=None, east_dim=0, north_dim=0, orientation=0, bits=None):
+        '''
+        Rotatable rectangle
+        @param lon: WGS84 longitude
+        @param lat: WGS84 latitude
+        @param east_dim: width in meters (this gets confusing for larger angles).  0 is a north-south line
+        @param north_dim: height in meters (this gets confusing for larger angles). 0 is an east-west line
+        @param orientation: degrees CW
+
+        @todo: great get/set for dimensions and allow for setting scale factor.
+        @todo: or just over rule the attribute get and sets
+        @todo: allow user to force the scale factor
+        @todo: Should this be raising a ValueError 
+        '''
+        if lon is not None:
+            assert lon >= -180. and lon <= 180.
+            self.lon = lon
+            assert lat >= -90. and lat <= 90.
+            self.lat = lat
+
+            assert 0 <=  east_dim and  east_dim <= 25500
+            assert 0 <= north_dim and north_dim <= 25500
+
+            assert 0 <= orientation and orientation < 360
+
+            if east_dim / 1000. >= 255 or north_dim / 1000. >= 255:
+                self.scale_factor = 1000
+                self.scale_factor_raw = 3
+
+            elif east_dim / 100. >= 255 or north_dim / 100. >= 255:
+                self.scale_factor = 100
+                self.scale_factor_raw = 2
+
+            elif east_dim / 10. >= 255 or north_dim / 10. >= 255:
+                self.scale_factor = 10
+                self.scale_factor_raw = 1
+            else:
+                self.scale_factor = 1
+                self.scale_factor_raw = 0
+
+            self.e_dim = east_dim
+            self.n_dim = north_dim
+            self.e_dim_scaled = east_dim / self.scale_factor
+            self.n_dim_scaled = east_dim / self.scale_factor
+
+            self.orientation = orientation
+
+        elif bits is not None:
+            self.decode_bits(bits)
+
+    def decode_bits(bits):
+        if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        if isinstance(bits,str):
+            bits = BitVector(bitstring = bits)
+        elif isinstance(bits, list) or isinstance(bits,tuple):
+            bits = BitVector ( bitlist = bits)
+
+        self.area_shape = int( bits[:3] )
+        self.scale_factor = int( bits[3:5] )
+        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000
+        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000
+        self.e_dim_scaled = int ( bits[60:68] ) 
+        self.n_dim_scaled = int ( bits[68:76] ) 
+
+        self.e_dim = self.e_dim_scaled * (1,10,100,100)[self.scale_factor]
+        self.n_dim = self.n_dim_scaled * (1,10,100,100)[self.scale_factor]
+
+        self.orientation = int ( bits[76:85] )
+
+        self.spare = int ( bits[85:90] )
+
+    def get_bits(self):
+        bvList = []
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # area_shape/type = 0
+        #xsscale_factor = {1:0,10:1,100:2,1000:3}[self.scale_factor]
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=scale_factor_raw), 2 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lat*600000), 27 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.e_dim_scaled), 8 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.n_dim_scaled), 8 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.orientation), 9 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 5 ) ) # spare
+        bv = binary.joinBV(bvList)
+        assert 90==len(bv)
+        return bv
+    
+    def __unicode__(self):
+        return 'AreaNoticeRectangle: (%.4f,%.4f) [%d,%d] m %d deg' % (self.lon,self.lat,self.e_dim,self.n_dim,self.orientation)
+
+    def __str__(self):
+        return self.__unicode__()
+
+    @property
+    def __geo_interface__(self):
+        r = {'area_shape':1, 'type':'Polygon', 'coordinates': (self.lon, self.lat) }
+        return r
+   
+
+
 
 class AreaNotice(BBM):
-    dac = 1
-    fi = 22
     def __init__(self,area_type=None,when=None,duration=None,link_id=0, nmea_strings=None):
         '''
         @param area_type: 0..127 based on table 11.10
@@ -605,6 +754,8 @@ class AreaNotice(BBM):
             self.link_id = link_id
 
             self.areas = []
+        self.dac = 1
+        self.fi = 22
 
         BBM.__init__(self, message_id = 8)
 
@@ -621,6 +772,36 @@ class AreaNotice(BBM):
 
     def __str__(self,verbose=False):
         return self.__unicode__(verbose)
+
+    @property
+    def __geo_interface__(self):
+        'Return dictionary compatible with GeoJSON-AIVD'
+        try:
+            repeat = self.repeat_indicator
+        except:
+            repeat = 0
+        if repeat is None: repeat = 0
+
+        try:
+            mmsi = self.source_mmsi
+        except:
+            mmsi = 0
+        
+        r = { 
+            'msgtype':self.message_id,
+            'repeat': repeat,
+            'mmsi': mmsi,
+            "bbm": {
+                'bbm_type':(self.dac,self.fi), 
+                'bbm_name':'area_notice',
+                'sub-areas': []
+                }
+            }
+        
+        for area in self.areas:
+            r['bbm']['sub-areas'].append(area.__geo_interface__)
+
+        return r
 
     def add_subarea(self,area):
         assert len(self.areas) < 11
