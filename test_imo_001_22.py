@@ -17,11 +17,26 @@ class TestAreaNoticeCirclePt(unittest.TestCase):
         #self.failUnlessRaises(an.AisPackingException, a.get_aivdm,channel='C')
         #self.failUnlessRaises(an.AisPackingException, a.get_aivdm,channel=1)
 
-        m5 = an.m5_shipdata()
-        print 'AIVDM:',m5.get_aivdm()
-        print 'AIVDM:',m5.get_aivdm(sequence_num=1)
-        print 'AIVDM:',m5.get_aivdm(normal_form=True)
+#        m5 = an.m5_shipdata()
+#        print 'AIVDM:',m5.get_aivdm()
+#        print 'AIVDM:',m5.get_aivdm(sequence_num=1)
+#        print 'AIVDM:',m5.get_aivdm(normal_form=True)
+        pass
 
+    def test_geom(self):
+
+        print 'FIX: make a test out of these'
+
+        an1 = an.AreaNoticeCirclePt(-73,43,0)
+        print 'radius:',an1.radius
+        pt = an1.geom()
+        print pt, str(pt)
+
+        # Circle
+        an2 = an.AreaNoticeCirclePt(-73,43,123.4)
+        print 'radius:',an2.radius
+        pt2 = an2.geom()
+        print pt2, str(pt2)
 
     def _test_selfconsistant(self):
         '''

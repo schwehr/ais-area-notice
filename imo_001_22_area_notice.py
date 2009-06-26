@@ -596,6 +596,25 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
     def __str__(self):
         return self.__unicode__()
 
+    def geom(self):
+        #if 'geom_geographic' not in self.__dict__:
+        # If I do this, will need to make sure that I invalidate the cache
+        if self.radius <= 0.01:
+            return shapely.geometry.Point(self.lon,self.lat)
+
+        # Circle
+        zone = lon_to_utm_zone(self.lon)
+        params = {'proj':'utm','zone':zone}
+        proj = Proj(params)
+
+        utm_center = proj(self.lon,self.lat)
+        pt = shapely.geometry.Point(utm_center)
+        circle_utm = pt.buffer(self.radius) #9260)
+
+        circle = shapely.geometry.Polygon( [ proj(pt[0],pt[1],inverse=True) for pt in circle_utm.boundary.coords])
+
+        return circle
+
     @property
     def __geo_interface__(self):
         'Provide a Geo Interface for GeoJSON serialization'
@@ -603,25 +622,15 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         if self.radius == 0.:
             return {'area_shape': 0, 
                     'area_shape_name': 'point',
-                    'type': 'Point', 'coordinates': (self.lon, self.lat) }
+                    'geomtery': {'type': 'Point', 'coordinates': (self.lon, self.lat) }
+                    }
 
-        else: # self.radius > 0:
-
-            zone = lon_to_utm_zone(self.lon)
-            params = {'proj':'utm','zone':zone}
-            proj = Proj(params)
-
-            utm_center = proj(self.lon,self.lat)
-            pt = shapely.geometry.Point(utm_center)
-            circle_utm = pt.buffer(self.radius) #9260)
-
-            circle = shapely.geometry.Polygon( [ proj(pt[0],pt[1],inverse=True) for pt in circle_utm.boundary.coords])
-
+        # self.radius > 0 ... circle
             r = {
                     'area_shape': 0, 
                     'area_shape_name': 'circle',
                     'radius':self.radius,
-                    'location': {'type': 'Polygon', 'coordinates': [pt for pt in circle.boundary.coords]},
+                    'geometry': {'type': 'Polygon', 'coordinates': [pt for pt in self.geom().boundary.coords]},
                     # Leaving out scale_factor
                 }
             return r
@@ -731,7 +740,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 class AreaNoticeSector(AreaNoticeSubArea):
     area_shape = 2
     def __init__(self, lon=None, lat=None, radius=0, left_bound=0, right_bound=0, bits=None):
-         '''
+        '''
         A pie slice
 
         @param lon: WGS84 longitude
@@ -777,7 +786,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
             self.decode_bits(bits)
        
 
-        FIX: keep writing code here
+        sys.exit('FIX: keep writing code here')
 
 
 
