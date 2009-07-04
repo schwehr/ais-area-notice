@@ -14,7 +14,7 @@ def hex_len2(h):
 def rand_hex_color():
     return ''.join( [ hex_len2(hex(int(random.random()*255)).split('x')[1]) for j in range(3) ])
 
-for i in range(3,127+1):
+for i in range(1,127+1):
     
     print '''
 	<!-- AreaNotice {number}: {name} -->
@@ -26,7 +26,7 @@ for i in range(3,127+1):
 	<Style id="AreaNotice_{number}_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
 	  <LineStyle><color>{c1}</color><width>8</width></LineStyle>
-	  <PolyStyle><color>{c2}</color>
+	  <PolyStyle><color>{c2}</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_{number}_normal">
 	  <LineStyle><color>{c3}</color><width>8</width></LineStyle>

@@ -12,6 +12,12 @@ Trying to do a more sane design for AIS BBM message
 
 @requires: U{Python<http://python.org/>} >= 2.5
 @requires: U{epydoc<http://epydoc.sourceforge.net/>} >= 3.0.1
+@requires: U{lxml<http://codespeak.net/lxml/lxmlhtml.html>} >= 2.0
+@requires: U{shapely<http:///>}
+@requires: U{geojson<http:///>}
+@requires: U{BitVector<http:///>}
+@requires: U{BitVector<http:///>}
+@requires: U{pyproj<http:///>}
 
 @license: GPL v3
 @undocumented: __doc__
@@ -30,6 +36,9 @@ from operator import xor # for checksum
 from pyproj import Proj
 import shapely.geometry
 import geojson
+
+import lxml
+from lxml.html import builder as E
 
 from BitVector import BitVector
 
@@ -321,6 +330,36 @@ notice_type = {
  chart == chart features'''
 
 
+def _make_short_notice():
+    d = {}
+    for k,v in notice_type.iteritems():
+        if isinstance (k,str):
+            d[v] = k
+    return d
+
+short_notice = _make_short_notice()
+
+def geom2kml(geom_dict):
+    '''Convert a geointerface geometry to KML
+    
+    @param geo_dict: Dictionary containing 'geometry' as defined by the geo interface / geojson / shapely
+    '''
+    geom_type = geom_dict['geometry']['type']
+    geom_coords = geom_dict['geometry']['coordinates']
+
+    if geom_type == 'Point':
+        return '<Point><coordinates>{lon},{lat},0</coordinates></Point>'.format(lon = geom_coords[0], lat = geom_coords[1])
+    elif geom_type == 'Polygon':
+        o = ['<Polygon><outerBoundaryIs><LinearRing><coordinates>']
+        for pt in geom_coords:
+            o.append('\t%f,%f,0' % (pt[0],pt[1]))
+        o.append('</coordinates></LinearRing></outerBoundaryIs></Polygon>')
+        return '\n'.join(o)
+
+    raise ValueError('Not a recognized __geo_interface__ type: %s' % (geom_type))
+
+
+
 class AisException(Exception):
     pass
 
@@ -373,9 +412,10 @@ class AIVDM (object):
         bvList.append(binary.setBitVectorSize(BitVector(intVal=source_mmsi),30))
         return binary.joinBV(bvList)
 
-    def get_json(self):
-        'Child classes must implement this.  Return a json object'
-        raise NotImplementedError()
+# See __geo_interface__
+#    def get_json(self):
+#        'Child classes must implement this.  Return a json object'
+#        raise NotImplementedError()
 
     def get_aivdm(self, sequence_num = None, channel = 'A', normal_form=False, source_mmsi=None, repeat_indicator=None):
         '''return the nmea string as if it had been received.  Assumes that payload_bits has already been set
@@ -591,10 +631,24 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         return bv
 
     def __unicode__(self):
-        return 'AreaNoticeCirclePt: (%.4f,%.4f) %d m' % (self.lon,self.lat,self.radius)
+        if self.radius == 0.:
+            return 'AreaNoticeCirclePt: Point at (%.4f,%.4f)' % (self.lon,self.lat)
+        return 'AreaNoticeCirclePt: Circle centered at (%.4f,%.4f) - radius %dm' % (self.lon,self.lat,self.radius)
 
     def __str__(self):
         return self.__unicode__()
+
+
+#    def html(self):
+#        'return an embeddable html representation using lxml E-Factor.  In this case, it is just text'
+#        if self.radius == 0.:
+#            #return E.LI('Point at %.5f,%.5f' % (self.lon,self.lat))
+#            return 'Point at %.5f,%.5f' % (self.lon,self.lat)
+        
+        #return E.LI('Circle centered at %.5f,%.5f' % (self.lon,self.lat))
+#        return 'Circle centered at %.5f,%.5f' % (self.lon,self.lat)
+        #table = E.TABLE(E.TR()
+
 
     def geom(self):
         #if 'geom_geographic' not in self.__dict__:
@@ -619,21 +673,23 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
     def __geo_interface__(self):
         'Provide a Geo Interface for GeoJSON serialization'
         # Would be better if there was a GeoJSON Circle type!
+
+
         if self.radius == 0.:
             return {'area_shape': 0, 
                     'area_shape_name': 'point',
-                    'geomtery': {'type': 'Point', 'coordinates': (self.lon, self.lat) }
+                    'geometry': {'type': 'Point', 'coordinates': [self.lon, self.lat] }
                     }
 
         # self.radius > 0 ... circle
-            r = {
-                    'area_shape': 0, 
-                    'area_shape_name': 'circle',
-                    'radius':self.radius,
-                    'geometry': {'type': 'Polygon', 'coordinates': [pt for pt in self.geom().boundary.coords]},
-                    # Leaving out scale_factor
-                }
-            return r
+        r = {
+            'area_shape': 0, 
+            'area_shape_name': 'circle',
+            'radius':self.radius,
+            'geometry': {'type': 'Polygon', 'coordinates': [pt for pt in self.geom().boundary.coords]},
+            # Leaving out scale_factor
+            }
+        return r
 
 class AreaNoticeRectangle(AreaNoticeSubArea):
     area_shape = 1
@@ -789,7 +845,6 @@ class AreaNoticeSector(AreaNoticeSubArea):
         sys.exit('FIX: keep writing code here')
 
 
-
 class AreaNotice(BBM):
     def __init__(self,area_type=None,when=None,duration=None,link_id=0, nmea_strings=None):
         '''
@@ -832,6 +887,62 @@ class AreaNotice(BBM):
     def __str__(self,verbose=False):
         return self.__unicode__(verbose)
 
+    def html(self, efactory=False):
+        'return an embeddable html representation using lxml E-Factor'
+        l = E.OL()
+        for area in self.areas:
+            l.append(E.LI(str(area)))
+        if efactory:
+            return
+        return lxml.html.tostring(E.DIV(E.P(self.__str__()),l))
+
+    def kml(self,style=False,full=False):
+        '''return kml str for google earth
+        @param style: if style is True, it will use the standard style.  Set to a name for a custom style
+        '''
+        o = []
+        if full:
+            o.append('''<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+''')
+            o.append(file('areanotice_styles.kml').read())
+        html = self.html()
+        for area in self.areas:
+            geo_i = area.__geo_interface__
+            if 'geometry' not in geo_i:
+                print 'Skipping area:',str(area)
+                continue
+            #print 'geo_i:',geo_i
+            #print 'type:',geo_i['geometry']
+            #print 'type:',geo_i['geometry']['type']
+            kml_shape = geom2kml(geo_i)
+
+            o.append('<Placemark>')
+            try:
+                o.append('<name>%s</name>' % (self.name))
+            except:
+                o.append('<name>%s</name>' % (short_notice[self.area_type].replace('_',' '),))
+            if style:
+                if isinstance(style,str):
+                    o.append('<styleUrl>%s</styleUrl>'% (style,))
+                o.append('<styleUrl>#AreaNotice_%d</styleUrl>' % self.area_type)
+                # no style available
+            o.append('<description>')
+            o.append('<i>AreaNotice - %s</i>' % (notice_type[self.area_type],) )
+            o.append(html)
+            o.append('</description>')
+
+            o.append(kml_shape)
+            o.append('</Placemark>\n')
+
+        if full:
+            o.append('''</Document>
+</kml>
+''')
+
+        return '\n'.join(o)
+
     @property
     def __geo_interface__(self):
         'Return dictionary compatible with GeoJSON-AIVD'
@@ -853,12 +964,15 @@ class AreaNotice(BBM):
             "bbm": {
                 'bbm_type':(self.dac,self.fi), 
                 'bbm_name':'area_notice',
-                'sub-areas': []
+                'areas': []
                 }
             }
-        
+
+        print 'areas:',len(self.areas)
+        print 'bbm:',r['bbm']
         for area in self.areas:
-            r['bbm']['sub-areas'].append(area.__geo_interface__)
+            print 'area_geo:',area.__geo_interface__
+            r['bbm']['areas'].append(area.__geo_interface__)
 
         return r
 

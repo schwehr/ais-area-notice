@@ -1,0 +1,2033 @@
+<!-- -*- xml -*- Tell emacs this is xml -->
+
+	<!-- AreaNotice 1: Caution Area: Marine mammals in area - Reduce Speed -->
+	<StyleMap id="AreaNotice_0">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_0_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_0_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_0_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>ff0e5200</color><width>8</width></LineStyle>
+	  <PolyStyle><color>8039ff00</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_0_normal">
+	  <LineStyle><color>ff0e5200</color><width>8</width></LineStyle>
+	  <PolyStyle><color>8039ff00</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 2: Caution Area: Marine mammals in area - Stay Clear -->
+	<StyleMap id="AreaNotice_1">
+		  <Pair><key>normal</key><styleUrl>#AreaNotice_1_normal</styleUrl></Pair>
+		  <Pair><key>highlight</key><styleUrl>#AreaNotice_1_highlight</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="AreaNotice_1_highlight">
+		<IconStyle><scale>1.2</scale></IconStyle>
+		<LineStyle><color>ff000000</color><width>4</width></LineStyle>
+		<PolyStyle><color>8000ecff</color></PolyStyle>
+	</Style>
+	<Style id="AreaNotice_1_normal">
+		<LineStyle><color>ff0000ff</color><width>4</width></LineStyle>
+		<PolyStyle><color>8000ecff</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 3: Caution Area: Marine mammals in area - Report Sightings -->
+	<StyleMap id="AreaNotice_3">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_3_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_3_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_3_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>456d44</color><width>8</width></LineStyle>
+	  <PolyStyle><color>ac1511</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_3_normal">
+	  <LineStyle><color>cdd55e</color><width>8</width></LineStyle>
+	  <PolyStyle><color>812c23</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 4: Caution Area: Protected Habitat - Reduce Speed -->
+	<StyleMap id="AreaNotice_4">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_4_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_4_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_4_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>72b73d</color><width>8</width></LineStyle>
+	  <PolyStyle><color>85bbb7</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_4_normal">
+	  <LineStyle><color>7cd1a6</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0a5135</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 5: Caution Area: Protected Habitat - Stay Clear -->
+	<StyleMap id="AreaNotice_5">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_5_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_5_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_5_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>95fab1</color><width>8</width></LineStyle>
+	  <PolyStyle><color>5f54e2</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_5_normal">
+	  <LineStyle><color>8f4dd0</color><width>8</width></LineStyle>
+	  <PolyStyle><color>32762c</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 6: Caution Area: Protected Habitat - No fishing or anchoring -->
+	<StyleMap id="AreaNotice_6">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_6_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_6_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_6_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>e14a82</color><width>8</width></LineStyle>
+	  <PolyStyle><color>e6d894</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_6_normal">
+	  <LineStyle><color>c7edd2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c656af</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 7: Reserved -->
+	<StyleMap id="AreaNotice_7">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_7_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_7_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_7_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>cd9a3c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>88af10</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_7_normal">
+	  <LineStyle><color>456d92</color><width>8</width></LineStyle>
+	  <PolyStyle><color>9da530</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 8: Caution Area: Traffic congestion -->
+	<StyleMap id="AreaNotice_8">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_8_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_8_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_8_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>1f05fc</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c1f3b3</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_8_normal">
+	  <LineStyle><color>03be24</color><width>8</width></LineStyle>
+	  <PolyStyle><color>9f07a1</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 9: Caution Area: Marine event -->
+	<StyleMap id="AreaNotice_9">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_9_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_9_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_9_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>8225c3</color><width>8</width></LineStyle>
+	  <PolyStyle><color>43e083</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_9_normal">
+	  <LineStyle><color>546ce7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>ba0e8e</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 10: Caution Area: Divers down -->
+	<StyleMap id="AreaNotice_10">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_10_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_10_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_10_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>6f83cc</color><width>8</width></LineStyle>
+	  <PolyStyle><color>4a9f04</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_10_normal">
+	  <LineStyle><color>1a431f</color><width>8</width></LineStyle>
+	  <PolyStyle><color>a43671</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 11: Caution Area: Swim area -->
+	<StyleMap id="AreaNotice_11">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_11_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_11_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_11_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>e9eaf6</color><width>8</width></LineStyle>
+	  <PolyStyle><color>4c2b2c</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_11_normal">
+	  <LineStyle><color>b40572</color><width>8</width></LineStyle>
+	  <PolyStyle><color>02db62</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 12: Caution Area: Dredge operations -->
+	<StyleMap id="AreaNotice_12">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_12_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_12_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_12_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>0552c1</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c715e3</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_12_normal">
+	  <LineStyle><color>323c40</color><width>8</width></LineStyle>
+	  <PolyStyle><color>791e54</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 13: Caution Area: Survey operations -->
+	<StyleMap id="AreaNotice_13">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_13_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_13_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_13_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>4a3156</color><width>8</width></LineStyle>
+	  <PolyStyle><color>f156a7</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_13_normal">
+	  <LineStyle><color>1ba1f6</color><width>8</width></LineStyle>
+	  <PolyStyle><color>4d99c2</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 14: Caution Area: Underwater operation -->
+	<StyleMap id="AreaNotice_14">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_14_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_14_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_14_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>4d3fd3</color><width>8</width></LineStyle>
+	  <PolyStyle><color>df56e0</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_14_normal">
+	  <LineStyle><color>963d21</color><width>8</width></LineStyle>
+	  <PolyStyle><color>72b08e</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 15: Caution Area: Seaplane operations -->
+	<StyleMap id="AreaNotice_15">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_15_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_15_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_15_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>db9ebd</color><width>8</width></LineStyle>
+	  <PolyStyle><color>2df5a3</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_15_normal">
+	  <LineStyle><color>200a29</color><width>8</width></LineStyle>
+	  <PolyStyle><color>4237b7</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 16: Caution Area: Fishery - nets in water -->
+	<StyleMap id="AreaNotice_16">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_16_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_16_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_16_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>e1e042</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c07ede</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_16_normal">
+	  <LineStyle><color>43fe6d</color><width>8</width></LineStyle>
+	  <PolyStyle><color>dc213a</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 17: Caution Area: Cluster of fishing vessels -->
+	<StyleMap id="AreaNotice_17">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_17_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_17_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_17_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>01a140</color><width>8</width></LineStyle>
+	  <PolyStyle><color>a31785</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_17_normal">
+	  <LineStyle><color>56c198</color><width>8</width></LineStyle>
+	  <PolyStyle><color>65b106</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 18: Caution Area: Fairway closed -->
+	<StyleMap id="AreaNotice_18">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_18_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_18_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_18_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>47d11d</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0d4755</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_18_normal">
+	  <LineStyle><color>ecb9bf</color><width>8</width></LineStyle>
+	  <PolyStyle><color>528e2c</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 19: Caution Area: Harbor closed -->
+	<StyleMap id="AreaNotice_19">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_19_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_19_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_19_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>b59ac8</color><width>8</width></LineStyle>
+	  <PolyStyle><color>02d2fa</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_19_normal">
+	  <LineStyle><color>e4ddcc</color><width>8</width></LineStyle>
+	  <PolyStyle><color>db72c0</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 20: Caution Area: Risk - define in free text field -->
+	<StyleMap id="AreaNotice_20">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_20_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_20_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_20_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>b51a86</color><width>8</width></LineStyle>
+	  <PolyStyle><color>f62559</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_20_normal">
+	  <LineStyle><color>6610b9</color><width>8</width></LineStyle>
+	  <PolyStyle><color>705cd4</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 21: Caution Area: Underwater vehicle operation -->
+	<StyleMap id="AreaNotice_21">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_21_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_21_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_21_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>bf9502</color><width>8</width></LineStyle>
+	  <PolyStyle><color>375679</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_21_normal">
+	  <LineStyle><color>bdf45c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>302379</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 22: Reserved -->
+	<StyleMap id="AreaNotice_22">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_22_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_22_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_22_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>beaad7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>5339bc</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_22_normal">
+	  <LineStyle><color>1ff735</color><width>8</width></LineStyle>
+	  <PolyStyle><color>7e4fb7</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 23: Storm front (line squall) -->
+	<StyleMap id="AreaNotice_23">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_23_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_23_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_23_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>803291</color><width>8</width></LineStyle>
+	  <PolyStyle><color>97ef11</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_23_normal">
+	  <LineStyle><color>0acb4d</color><width>8</width></LineStyle>
+	  <PolyStyle><color>cfd8f3</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 24: Env. Caution Area: Hazardous sea ice -->
+	<StyleMap id="AreaNotice_24">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_24_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_24_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_24_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>f336ca</color><width>8</width></LineStyle>
+	  <PolyStyle><color>057ea1</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_24_normal">
+	  <LineStyle><color>3a1208</color><width>8</width></LineStyle>
+	  <PolyStyle><color>22f6b4</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 25: Env. Caution Area: Storm warning (storm cell or line of storms) -->
+	<StyleMap id="AreaNotice_25">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_25_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_25_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_25_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>a5b00c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>1cf29c</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_25_normal">
+	  <LineStyle><color>c4b448</color><width>8</width></LineStyle>
+	  <PolyStyle><color>3d9863</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 26: Env. Caution Area: High wind -->
+	<StyleMap id="AreaNotice_26">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_26_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_26_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_26_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>a4ba52</color><width>8</width></LineStyle>
+	  <PolyStyle><color>249abb</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_26_normal">
+	  <LineStyle><color>f83235</color><width>8</width></LineStyle>
+	  <PolyStyle><color>fb4898</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 27: Env. Caution Area: High waves -->
+	<StyleMap id="AreaNotice_27">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_27_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_27_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_27_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>c59087</color><width>8</width></LineStyle>
+	  <PolyStyle><color>bac2b2</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_27_normal">
+	  <LineStyle><color>99adfb</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0fabee</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 28: Env. Caution Area: Restricted visibility (fog, rain, etc) -->
+	<StyleMap id="AreaNotice_28">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_28_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_28_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_28_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>1e66ab</color><width>8</width></LineStyle>
+	  <PolyStyle><color>cc9369</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_28_normal">
+	  <LineStyle><color>6acf43</color><width>8</width></LineStyle>
+	  <PolyStyle><color>a4678d</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 29: Env. Caution Area: Strong currents -->
+	<StyleMap id="AreaNotice_29">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_29_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_29_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_29_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>b6f145</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c0cd58</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_29_normal">
+	  <LineStyle><color>c7f5ec</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c0b593</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 30: Env. Caution Area: Heavy icing -->
+	<StyleMap id="AreaNotice_30">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_30_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_30_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_30_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>648766</color><width>8</width></LineStyle>
+	  <PolyStyle><color>d2e669</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_30_normal">
+	  <LineStyle><color>7865f0</color><width>8</width></LineStyle>
+	  <PolyStyle><color>069673</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 31: Reserved -->
+	<StyleMap id="AreaNotice_31">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_31_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_31_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_31_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>3a32e7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>af30b5</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_31_normal">
+	  <LineStyle><color>9de796</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0854a9</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 32: Restricted Area: Fishing prohibited -->
+	<StyleMap id="AreaNotice_32">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_32_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_32_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_32_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>d766b2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>aaf003</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_32_normal">
+	  <LineStyle><color>771cbf</color><width>8</width></LineStyle>
+	  <PolyStyle><color>51bfca</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 33: Restricted Area: No anchoring. -->
+	<StyleMap id="AreaNotice_33">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_33_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_33_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_33_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>4eb417</color><width>8</width></LineStyle>
+	  <PolyStyle><color>9e0224</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_33_normal">
+	  <LineStyle><color>9dc54f</color><width>8</width></LineStyle>
+	  <PolyStyle><color>5afd65</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 34: Restricted Area: Entry approval required prior to transit -->
+	<StyleMap id="AreaNotice_34">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_34_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_34_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_34_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>9e0be0</color><width>8</width></LineStyle>
+	  <PolyStyle><color>61e511</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_34_normal">
+	  <LineStyle><color>d8aca4</color><width>8</width></LineStyle>
+	  <PolyStyle><color>3aaa3d</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 35: Restricted Area: Entry prohibited -->
+	<StyleMap id="AreaNotice_35">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_35_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_35_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_35_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>37bf73</color><width>8</width></LineStyle>
+	  <PolyStyle><color>29372d</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_35_normal">
+	  <LineStyle><color>6e1a81</color><width>8</width></LineStyle>
+	  <PolyStyle><color>ccb047</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 36: Restricted Area: Active military OPAREA -->
+	<StyleMap id="AreaNotice_36">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_36_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_36_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_36_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>77111a</color><width>8</width></LineStyle>
+	  <PolyStyle><color>a9979f</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_36_normal">
+	  <LineStyle><color>7e75dc</color><width>8</width></LineStyle>
+	  <PolyStyle><color>972143</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 37: Restricted Area: Firing - danger area. -->
+	<StyleMap id="AreaNotice_37">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_37_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_37_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_37_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>b66674</color><width>8</width></LineStyle>
+	  <PolyStyle><color>a18a41</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_37_normal">
+	  <LineStyle><color>a54f7d</color><width>8</width></LineStyle>
+	  <PolyStyle><color>765dc1</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 38: Reserved -->
+	<StyleMap id="AreaNotice_38">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_38_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_38_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_38_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>e262d3</color><width>8</width></LineStyle>
+	  <PolyStyle><color>81ea60</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_38_normal">
+	  <LineStyle><color>73d733</color><width>8</width></LineStyle>
+	  <PolyStyle><color>acbfdd</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 39: Reserved -->
+	<StyleMap id="AreaNotice_39">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_39_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_39_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_39_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>5eb054</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c53688</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_39_normal">
+	  <LineStyle><color>780b76</color><width>8</width></LineStyle>
+	  <PolyStyle><color>d09034</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 40: Anchorage Area: Anchorage open -->
+	<StyleMap id="AreaNotice_40">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_40_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_40_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_40_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>3bacb3</color><width>8</width></LineStyle>
+	  <PolyStyle><color>226975</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_40_normal">
+	  <LineStyle><color>d726e5</color><width>8</width></LineStyle>
+	  <PolyStyle><color>8c103f</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 41: Anchorage Area: Anchorage closed -->
+	<StyleMap id="AreaNotice_41">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_41_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_41_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_41_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>53a2db</color><width>8</width></LineStyle>
+	  <PolyStyle><color>2370aa</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_41_normal">
+	  <LineStyle><color>524970</color><width>8</width></LineStyle>
+	  <PolyStyle><color>59111b</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 42: Anchorage Area: Anchoring prohibited -->
+	<StyleMap id="AreaNotice_42">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_42_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_42_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_42_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>165759</color><width>8</width></LineStyle>
+	  <PolyStyle><color>bf2210</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_42_normal">
+	  <LineStyle><color>04f328</color><width>8</width></LineStyle>
+	  <PolyStyle><color>aed79c</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 43: Anchorage Area: Deep draft anchorage -->
+	<StyleMap id="AreaNotice_43">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_43_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_43_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_43_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>b5c22c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>ae8bbd</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_43_normal">
+	  <LineStyle><color>d4ddbd</color><width>8</width></LineStyle>
+	  <PolyStyle><color>276fe2</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 44: Anchorage Area: Shallow draft anchorage -->
+	<StyleMap id="AreaNotice_44">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_44_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_44_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_44_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>a0f2b2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>134b31</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_44_normal">
+	  <LineStyle><color>345a8c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>698682</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 45: Anchorage Area: Vessel transfer operations -->
+	<StyleMap id="AreaNotice_45">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_45_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_45_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_45_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>1e0bb1</color><width>8</width></LineStyle>
+	  <PolyStyle><color>52c5cf</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_45_normal">
+	  <LineStyle><color>ec36b2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>e4aa8c</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 46: Reserved -->
+	<StyleMap id="AreaNotice_46">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_46_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_46_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_46_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>f1bc2c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>cc2d1d</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_46_normal">
+	  <LineStyle><color>2d0264</color><width>8</width></LineStyle>
+	  <PolyStyle><color>1f6366</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 47: Reserved -->
+	<StyleMap id="AreaNotice_47">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_47_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_47_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_47_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>b28498</color><width>8</width></LineStyle>
+	  <PolyStyle><color>877ac5</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_47_normal">
+	  <LineStyle><color>3c1eea</color><width>8</width></LineStyle>
+	  <PolyStyle><color>635bfb</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 48: Reserved -->
+	<StyleMap id="AreaNotice_48">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_48_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_48_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_48_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>809f60</color><width>8</width></LineStyle>
+	  <PolyStyle><color>9b8b33</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_48_normal">
+	  <LineStyle><color>a35926</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0694ca</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 49: Reserved -->
+	<StyleMap id="AreaNotice_49">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_49_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_49_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_49_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>de34c8</color><width>8</width></LineStyle>
+	  <PolyStyle><color>f032ed</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_49_normal">
+	  <LineStyle><color>774522</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0b1467</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 50: Reserved -->
+	<StyleMap id="AreaNotice_50">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_50_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_50_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_50_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>657aee</color><width>8</width></LineStyle>
+	  <PolyStyle><color>89bda8</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_50_normal">
+	  <LineStyle><color>77e7fc</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0d96a4</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 51: Reserved -->
+	<StyleMap id="AreaNotice_51">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_51_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_51_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_51_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>204de2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>693388</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_51_normal">
+	  <LineStyle><color>c1c30c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c73003</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 52: Reserved -->
+	<StyleMap id="AreaNotice_52">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_52_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_52_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_52_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>7076c7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>12c3f4</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_52_normal">
+	  <LineStyle><color>550172</color><width>8</width></LineStyle>
+	  <PolyStyle><color>3b0cf2</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 53: Reserved -->
+	<StyleMap id="AreaNotice_53">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_53_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_53_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_53_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>bda701</color><width>8</width></LineStyle>
+	  <PolyStyle><color>bd29a7</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_53_normal">
+	  <LineStyle><color>79c8f7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>b1d8af</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 54: Reserved -->
+	<StyleMap id="AreaNotice_54">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_54_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_54_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_54_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>8efca4</color><width>8</width></LineStyle>
+	  <PolyStyle><color>af638a</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_54_normal">
+	  <LineStyle><color>7d72c7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>389483</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 55: Reserved -->
+	<StyleMap id="AreaNotice_55">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_55_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_55_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_55_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>3f6252</color><width>8</width></LineStyle>
+	  <PolyStyle><color>cfe15f</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_55_normal">
+	  <LineStyle><color>aff9aa</color><width>8</width></LineStyle>
+	  <PolyStyle><color>4f1635</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 56: Security Alert - Level 1 -->
+	<StyleMap id="AreaNotice_56">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_56_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_56_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_56_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>f1bf40</color><width>8</width></LineStyle>
+	  <PolyStyle><color>e364b2</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_56_normal">
+	  <LineStyle><color>4ba85a</color><width>8</width></LineStyle>
+	  <PolyStyle><color>d9fa02</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 57: Security Alert - Level 2 -->
+	<StyleMap id="AreaNotice_57">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_57_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_57_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_57_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>48fef6</color><width>8</width></LineStyle>
+	  <PolyStyle><color>77fbaf</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_57_normal">
+	  <LineStyle><color>118601</color><width>8</width></LineStyle>
+	  <PolyStyle><color>3342d4</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 58: Security Alert - Level 3 -->
+	<StyleMap id="AreaNotice_58">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_58_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_58_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_58_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>5d78c9</color><width>8</width></LineStyle>
+	  <PolyStyle><color>8cd9f9</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_58_normal">
+	  <LineStyle><color>105964</color><width>8</width></LineStyle>
+	  <PolyStyle><color>b71033</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 59: Reserved -->
+	<StyleMap id="AreaNotice_59">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_59_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_59_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_59_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>978325</color><width>8</width></LineStyle>
+	  <PolyStyle><color>9d2d31</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_59_normal">
+	  <LineStyle><color>2fd6fe</color><width>8</width></LineStyle>
+	  <PolyStyle><color>30d22f</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 60: Reserved -->
+	<StyleMap id="AreaNotice_60">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_60_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_60_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_60_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>18abf5</color><width>8</width></LineStyle>
+	  <PolyStyle><color>f13457</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_60_normal">
+	  <LineStyle><color>778027</color><width>8</width></LineStyle>
+	  <PolyStyle><color>b2bc13</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 61: Reserved -->
+	<StyleMap id="AreaNotice_61">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_61_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_61_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_61_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>013ddd</color><width>8</width></LineStyle>
+	  <PolyStyle><color>e8dc1a</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_61_normal">
+	  <LineStyle><color>8c93fa</color><width>8</width></LineStyle>
+	  <PolyStyle><color>5609be</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 62: Reserved -->
+	<StyleMap id="AreaNotice_62">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_62_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_62_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_62_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>6e6e49</color><width>8</width></LineStyle>
+	  <PolyStyle><color>03c1cb</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_62_normal">
+	  <LineStyle><color>9aab87</color><width>8</width></LineStyle>
+	  <PolyStyle><color>003c76</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 63: Reserved -->
+	<StyleMap id="AreaNotice_63">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_63_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_63_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_63_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>154d0a</color><width>8</width></LineStyle>
+	  <PolyStyle><color>a3ab84</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_63_normal">
+	  <LineStyle><color>787b93</color><width>8</width></LineStyle>
+	  <PolyStyle><color>3f9ad1</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 64: Distress Area: Vessel disabled and adrift -->
+	<StyleMap id="AreaNotice_64">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_64_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_64_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_64_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>8e9195</color><width>8</width></LineStyle>
+	  <PolyStyle><color>1ac3c0</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_64_normal">
+	  <LineStyle><color>7d9444</color><width>8</width></LineStyle>
+	  <PolyStyle><color>caf6b3</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 65: Distress Area: Vessel sinking -->
+	<StyleMap id="AreaNotice_65">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_65_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_65_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_65_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>78d0be</color><width>8</width></LineStyle>
+	  <PolyStyle><color>5fe08e</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_65_normal">
+	  <LineStyle><color>da76c8</color><width>8</width></LineStyle>
+	  <PolyStyle><color>161ab7</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 66: Distress Area: Vessel abandoning ship -->
+	<StyleMap id="AreaNotice_66">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_66_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_66_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_66_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>75f4d1</color><width>8</width></LineStyle>
+	  <PolyStyle><color>ab4210</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_66_normal">
+	  <LineStyle><color>99aea7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>f13239</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 67: Distress Area: Vessel requests medical assistance -->
+	<StyleMap id="AreaNotice_67">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_67_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_67_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_67_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>2bc616</color><width>8</width></LineStyle>
+	  <PolyStyle><color>aa01c6</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_67_normal">
+	  <LineStyle><color>75687b</color><width>8</width></LineStyle>
+	  <PolyStyle><color>b9979a</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 68: Distress Area: Vessel flooding -->
+	<StyleMap id="AreaNotice_68">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_68_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_68_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_68_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>9b8a04</color><width>8</width></LineStyle>
+	  <PolyStyle><color>52a945</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_68_normal">
+	  <LineStyle><color>d49e14</color><width>8</width></LineStyle>
+	  <PolyStyle><color>1d6393</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 69: Distress Area: Vessel fire/explosion -->
+	<StyleMap id="AreaNotice_69">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_69_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_69_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_69_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>59cd6e</color><width>8</width></LineStyle>
+	  <PolyStyle><color>bd0398</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_69_normal">
+	  <LineStyle><color>490bf2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>e32483</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 70: Distress Area: Vessel grounding -->
+	<StyleMap id="AreaNotice_70">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_70_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_70_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_70_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>1b4afb</color><width>8</width></LineStyle>
+	  <PolyStyle><color>9a4f49</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_70_normal">
+	  <LineStyle><color>ed748b</color><width>8</width></LineStyle>
+	  <PolyStyle><color>502556</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 71: Distress Area: Vessel collision -->
+	<StyleMap id="AreaNotice_71">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_71_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_71_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_71_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>fe8d04</color><width>8</width></LineStyle>
+	  <PolyStyle><color>016b5e</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_71_normal">
+	  <LineStyle><color>5194ae</color><width>8</width></LineStyle>
+	  <PolyStyle><color>d1ccb0</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 72: Distress Area: Vessel listing/capsizing -->
+	<StyleMap id="AreaNotice_72">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_72_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_72_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_72_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>aeee4d</color><width>8</width></LineStyle>
+	  <PolyStyle><color>359a1d</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_72_normal">
+	  <LineStyle><color>a9fbaa</color><width>8</width></LineStyle>
+	  <PolyStyle><color>55f02a</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 73: Distress Area: Vessel under assault -->
+	<StyleMap id="AreaNotice_73">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_73_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_73_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_73_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>787c36</color><width>8</width></LineStyle>
+	  <PolyStyle><color>87f76a</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_73_normal">
+	  <LineStyle><color>6d1025</color><width>8</width></LineStyle>
+	  <PolyStyle><color>77bf7d</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 74: Distress Area: Person overboard -->
+	<StyleMap id="AreaNotice_74">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_74_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_74_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_74_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>956b6d</color><width>8</width></LineStyle>
+	  <PolyStyle><color>736bdd</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_74_normal">
+	  <LineStyle><color>247996</color><width>8</width></LineStyle>
+	  <PolyStyle><color>02111e</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 75: Distress Area: SAR area -->
+	<StyleMap id="AreaNotice_75">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_75_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_75_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_75_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>9b9d19</color><width>8</width></LineStyle>
+	  <PolyStyle><color>b1e3d5</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_75_normal">
+	  <LineStyle><color>dfc114</color><width>8</width></LineStyle>
+	  <PolyStyle><color>751bab</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 76: Distress Area: Pollution response area -->
+	<StyleMap id="AreaNotice_76">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_76_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_76_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_76_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>c097d8</color><width>8</width></LineStyle>
+	  <PolyStyle><color>67129d</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_76_normal">
+	  <LineStyle><color>99c328</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0171b2</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 77: Reserved -->
+	<StyleMap id="AreaNotice_77">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_77_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_77_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_77_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>333b89</color><width>8</width></LineStyle>
+	  <PolyStyle><color>892227</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_77_normal">
+	  <LineStyle><color>3b6da3</color><width>8</width></LineStyle>
+	  <PolyStyle><color>6c2caf</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 78: Reserved -->
+	<StyleMap id="AreaNotice_78">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_78_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_78_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_78_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>1e606f</color><width>8</width></LineStyle>
+	  <PolyStyle><color>b48c27</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_78_normal">
+	  <LineStyle><color>f77107</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c8a343</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 79: Reserved -->
+	<StyleMap id="AreaNotice_79">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_79_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_79_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_79_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>1ad205</color><width>8</width></LineStyle>
+	  <PolyStyle><color>2abfb0</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_79_normal">
+	  <LineStyle><color>537f8c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>3243c6</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 80: Instruction: Contact VTS at this point/juncture -->
+	<StyleMap id="AreaNotice_80">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_80_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_80_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_80_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>ed95f6</color><width>8</width></LineStyle>
+	  <PolyStyle><color>b55bbb</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_80_normal">
+	  <LineStyle><color>22cd4c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>75dea3</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 81: Instruction: Contact Port Administration at this point/juncture -->
+	<StyleMap id="AreaNotice_81">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_81_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_81_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_81_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>8ed1d7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>7c1348</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_81_normal">
+	  <LineStyle><color>f60734</color><width>8</width></LineStyle>
+	  <PolyStyle><color>721d93</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 82: Instruction: Do not proceed beyond this point/juncture -->
+	<StyleMap id="AreaNotice_82">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_82_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_82_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_82_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>03b955</color><width>8</width></LineStyle>
+	  <PolyStyle><color>9ae8c9</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_82_normal">
+	  <LineStyle><color>bdfb33</color><width>8</width></LineStyle>
+	  <PolyStyle><color>fc7c29</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 83: Instruction: Await instructions prior to proceeding beyond this point/juncture -->
+	<StyleMap id="AreaNotice_83">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_83_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_83_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_83_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>10ee7d</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c5c37d</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_83_normal">
+	  <LineStyle><color>252bf7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>d51b8c</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 84: Reserved -->
+	<StyleMap id="AreaNotice_84">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_84_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_84_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_84_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>315f7f</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c021cd</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_84_normal">
+	  <LineStyle><color>f2d464</color><width>8</width></LineStyle>
+	  <PolyStyle><color>9b042a</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 85: Reserved -->
+	<StyleMap id="AreaNotice_85">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_85_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_85_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_85_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>2cf791</color><width>8</width></LineStyle>
+	  <PolyStyle><color>8e161d</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_85_normal">
+	  <LineStyle><color>6c35b3</color><width>8</width></LineStyle>
+	  <PolyStyle><color>af9bf9</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 86: Reserved -->
+	<StyleMap id="AreaNotice_86">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_86_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_86_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_86_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>9beab1</color><width>8</width></LineStyle>
+	  <PolyStyle><color>71e9e0</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_86_normal">
+	  <LineStyle><color>041b7c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>8bdcc7</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 87: Reserved -->
+	<StyleMap id="AreaNotice_87">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_87_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_87_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_87_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>ddaf11</color><width>8</width></LineStyle>
+	  <PolyStyle><color>5fa81c</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_87_normal">
+	  <LineStyle><color>851b2b</color><width>8</width></LineStyle>
+	  <PolyStyle><color>7bca0b</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 88: Information: Pilot boarding position -->
+	<StyleMap id="AreaNotice_88">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_88_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_88_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_88_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>edc8ce</color><width>8</width></LineStyle>
+	  <PolyStyle><color>97b3e0</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_88_normal">
+	  <LineStyle><color>717a7f</color><width>8</width></LineStyle>
+	  <PolyStyle><color>a6c318</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 89: Information: Icebreaker waiting area -->
+	<StyleMap id="AreaNotice_89">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_89_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_89_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_89_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>507118</color><width>8</width></LineStyle>
+	  <PolyStyle><color>eea352</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_89_normal">
+	  <LineStyle><color>b0f274</color><width>8</width></LineStyle>
+	  <PolyStyle><color>675989</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 90: Information: Places of refuge -->
+	<StyleMap id="AreaNotice_90">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_90_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_90_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_90_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>536239</color><width>8</width></LineStyle>
+	  <PolyStyle><color>23da24</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_90_normal">
+	  <LineStyle><color>370edd</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c77c00</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 91: Information: Position of icebreakers -->
+	<StyleMap id="AreaNotice_91">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_91_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_91_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_91_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>bd1b35</color><width>8</width></LineStyle>
+	  <PolyStyle><color>057faf</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_91_normal">
+	  <LineStyle><color>c9f999</color><width>8</width></LineStyle>
+	  <PolyStyle><color>04f9e7</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 92: Information: Location of response units -->
+	<StyleMap id="AreaNotice_92">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_92_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_92_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_92_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>803516</color><width>8</width></LineStyle>
+	  <PolyStyle><color>74440f</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_92_normal">
+	  <LineStyle><color>faf507</color><width>8</width></LineStyle>
+	  <PolyStyle><color>02361d</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 93: Reserved -->
+	<StyleMap id="AreaNotice_93">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_93_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_93_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_93_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>26c9b2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>b3a33b</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_93_normal">
+	  <LineStyle><color>76d4aa</color><width>8</width></LineStyle>
+	  <PolyStyle><color>295d01</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 94: Reserved -->
+	<StyleMap id="AreaNotice_94">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_94_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_94_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_94_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>5f2557</color><width>8</width></LineStyle>
+	  <PolyStyle><color>61597b</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_94_normal">
+	  <LineStyle><color>2547f2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>4d4fd4</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 95: Reserved -->
+	<StyleMap id="AreaNotice_95">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_95_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_95_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_95_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>70492c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>a6aa89</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_95_normal">
+	  <LineStyle><color>fe606c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>b5533d</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 96: Chart Feature: Sunken vessel -->
+	<StyleMap id="AreaNotice_96">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_96_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_96_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_96_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>0d020e</color><width>8</width></LineStyle>
+	  <PolyStyle><color>255633</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_96_normal">
+	  <LineStyle><color>93c7b1</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c0e022</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 97: Chart Feature: Submerged object -->
+	<StyleMap id="AreaNotice_97">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_97_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_97_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_97_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>00e4e3</color><width>8</width></LineStyle>
+	  <PolyStyle><color>7c97e2</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_97_normal">
+	  <LineStyle><color>5f3bd6</color><width>8</width></LineStyle>
+	  <PolyStyle><color>681c93</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 98: Chart Feature: Semi-submerged object -->
+	<StyleMap id="AreaNotice_98">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_98_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_98_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_98_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>fcc617</color><width>8</width></LineStyle>
+	  <PolyStyle><color>bed693</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_98_normal">
+	  <LineStyle><color>6dac62</color><width>8</width></LineStyle>
+	  <PolyStyle><color>67524d</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 99: Chart Feature: Shoal area -->
+	<StyleMap id="AreaNotice_99">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_99_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_99_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_99_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>bf4492</color><width>8</width></LineStyle>
+	  <PolyStyle><color>028255</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_99_normal">
+	  <LineStyle><color>5a5783</color><width>8</width></LineStyle>
+	  <PolyStyle><color>6bf8bd</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 100: Chart Feature: Shoal area due North -->
+	<StyleMap id="AreaNotice_100">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_100_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_100_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_100_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>f20472</color><width>8</width></LineStyle>
+	  <PolyStyle><color>a452aa</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_100_normal">
+	  <LineStyle><color>fea8c5</color><width>8</width></LineStyle>
+	  <PolyStyle><color>add72f</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 101: Chart Feature: Shoal area due East -->
+	<StyleMap id="AreaNotice_101">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_101_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_101_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_101_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>159d20</color><width>8</width></LineStyle>
+	  <PolyStyle><color>9dde62</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_101_normal">
+	  <LineStyle><color>0f8369</color><width>8</width></LineStyle>
+	  <PolyStyle><color>734d45</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 102: Chart Feature: Shoal area due South -->
+	<StyleMap id="AreaNotice_102">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_102_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_102_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_102_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>48e656</color><width>8</width></LineStyle>
+	  <PolyStyle><color>10bf25</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_102_normal">
+	  <LineStyle><color>a69132</color><width>8</width></LineStyle>
+	  <PolyStyle><color>c4c7a3</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 103: Chart Feature: Shoal area due West -->
+	<StyleMap id="AreaNotice_103">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_103_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_103_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_103_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>91e2e7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>563ffc</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_103_normal">
+	  <LineStyle><color>4d52b2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>40a62d</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 104: Chart Feature: Channel obstruction -->
+	<StyleMap id="AreaNotice_104">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_104_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_104_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_104_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>9e0c8f</color><width>8</width></LineStyle>
+	  <PolyStyle><color>341a07</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_104_normal">
+	  <LineStyle><color>aeb2e2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>2eb779</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 105: Chart Feature: Reduced vertical clearance -->
+	<StyleMap id="AreaNotice_105">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_105_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_105_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_105_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>f32ec8</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0bc9e2</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_105_normal">
+	  <LineStyle><color>7a9436</color><width>8</width></LineStyle>
+	  <PolyStyle><color>990a13</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 106: Chart Feature: Bridge closed -->
+	<StyleMap id="AreaNotice_106">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_106_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_106_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_106_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>4b5937</color><width>8</width></LineStyle>
+	  <PolyStyle><color>91f9a9</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_106_normal">
+	  <LineStyle><color>04ad81</color><width>8</width></LineStyle>
+	  <PolyStyle><color>4a4ebc</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 107: Chart Feature: Bridge partially open -->
+	<StyleMap id="AreaNotice_107">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_107_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_107_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_107_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>3f0e55</color><width>8</width></LineStyle>
+	  <PolyStyle><color>58dee2</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_107_normal">
+	  <LineStyle><color>ad2230</color><width>8</width></LineStyle>
+	  <PolyStyle><color>8f2823</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 108: Chart Feature: Bridge fully open -->
+	<StyleMap id="AreaNotice_108">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_108_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_108_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_108_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>d7adc9</color><width>8</width></LineStyle>
+	  <PolyStyle><color>2d3617</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_108_normal">
+	  <LineStyle><color>b298de</color><width>8</width></LineStyle>
+	  <PolyStyle><color>5f70f7</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 109: Reserved -->
+	<StyleMap id="AreaNotice_109">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_109_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_109_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_109_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>315e49</color><width>8</width></LineStyle>
+	  <PolyStyle><color>047b12</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_109_normal">
+	  <LineStyle><color>5db536</color><width>8</width></LineStyle>
+	  <PolyStyle><color>91ab7e</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 110: Reserved -->
+	<StyleMap id="AreaNotice_110">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_110_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_110_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_110_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>47d723</color><width>8</width></LineStyle>
+	  <PolyStyle><color>130dd0</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_110_normal">
+	  <LineStyle><color>75e8fb</color><width>8</width></LineStyle>
+	  <PolyStyle><color>6c3d68</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 111: Reserved -->
+	<StyleMap id="AreaNotice_111">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_111_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_111_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_111_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>4ab228</color><width>8</width></LineStyle>
+	  <PolyStyle><color>bf807d</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_111_normal">
+	  <LineStyle><color>3a72f6</color><width>8</width></LineStyle>
+	  <PolyStyle><color>d79d59</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 112: Report from ship: Icing info -->
+	<StyleMap id="AreaNotice_112">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_112_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_112_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_112_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>23b9f6</color><width>8</width></LineStyle>
+	  <PolyStyle><color>993eed</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_112_normal">
+	  <LineStyle><color>2cd637</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0f42d7</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 113: Reserved -->
+	<StyleMap id="AreaNotice_113">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_113_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_113_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_113_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>bccb5b</color><width>8</width></LineStyle>
+	  <PolyStyle><color>dc6864</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_113_normal">
+	  <LineStyle><color>9d31ac</color><width>8</width></LineStyle>
+	  <PolyStyle><color>5228d9</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 114: Report from ship: Miscellaneous information - define in free text field -->
+	<StyleMap id="AreaNotice_114">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_114_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_114_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_114_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>3237f5</color><width>8</width></LineStyle>
+	  <PolyStyle><color>81e962</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_114_normal">
+	  <LineStyle><color>a7b668</color><width>8</width></LineStyle>
+	  <PolyStyle><color>4462d4</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 115: Reserved -->
+	<StyleMap id="AreaNotice_115">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_115_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_115_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_115_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>f513a7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>60642f</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_115_normal">
+	  <LineStyle><color>6bf09f</color><width>8</width></LineStyle>
+	  <PolyStyle><color>ae8922</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 116: Reserved -->
+	<StyleMap id="AreaNotice_116">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_116_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_116_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_116_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>d1fc4a</color><width>8</width></LineStyle>
+	  <PolyStyle><color>697311</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_116_normal">
+	  <LineStyle><color>9af73e</color><width>8</width></LineStyle>
+	  <PolyStyle><color>b399e9</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 117: Reserved -->
+	<StyleMap id="AreaNotice_117">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_117_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_117_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_117_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>badf58</color><width>8</width></LineStyle>
+	  <PolyStyle><color>e0aedb</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_117_normal">
+	  <LineStyle><color>5977b2</color><width>8</width></LineStyle>
+	  <PolyStyle><color>1791a5</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 118: Reserved -->
+	<StyleMap id="AreaNotice_118">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_118_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_118_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_118_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>8b692b</color><width>8</width></LineStyle>
+	  <PolyStyle><color>6887ce</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_118_normal">
+	  <LineStyle><color>309ad5</color><width>8</width></LineStyle>
+	  <PolyStyle><color>5cd75a</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 119: Reserved -->
+	<StyleMap id="AreaNotice_119">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_119_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_119_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_119_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>c811fb</color><width>8</width></LineStyle>
+	  <PolyStyle><color>f7bbb3</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_119_normal">
+	  <LineStyle><color>60be3d</color><width>8</width></LineStyle>
+	  <PolyStyle><color>03d8e8</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 120: Reserved -->
+	<StyleMap id="AreaNotice_120">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_120_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_120_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_120_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>fc90f3</color><width>8</width></LineStyle>
+	  <PolyStyle><color>841900</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_120_normal">
+	  <LineStyle><color>dc58ae</color><width>8</width></LineStyle>
+	  <PolyStyle><color>932467</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 121: Reserved -->
+	<StyleMap id="AreaNotice_121">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_121_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_121_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_121_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>bde296</color><width>8</width></LineStyle>
+	  <PolyStyle><color>7b534c</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_121_normal">
+	  <LineStyle><color>91fba7</color><width>8</width></LineStyle>
+	  <PolyStyle><color>43c60e</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 122: Reserved -->
+	<StyleMap id="AreaNotice_122">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_122_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_122_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_122_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>fede0f</color><width>8</width></LineStyle>
+	  <PolyStyle><color>a239b8</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_122_normal">
+	  <LineStyle><color>eb5762</color><width>8</width></LineStyle>
+	  <PolyStyle><color>e0fd4d</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 123: Reserved -->
+	<StyleMap id="AreaNotice_123">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_123_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_123_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_123_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>c75a42</color><width>8</width></LineStyle>
+	  <PolyStyle><color>22a007</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_123_normal">
+	  <LineStyle><color>b7e1ac</color><width>8</width></LineStyle>
+	  <PolyStyle><color>06ce1a</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 124: Reserved -->
+	<StyleMap id="AreaNotice_124">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_124_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_124_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_124_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>19c319</color><width>8</width></LineStyle>
+	  <PolyStyle><color>039082</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_124_normal">
+	  <LineStyle><color>e6276c</color><width>8</width></LineStyle>
+	  <PolyStyle><color>0dd1f9</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 125: Other - Define in free text field -->
+	<StyleMap id="AreaNotice_125">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_125_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_125_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_125_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>2290b8</color><width>8</width></LineStyle>
+	  <PolyStyle><color>1281fb</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_125_normal">
+	  <LineStyle><color>792fcd</color><width>8</width></LineStyle>
+	  <PolyStyle><color>985643</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 126: Cancellation - cancel area as identified by Message Linka -->
+	<StyleMap id="AreaNotice_126">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_126_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_126_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_126_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>bd6fed</color><width>8</width></LineStyle>
+	  <PolyStyle><color>475ffd</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_126_normal">
+	  <LineStyle><color>e336da</color><width>8</width></LineStyle>
+	  <PolyStyle><color>54b92d</color></PolyStyle>
+	</Style>
+
+	<!-- AreaNotice 127: Undefined (default) -->
+	<StyleMap id="AreaNotice_127">
+		<Pair><key>normal</key><styleUrl>#AreaNotice_127_normal</styleUrl></Pair>
+		<Pair><key>highlight</key><styleUrl>#AreaNotice_127_highlight</styleUrl></Pair>
+	</StyleMap>
+
+	<Style id="AreaNotice_127_highlight">
+          <IconStyle><scale>1.2</scale></IconStyle>
+	  <LineStyle><color>edaf5b</color><width>8</width></LineStyle>
+	  <PolyStyle><color>f2164f</color></PolyStyle>
+        </Style>
+	<Style id="AreaNotice_127_normal">
+	  <LineStyle><color>272cb8</color><width>8</width></LineStyle>
+	  <PolyStyle><color>86608d</color></PolyStyle>
+	</Style>

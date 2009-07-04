@@ -30,13 +30,13 @@ class TestAreaNoticeCirclePt(unittest.TestCase):
         an1 = an.AreaNoticeCirclePt(-73,43,0)
         print 'radius:',an1.radius
         pt = an1.geom()
-        print pt, str(pt)
+        #print pt, str(pt)
 
         # Circle
         an2 = an.AreaNoticeCirclePt(-73,43,123.4)
         print 'radius:',an2.radius
         pt2 = an2.geom()
-        print pt2, str(pt2)
+        #print pt2, str(pt2)
 
     def _test_selfconsistant(self):
         '''
@@ -68,22 +68,50 @@ class TestAreaNotice(unittest.TestCase):
     def _test_whale(self):
         no_whales = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime.utcnow(),60,10)
         no_whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
-        print'\nno_whales:', no_whales.__str__(verbose=True)
+        #print'\nno_whales:', no_whales.__str__(verbose=True)
 
-        print 'bbm:',no_whales.get_bbm()
-        print 'aivdm:',no_whales.get_aivdm(source_mmsi=1233456789)
+        #print 'bbm:',no_whales.get_bbm()
+        #print 'aivdm:',no_whales.get_aivdm(source_mmsi=1233456789)
 
         no_whales.add_subarea(an.AreaNoticeCirclePt(-69, 42, radius=9260))
         no_whales.add_subarea(an.AreaNoticeCirclePt(-68, 43, radius=9260))
-        print'\nno_whales:', no_whales.__str__(verbose=True)
+        #print'\nno_whales:', no_whales.__str__(verbose=True)
 
-        print 'bbm:',no_whales.get_bbm()
-        print 'aivdm:',no_whales.get_aivdm(source_mmsi=1233456789)
+        #print 'bbm:',no_whales.get_bbm()
+        #print 'aivdm:',no_whales.get_aivdm(source_mmsi=1233456789)
+    def _test_subarea_json(self):
+        'Circle point json'
+        area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260)
+        self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) > 5)
 
-    def test_json(self):
+        area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=0) 
+        print 'Point:', area.__geo_interface__
+        self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) == 2)
+
+    def _test_json(self):
         whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
         whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
-        print '\ngeojson:', geojson.dumps(whales)
+
+
+        #print '\ntl_areas:',whales.areas
+        #print 'tl:',whales.areas[0].__geo_interface__
+        print whales.__geo_interface__
+
+        #print '\ngeojson:', geojson.dumps(whales)
+
+    def _test_html(self):
+        whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
+        whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
+        whales.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.07, radius=0))
+        import lxml.html
+        print lxml.html.tostring(whales.html())
+
+    def test_kml(self):
+        whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
+        whales.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.07, radius=0))
+        whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
+
+        print whales.kml()
 
 def main():
     unittest.main()
