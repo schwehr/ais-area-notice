@@ -746,8 +746,8 @@ class AreaNoticeSector(AreaNoticeSubArea):
         @param lon: WGS84 longitude
         @param lat: WGS84 latitude
         @param radius: width in meters
-        @param bound: Orientation of the left boundary.  CW from True North
-        @param orientation: degrees CW
+        @param left_bound: Orientation of the left boundary.  CW from True North
+        @param right_bound: Orientation of the right boundary.  CW from True North
 
         @todo: great get/set for dimensions and allow for setting scale factor.
         @todo: or just over rule the attribute get and sets
