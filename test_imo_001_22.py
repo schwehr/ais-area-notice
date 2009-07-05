@@ -5,6 +5,7 @@ import unittest
 import geojson
 
 import imo_001_22_area_notice as an
+from imo_001_22_area_notice import vec_rot, vec_add, deg2rad
 
 class TestAreaNoticeCirclePt(unittest.TestCase):
     ''' 
@@ -113,10 +114,65 @@ class TestAreaNotice(unittest.TestCase):
 
         print whales.kml()
 
+def almost_equal(v1,v2,epsilon=0.2):
+    if len(v1) != len(v2):
+        return ValueError('Both sequences must be the same length')
+    for i,a in enumerate(v1):
+        b = v2[i]
+        delta = abs(a - b)
+        if delta > epsilon:
+            return False
+    return True
+    
+
+class TestMath(unittest.TestCase):
+    def test_deg2rad(self):
+        'deg2rad'
+        self.failUnlessAlmostEqual(0,deg2rad(0))
+        self.failUnlessAlmostEqual(math.pi/2,deg2rad(90))
+        self.failUnlessAlmostEqual(math.pi,deg2rad(180))
+
+        self.failUnlessAlmostEqual(-math.pi/4,deg2rad(-45))
+        self.failUnlessAlmostEqual(-math.pi/2,deg2rad(-90))
+        self.failUnlessAlmostEqual(-math.pi,deg2rad(-180))
+
+    def test_rot(self):
+        'rot about 0'
+        p1 = (0,0)
+        self.failUnlessEqual((0,0),vec_rot(p1,0))
+        self.failUnlessEqual((0,0),vec_rot(p1,math.pi))
+        self.failUnlessEqual((0,0),vec_rot(p1,math.pi/2))
+        self.failUnlessEqual((0,0),vec_rot(p1,math.pi/4))
+        self.failUnlessEqual((0,0),vec_rot(p1,-math.pi/4))
+
+
+    def test_rot2(self):
+        'rot of 1,0'
+        p1 = (1,0)
+        self.failUnlessEqual((1,0),vec_rot(p1,0))
+        self.failUnless(almost_equal((0,1),vec_rot(p1,math.pi/2)))
+        self.failUnless(almost_equal((-1,0),vec_rot(p1,math.pi)))
+        self.failUnless(almost_equal((0,-1),vec_rot(p1,-math.pi/2)))
+
+        self.failUnless(almost_equal((math.sqrt(.5),math.sqrt(.5)),vec_rot(p1,math.pi/4)))
+        self.failUnless(almost_equal( (0,1), vec_rot(vec_rot(p1,math.pi/4),math.pi/4)))
+        self.failUnless(almost_equal((0.707107,0.707107),vec_rot((1,0),math.pi/4)))
+        self.failUnless(almost_equal((0,1),vec_rot((math.sqrt(.5),math.sqrt(.5)),math.pi/4)))
+
+    def test_rot3(self):
+        'rot of 0,1'
+        p1 = (0,1)
+        self.failUnlessEqual((0,1),vec_rot(p1,0))
+        self.failUnless(almost_equal((-1,0),vec_rot(p1,math.pi/2)))
+        self.failUnless(almost_equal((0,-1),vec_rot(p1,math.pi)))
+        self.failUnless(almost_equal((1,0),vec_rot(p1,-math.pi/2)))
+        self.failUnless(almost_equal((-math.sqrt(.5),math.sqrt(.5)),vec_rot(p1,math.pi/4)))
+        self.failUnless(almost_equal( (-1,0), vec_rot(vec_rot(p1,math.pi/4),math.pi/4)))
+        self.failUnless(almost_equal((0,1),vec_rot((math.sqrt(.5),math.sqrt(.5)),math.pi/4)))
+
+
 def main():
     unittest.main()
-
-
 
 if __name__ == '__main__':
     main()

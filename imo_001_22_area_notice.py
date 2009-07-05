@@ -33,6 +33,10 @@ import sys
 import datetime
 from operator import xor # for checksum
 
+import operator
+#from math import *
+import math
+
 from pyproj import Proj
 import shapely.geometry
 import geojson
@@ -42,10 +46,16 @@ from lxml.html import builder as E
 
 from BitVector import BitVector
 
-import binary #, aisstring
+import binary, aisstring
 
 def lon_to_utm_zone(lon):
     return int(( lon + 180 ) / 6) + 1
+
+iso8601_timeformat = '%Y-%m-%dT%H:%M:%SZ'
+'''ISO time format for NetworkLinkControl strftime
+@see: U{KML Tutorial<http://code.google.com/apis/kml/documentation/kml_21tutorial.html#updates>}
+'''
+
 
 nmea_talkers = {
     'AG':'Autopilot - General',
@@ -329,7 +339,6 @@ notice_type = {
  info == informational
  chart == chart features'''
 
-
 def _make_short_notice():
     d = {}
     for k,v in notice_type.iteritems():
@@ -338,6 +347,34 @@ def _make_short_notice():
     return d
 
 short_notice = _make_short_notice()
+
+def frange(start, stop=None, step=None):
+    'range but with float steps'
+    if stop is None:
+        stop = float(start)
+        start = 0.0
+    if step is None:
+        step = 1.0
+    cur = float(start)
+    while cur < stop:
+        yield cur
+        cur += step
+
+
+def vec_add(a,b):
+    return map(operator.add,a,b)
+
+def vec_rot(a, theta):
+    'counter clockwise rotation by theta radians'
+    x,y = a
+    x1 = x * math.cos(theta) - y * math.sin(theta)
+    y1 = x * math.sin(theta) + y * math.cos(theta)
+    return x1,y1
+
+def deg2rad(degrees):
+    return (degrees / 180.) * math.pi
+def rad2deg(radians):
+    return (radians / math.pi) * 180.
 
 def geom2kml(geom_dict):
     '''Convert a geointerface geometry to KML
@@ -354,6 +391,13 @@ def geom2kml(geom_dict):
         for pt in geom_coords:
             o.append('\t%f,%f,0' % (pt[0],pt[1]))
         o.append('</coordinates></LinearRing></outerBoundaryIs></Polygon>')
+        return '\n'.join(o)
+
+    elif geom_type == 'LineString':
+        o = ['<LineString><coordinates>']
+        for pt in geom_coords:
+            o.append('\t%f,%f,0' % (pt[0],pt[1]))
+        o.append('</coordinates></LineString>')
         return '\n'.join(o)
 
     raise ValueError('Not a recognized __geo_interface__ type: %s' % (geom_type))
@@ -485,6 +529,59 @@ class AIVDM (object):
         sentences.append(sentence + '*' + nmea_checksum_hex(sentence))
 
         return sentences
+
+    def kml(self,with_style=False,full=False,with_time=False):
+        '''return kml str for google earth
+        @param style: if style is True, it will use the standard style.  Set to a name for a custom style
+        '''
+        o = []
+        if full:
+            o.append('''<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+''')
+            o.append(file('areanotice_styles.kml').read())
+        html = self.html()
+        for area in self.areas:
+            geo_i = area.__geo_interface__
+            if 'geometry' not in geo_i:
+                print 'Skipping area:',str(area)
+                continue
+            #print 'geo_i:',geo_i
+            #print 'type:',geo_i['geometry']
+            #print 'type:',geo_i['geometry']['type']
+            kml_shape = geom2kml(geo_i)
+
+            o.append('<Placemark>')
+            try:
+                o.append('<name>%s</name>' % (self.name))
+            except:
+                o.append('<name>%s</name>' % (short_notice[self.area_type].replace('_',' '),))
+            if with_style:
+                if isinstance(with_style,str):
+                    o.append('<styleUrl>%s</styleUrl>'% (with_style,))
+                o.append('<styleUrl>#AreaNotice_%d</styleUrl>' % self.area_type)
+                # no style available
+            o.append('<description>')
+            o.append('<i>AreaNotice - %s</i>' % (notice_type[self.area_type],) )
+            o.append(html)
+            o.append('</description>')
+
+            o.append(kml_shape)
+            if with_time:
+                start = datetime.datetime.strftime(self.when,iso8601_timeformat)
+                end = datetime.datetime.strftime(self.when + datetime.timedelta(minutes=self.duration),iso8601_timeformat)
+                o.append('''<TimeSpan><begin>%s</begin><end>%s</end></TimeSpan>''' % (start,end))
+
+            o.append('</Placemark>\n')
+
+        if full:
+            o.append('''</Document>
+</kml>
+''')
+
+        return '\n'.join(o)
+
 
 class m5_shipdata(AIVDM):
     'Junk used for initial testing'
@@ -638,18 +735,6 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
     def __str__(self):
         return self.__unicode__()
 
-
-#    def html(self):
-#        'return an embeddable html representation using lxml E-Factor.  In this case, it is just text'
-#        if self.radius == 0.:
-#            #return E.LI('Point at %.5f,%.5f' % (self.lon,self.lat))
-#            return 'Point at %.5f,%.5f' % (self.lon,self.lat)
-        
-        #return E.LI('Circle centered at %.5f,%.5f' % (self.lon,self.lat))
-#        return 'Circle centered at %.5f,%.5f' % (self.lon,self.lat)
-        #table = E.TABLE(E.TR()
-
-
     def geom(self):
         #if 'geom_geographic' not in self.__dict__:
         # If I do this, will need to make sure that I invalidate the cache
@@ -676,31 +761,32 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
 
         if self.radius == 0.:
-            return {'area_shape': 0, 
+            return {'area_shape': self.area_shape, 
                     'area_shape_name': 'point',
                     'geometry': {'type': 'Point', 'coordinates': [self.lon, self.lat] }
                     }
 
         # self.radius > 0 ... circle
         r = {
-            'area_shape': 0, 
+            'area_shape': self.area_shape, 
             'area_shape_name': 'circle',
             'radius':self.radius,
-            'geometry': {'type': 'Polygon', 'coordinates': [pt for pt in self.geom().boundary.coords]},
+            'geometry': {'type': 'Polygon', 'coordinates': tuple(self.geom().boundary.coords) },
+            #'geometry': {'type': 'Polygon', 'coordinates': [pt for pt in self.geom().boundary.coords]},
             # Leaving out scale_factor
             }
         return r
 
 class AreaNoticeRectangle(AreaNoticeSubArea):
     area_shape = 1
-    def __init__(self, lon=None, lat=None, east_dim=0, north_dim=0, orientation=0, bits=None):
+    def __init__(self, lon=None, lat=None, east_dim=0, north_dim=0, orientation_deg=0, bits=None):
         '''
         Rotatable rectangle
         @param lon: WGS84 longitude
         @param lat: WGS84 latitude
         @param east_dim: width in meters (this gets confusing for larger angles).  0 is a north-south line
         @param north_dim: height in meters (this gets confusing for larger angles). 0 is an east-west line
-        @param orientation: degrees CW
+        @param orientation_deg: degrees CW
 
         @todo: great get/set for dimensions and allow for setting scale factor.
         @todo: or just over rule the attribute get and sets
@@ -716,7 +802,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             assert 0 <=  east_dim and  east_dim <= 25500
             assert 0 <= north_dim and north_dim <= 25500
 
-            assert 0 <= orientation and orientation < 360
+            assert 0 <= orientation_deg and orientation_deg < 360
 
             if east_dim / 1000. >= 255 or north_dim / 1000. >= 255:
                 self.scale_factor = 1000
@@ -738,7 +824,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             self.e_dim_scaled = east_dim / self.scale_factor
             self.n_dim_scaled = east_dim / self.scale_factor
 
-            self.orientation = orientation
+            self.orientation_deg = orientation_deg
+            #self.orient_rad = deg2rad(orientation)
 
         elif bits is not None:
             self.decode_bits(bits)
@@ -760,7 +847,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         self.e_dim = self.e_dim_scaled * (1,10,100,100)[self.scale_factor]
         self.n_dim = self.n_dim_scaled * (1,10,100,100)[self.scale_factor]
 
-        self.orientation = int ( bits[76:85] )
+        self.orientation_deg = int ( bits[76:85] )
 
         self.spare = int ( bits[85:90] )
 
@@ -780,30 +867,57 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         return bv
     
     def __unicode__(self):
-        return 'AreaNoticeRectangle: (%.4f,%.4f) [%d,%d] m %d deg' % (self.lon,self.lat,self.e_dim,self.n_dim,self.orientation)
+        return 'AreaNoticeRectangle: (%.4f,%.4f) [%d,%d]m rot: %d deg' % (self.lon,self.lat,self.e_dim,self.n_dim,self.orientation_deg)
 
     def __str__(self):
         return self.__unicode__()
+
+
+    def geom(self):
+        'return shapely geometry object'
+        zone = lon_to_utm_zone(self.lon)
+        params = {'proj':'utm', 'zone':zone}
+        proj = Proj(params)
+
+        p1 = proj(self.lon,self.lat)
+
+        pts = [(0,0), (self.e_dim,0), (self.e_dim,self.n_dim), (0,self.n_dim)]
+
+        #print 'before:',pts
+        rot = deg2rad(-self.orientation_deg)
+        pts = [vec_rot(pt,rot) for pt in pts]
+        #print 'rot:',pts
+
+        pts = [vec_add(p1,pt) for pt in pts]
+        pts = [proj(*pt,inverse=True) for pt in pts]
+
+        return shapely.geometry.Polygon(pts)
 
     @property
     def __geo_interface__(self):
         '''Provide a Geo Interface for GeoJSON serialization
         @todo: Write the code to build the polygon with rotation'''
-        r = {'area_shape':1, 'type':'Polygon', 'coordinates': (self.lon, self.lat) }
-        sys.stderr.write('FIX: calculate the Polygon')
+        r = {
+            'area_shape': self.area_shape, 'area_shape_name': 'rectangle',
+            'orientation': self.orientation_deg,
+            'e_dim': self.e_dim, 'n_dim': self.n_dim,
+            'geometry': {'type':'Polygon', 'coordinates':  tuple(self.geom().boundary.coords) },
+            }
+
         return r
-   
+
+  
 class AreaNoticeSector(AreaNoticeSubArea):
     area_shape = 2
-    def __init__(self, lon=None, lat=None, radius=0, left_bound=0, right_bound=0, bits=None):
+    def __init__(self, lon=None, lat=None, radius=0, left_bound_deg=0, right_bound_deg=0, bits=None):
         '''
         A pie slice
 
         @param lon: WGS84 longitude
         @param lat: WGS84 latitude
         @param radius: width in meters
-        @param left_bound: Orientation of the left boundary.  CW from True North
-        @param right_bound: Orientation of the right boundary.  CW from True North
+        @param left_bound_deg: Orientation of the left boundary.  CW from True North
+        @param right_bound_deg: Orientation of the right boundary.  CW from True North
 
         @todo: great get/set for dimensions and allow for setting scale factor.
         @todo: or just over rule the attribute get and sets
@@ -817,33 +931,290 @@ class AreaNoticeSector(AreaNoticeSubArea):
             self.lat = lat
 
             assert 0 <=  radius and  radius <= 25500
-            assert 0 <= north_dim and north_dim <= 25500
 
-            assert 0 <=  left_bound and  left_bound < 360
-            assert 0 <= right_bound and right_bound < 360
+            assert 0 <=  left_bound_deg and  left_bound_deg < 360
+            assert 0 <= right_bound_deg and right_bound_deg < 360
 
-            assert left_bound <= right_bound
+            assert left_bound_deg <= right_bound_deg
 
-            if radius / 100. >= 4095:
-                self.scale_factor_raw = 3
-            elif radius / 10. > 4095:
-                self.scale_factor_raw = 2
-            elif radius > 4095:
-                self.scale_factor_raw = 1
-            else:
-                self.scale_factor_raw = 0
-
+            if radius / 100. >= 4095: self.scale_factor_raw = 3
+            elif radius / 10. > 4095: self.scale_factor_raw = 2
+            elif radius > 4095:       self.scale_factor_raw = 1
+            else:                     self.scale_factor_raw = 0
             self.scale_factor = (1,10,100,100)[self.scale_factor_raw]
+            self.radius = radius
             self.radius_scaled = int( radius / self.scale_factor)
 
-            self.bound = bound
+            self.left_bound_deg  = left_bound_deg
+            self.right_bound_deg = right_bound_deg
 
         elif bits is not None:
             self.decode_bits(bits)
        
+    def decode_bits(bits):
+        if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        if isinstance(bits,str):
+            bits = BitVector(bitstring = bits)
+        elif isinstance(bits, list) or isinstance(bits,tuple):
+            bits = BitVector ( bitlist = bits)
 
-        sys.exit('FIX: keep writing code here')
+        self.area_shape = int( bits[:3] )
+        self.scale_factor = int( bits[3:5] )
+        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000
+        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000
+        self.radius_scaled = int ( bits[60:72] ) 
 
+        self.radius = self.radius_scaled * (1,10,100,100)[self.scale_factor]
+
+        self.left_bound_deg = int ( bits[72:81] )
+        self.right_bound_deg = int ( bits[81:90] )
+
+    def __unicode__(self):
+        return 'AreaNoticeSector: (%.4f,%.4f) %d rot: %d to %d deg' % (self.lon, self.lat, self.radius, 
+                                                                       self.left_bound_deg, self.right_bound_deg)
+    def __str__(self):
+        return self.__unicode__()
+
+
+    def geom(self):
+        'return shapely geometry object'
+        zone = lon_to_utm_zone(self.lon)
+        params = {'proj':'utm', 'zone':zone}
+        proj = Proj(params)
+
+        # FIX: test for degenerate shapes
+
+        p1 = proj(self.lon,self.lat)
+
+        pts = [ vec_rot( (0,self.radius), deg2rad(-angle) ) for angle in frange(self.left_bound_deg, self.right_bound_deg+0.01, 0.5) ]
+        pts = [(0,0),] + pts + [(0,0),]
+        print 'pts:',pts
+
+
+        pts = [vec_add(p1,pt) for pt in pts] # Move to the right place in the world
+        pts = [proj(*pt,inverse=True) for pt in pts] # Project back to geographic
+        
+        return shapely.geometry.Polygon(pts)
+
+    @property
+    def __geo_interface__(self):
+        '''Provide a Geo Interface for GeoJSON serialization
+        @todo: Write the code to build the polygon with rotation'''
+        r = {
+            'area_shape': self.area_shape, 'area_shape_name': 'sector',
+            'left_bound': self.left_bound_deg,
+            'right_bound': self.right_bound_deg,
+            'radius': self.radius,
+            'geometry': {'type':'Polygon', 'coordinates':  tuple(self.geom().boundary.coords) },
+            }
+
+        return r
+
+class AreaNoticePolyline(AreaNoticeSubArea):
+    area_shape = 3
+    def __init__(self, points=None,
+                 lon=None, lat=None,
+                 bits=None):
+        '''A line or open area.  If an area, this is the area to the
+        left of the line.  The line starts at the prior line.  Must set p1
+        or provide bits.  You will not be able to get the geometry if you
+        do not provide a lon,lat for the starting point
+
+        @param points: 1 to 4 relative offsets (angle in degrees, distance in meters) 
+        @param lon: WGS84 longitude of the starting point.  Must match the previous point
+        @param lat: WGS84 longitude of the starting point.  Must match the previous point
+        @param bits: bits to decode from
+        @todo: FIX: make sure that the AreaNotice decode bits passes the lon, lat
+        '''
+
+        if lon is not None:
+            assert lon >= -180. and lon <= 180.
+            self.lon = lon
+            assert lat >= -90. and lat <= 90.
+            self.lat = lat
+
+
+        if points is not None:
+            assert len(points)>0 and len(points)<5
+            self.points = points
+
+            max_dist = max([pt[1] for pt in points])
+            if max_dist / 100. >= 4095: self.scale_factor_raw = 3
+            elif max_dist / 10. > 4095: self.scale_factor_raw = 2
+            elif max_dist > 4095:       self.scale_factor_raw = 1
+            else:                     self.scale_factor_raw = 0
+            self.scale_factor = (1,10,100,100)[self.scale_factor_raw]
+
+        elif bits is not None:
+            self.decode_bits(bits)
+
+    def decode_bits(bits):
+        if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        if isinstance(bits,str):
+            bits = BitVector(bitstring = bits)
+        elif isinstance(bits, list) or isinstance(bits,tuple):
+            bits = BitVector ( bitlist = bits)
+
+        self.area_shape = int( bits[:3] )
+        self.scale_factor = int( bits[3:5] )
+
+        self.points = []
+        for i in range(4):
+            base = 5 + i*21
+            angle = int ( bits[base:base+10] )
+            dist_scaled = int ( bits[base+10:base+10+11] )
+            dist = dist_scaled * (1,10,100,100)[self.scale_factor]
+            self.points.append((angle,dist))
+            if 720 == dist_scaled:
+                break
+
+
+    def get_bits(self):
+        'Build a BitVector for this area'
+        bvList = []
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # area_shape/type = 0
+
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=scale_factor_raw), 2 ) )
+
+        assert(False) # FIX: write
+
+        bv = binary.joinBV(bvList)
+        assert 90==len(bv)
+        return bv
+
+    def __unicode__(self):
+        return 'AreaNoticePolyline: (%.4f,%.4f) %d points' % ( self.lon, self.lat, len(self.points) )
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def geom(self):
+        zone = lon_to_utm_zone(self.lon)
+        params = {'proj':'utm','zone':zone}
+        proj = Proj(params)
+
+        p1 = proj(self.lon,self.lat)
+
+        pts = [(0,0)]
+        cur = (0,0)
+        for pt in self.points:
+            alpha = deg2rad(pt[0])
+            d = pt[1]
+            x,y = d * math.sin(alpha), d * math.cos(alpha)
+            cur = vec_add(cur,(x,y))
+            #print 'step:',pt,cur
+            pts.append(cur)
+
+
+        pts = [vec_add(p1,pt) for pt in pts]
+        pts = [proj(*pt,inverse=True) for pt in pts]
+        return shapely.geometry.LineString(pts)
+
+    @property
+    def __geo_interface__(self):
+        '''Provide a Geo Interface for GeoJSON serialization
+        @todo: Write the code to build the polygon with rotation'''
+        r = {
+            'area_shape':self.area_shape, 'area_shape_name': 'waypoints/polyline',
+            'geometry': {'type':'LineString', 'coordinates':  tuple(self.geom().coords) },
+            }
+
+        return r
+
+
+class AreaNoticePolygon(AreaNoticePolyline):
+    'Polyline that wraps back to the beginning'
+    area_shape = 4
+    area_name = 'polygon'
+
+    def geom(self):
+        zone = lon_to_utm_zone(self.lon)
+        params = {'proj':'utm','zone':zone}
+        proj = Proj(params)
+
+        p1 = proj(self.lon,self.lat)
+
+        pts = [(0,0)]
+        cur = (0,0)
+        for pt in self.points:
+            alpha = deg2rad(pt[0])
+            d = pt[1]
+            x,y = d * math.sin(alpha), d * math.cos(alpha)
+            cur = vec_add(cur,(x,y))
+            pts.append(cur)
+
+
+        print 'pts:',pts
+
+        pts = [vec_add(p1,pt) for pt in pts]
+        pts = [proj(*pt,inverse=True) for pt in pts]
+        return shapely.geometry.Polygon(pts)
+
+    @property
+    def __geo_interface__(self):
+        '''Provide a Geo Interface for GeoJSON serialization
+        @todo: Write the code to build the polygon with rotation'''
+        r = {
+            'area_shape':self.area_shape, 'area_shape_name': self.area_name,
+            'geometry': {'type':'Polygon', 'coordinates':  tuple(self.geom().boundary.coords) },
+            }
+
+        return r
+
+class AreaNoticeFreeText(AreaNoticeSubArea):
+    area_shape = 4
+    area_name = 'freetext'
+    def __init__(self,text=None, bits=None):
+        if text is not None:
+            text = text.upper()
+            assert len(text) < 84
+            for c in text:
+                assert c in aisstring.characterDict
+            self.text = text
+        elif bits is not None:
+            self.decode_bits(bits)
+
+           
+    def decode_bits(bits):
+        if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        if isinstance(bits,str):
+            bits = BitVector(bitstring = bits)
+        elif isinstance(bits, list) or isinstance(bits,tuple):
+            bits = BitVector ( bitlist = bits)
+
+        area_shape = int( bits[:3] )
+        assert self.area_shape == area_shape
+        self.text = aisstring.decode(bits[3:-1])
+        self.spare = int(bits[-1])
+
+    def get_bits(self):
+        'Build a BitVector for this area'
+        bvList = []
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), self.area_shape ) )
+        bvList.append(aisstring.encode(self.text,8))
+        bvList.append( BitVector(intVal=1) ) # spare
+        bv = binary.joinBV(bvList)
+        assert 90==len(bv)
+        return bv
+
+    def __unicode__(self):
+        return 'AreaNoticeFreeText: "%s"' % (self.text,)
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def geom(self):
+        # FIX: should this somehow have a position?
+        return None
+
+    @property
+    def __geo_interface__(self):
+        'Provide a Geo Interface for GeoJSON serialization'
+        # FIX: should this return geometry?  Probably not as this text gets built into the message text for other geom
+        return {'area_shape': self.area_shape, 
+                'area_shape_name': self.area_name,
+                # No geometry... 'geometry': {'type': 'Point', 'coordinates': [self.lon, self.lat] }
+                }
 
 class AreaNotice(BBM):
     def __init__(self,area_type=None,when=None,duration=None,link_id=0, nmea_strings=None):
@@ -888,7 +1259,8 @@ class AreaNotice(BBM):
         return self.__unicode__(verbose)
 
     def html(self, efactory=False):
-        'return an embeddable html representation using lxml E-Factor'
+        '''return an embeddable html representation
+        @param efactory: return lxml E-factory'''
         l = E.OL()
         for area in self.areas:
             l.append(E.LI(str(area)))
@@ -896,52 +1268,6 @@ class AreaNotice(BBM):
             return
         return lxml.html.tostring(E.DIV(E.P(self.__str__()),l))
 
-    def kml(self,style=False,full=False):
-        '''return kml str for google earth
-        @param style: if style is True, it will use the standard style.  Set to a name for a custom style
-        '''
-        o = []
-        if full:
-            o.append('''<?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
-<Document>
-''')
-            o.append(file('areanotice_styles.kml').read())
-        html = self.html()
-        for area in self.areas:
-            geo_i = area.__geo_interface__
-            if 'geometry' not in geo_i:
-                print 'Skipping area:',str(area)
-                continue
-            #print 'geo_i:',geo_i
-            #print 'type:',geo_i['geometry']
-            #print 'type:',geo_i['geometry']['type']
-            kml_shape = geom2kml(geo_i)
-
-            o.append('<Placemark>')
-            try:
-                o.append('<name>%s</name>' % (self.name))
-            except:
-                o.append('<name>%s</name>' % (short_notice[self.area_type].replace('_',' '),))
-            if style:
-                if isinstance(style,str):
-                    o.append('<styleUrl>%s</styleUrl>'% (style,))
-                o.append('<styleUrl>#AreaNotice_%d</styleUrl>' % self.area_type)
-                # no style available
-            o.append('<description>')
-            o.append('<i>AreaNotice - %s</i>' % (notice_type[self.area_type],) )
-            o.append(html)
-            o.append('</description>')
-
-            o.append(kml_shape)
-            o.append('</Placemark>\n')
-
-        if full:
-            o.append('''</Document>
-</kml>
-''')
-
-        return '\n'.join(o)
 
     @property
     def __geo_interface__(self):
@@ -968,10 +1294,10 @@ class AreaNotice(BBM):
                 }
             }
 
-        print 'areas:',len(self.areas)
-        print 'bbm:',r['bbm']
+        #print 'areas:',len(self.areas)
+        #print 'bbm:',r['bbm']
         for area in self.areas:
-            print 'area_geo:',area.__geo_interface__
+            #print 'area_geo:',area.__geo_interface__
             r['bbm']['areas'].append(area.__geo_interface__)
 
         return r
