@@ -49,6 +49,18 @@ from BitVector import BitVector
 
 import binary, aisstring
 
+
+kml_head = '''<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+'''
+'Beginning of a KML file for visualization'
+
+kml_tail = '''</Document>
+</kml>
+'''
+'Finish a kml file'
+
 def lon_to_utm_zone(lon):
     return int(( lon + 180 ) / 6) + 1
 
@@ -483,7 +495,6 @@ class AIVDM (object):
         if channel not in ('A','B'):
             raise AisPackingException('channel',channel)
 
-        
         if repeat_indicator is None:
             try:
                 repeat_indicator = self.repeat_indicator
@@ -499,6 +510,8 @@ class AIVDM (object):
         header = self.get_bits_header(repeat_indicator=repeat_indicator,source_mmsi=source_mmsi)
         payload, pad = binary.bitvectoais6(header + self.get_bits())
 
+        print 'FIX_len:',len(payload)
+
         if sequence_num is None:
             sequence_num = ''
         
@@ -512,8 +525,6 @@ class AIVDM (object):
             return [sentence + '*' + nmea_checksum_hex(sentence),]
 
         max_payload_char = 43
-        #if sequence_num == '':
-        #    max_payload_char = 44 # is this safe?
 
         sentences = []
         tot_sentences = 1 + len(payload) / max_payload_char
@@ -545,20 +556,14 @@ class AIVDM (object):
         '''
         o = []
         if full:
-            o.append('''<?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
-<Document>
-''')
+            o.append(kml_head)
             o.append(file('areanotice_styles.kml').read())
         html = self.html()
         for area in self.areas:
             geo_i = area.__geo_interface__
             if 'geometry' not in geo_i:
-                print 'Skipping area:',str(area)
+                #print 'Skipping area:',str(area)
                 continue
-            #print 'geo_i:',geo_i
-            #print 'type:',geo_i['geometry']
-            #print 'type:',geo_i['geometry']['type']
             kml_shape = geom2kml(geo_i)
 
             o.append('<Placemark>')
@@ -570,7 +575,6 @@ class AIVDM (object):
                 if isinstance(with_style,str):
                     o.append('<styleUrl>%s</styleUrl>'% (with_style,))
                 o.append('<styleUrl>#AreaNotice_%d</styleUrl>' % self.area_type)
-                # no style available
             o.append('<description>')
             o.append('<i>AreaNotice - %s</i>' % (notice_type[self.area_type],) )
             o.append(html)
@@ -585,9 +589,7 @@ class AIVDM (object):
             o.append('</Placemark>\n')
 
         if full:
-            o.append('''</Document>
-</kml>
-''')
+            o.append(kml_tail)
 
         return '\n'.join(o)
 
@@ -649,11 +651,6 @@ class BBM (AIVDM):
 
         return sentences
 
-#class BbmMsgTest(BBM):
-#    def get_bits(self):
-#        print 'BbmMsgTest get_bits'
-#        return binary.ais6tobitvec('85OhdP020db0p')[:-2] # remove pad
-
 class AreaNoticeSubArea(object):
     pass
 
@@ -711,13 +708,15 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
     def get_bits(self):
         'Build a BitVector for this area'
         bvList = []
-        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), self.area_shape ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape ), 3) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
         bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
         bvList.append( binary.bvFromSignedInt( int(self.lat*600000), 27 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.radius_scaled), 12 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 18 ) ) # spare
         bv = binary.joinBV(bvList)
+        if 90 != len(bv):
+            print 'len:',[len(b) for b in bvList]
         assert 90==len(bv)
         return bv
 
@@ -1180,7 +1179,9 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
     def __init__(self,text=None, bits=None):
         if text is not None:
             text = text.upper()
-            assert len(text) < 84
+            #if len(text) > 14:
+            #   sys.stderr.write('text too long')
+            assert len(text) <= 14
             for c in text:
                 assert c in aisstring.characterDict
             self.text = text
@@ -1203,10 +1204,13 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
     def get_bits(self):
         'Build a BitVector for this area'
         bvList = []
-        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), self.area_shape ) )
-        bvList.append(aisstring.encode(self.text,8))
-        bvList.append( BitVector(intVal=1) ) # spare
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape), 3 ))
+        text = self.text.ljust(14,'@')
+        bvList.append(aisstring.encode(text))
+        bvList.append( BitVector( bitstring = '000' ) ) # spare
         bv = binary.joinBV(bvList)
+        if 90 != len(bv):
+            print 'len_freetext:',[len(b) for b in bvList]
         assert 90==len(bv)
         return bv
 
@@ -1319,16 +1323,17 @@ class AreaNotice(BBM):
         assert len(self.areas) < 11
         self.areas.append(area)
 
-    def get_bits(self,include_bin_hdr=False, mmsi=None, include_dac_fi=True):
+    def get_bits(self,include_bin_hdr=False, mmsi=None, no_include_dac_fi=False):
         '''@param include_bin_hdr: If true, include the standard message header with source mmsi'''
         bvList = []
         if include_bin_hdr:
             bvList.append( binary.setBitVectorSize( BitVector(intVal=8), 6 ) ) # Messages ID
             bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 2 ) ) # Repeat Indicator
             bvList.append( binary.setBitVectorSize( BitVector(intVal=mmsi), 30 ) )
-            bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 2 ) ) # Spare
 
-        if include_dac_fi:
+        if include_bin_hdr or not no_include_dac_fi:
+            print 'fix: adding header for bbm'
+            bvList.append( BitVector( bitstring = '00' ) ) # Spare
             bvList.append( binary.setBitVectorSize( BitVector(intVal=self.dac), 10 ) )
             bvList.append( binary.setBitVectorSize( BitVector(intVal=self.fi), 6 ) )
 
@@ -1342,10 +1347,13 @@ class AreaNotice(BBM):
 
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.duration), 18 ) )
 
-        #print '\narea_count:',len(self.areas)
-        for area in self.areas:
-            bvList.append(area.get_bits())
+        stdlen = sum([len(b) for b in bvList])
+        print 'stdlen:',stdlen
 
+        #print '\narea_count:',len(self.areas)
+        for i,area in enumerate(self.areas):
+            bvList.append(area.get_bits())
+            print 'subarea_len:',i,len(bvList[-1])
         return binary.joinBV(bvList)
            
 
