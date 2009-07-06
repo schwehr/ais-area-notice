@@ -1,0 +1,4 @@
+Known issues
+
+* How do we handle polygons that can come from multiple sections?
+  Right now only handle individual polygon sub areas.

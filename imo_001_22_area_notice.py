@@ -7,14 +7,15 @@ __copyright__ = '2009'
 __license__   = 'GPL v3'
 __contact__   = 'kurt at ccom.unh.edu'
 
+# @requires: U{geojson<http:///>}
+
 __doc__ ='''
 Trying to do a more sane design for AIS BBM message
 
-@requires: U{Python<http://python.org/>} >= 2.5
+@requires: U{Python<http://python.org/>} >= 2.6
 @requires: U{epydoc<http://epydoc.sourceforge.net/>} >= 3.0.1
 @requires: U{lxml<http://codespeak.net/lxml/lxmlhtml.html>} >= 2.0
 @requires: U{shapely<http:///>}
-@requires: U{geojson<http:///>}
 @requires: U{BitVector<http:///>}
 @requires: U{BitVector<http:///>}
 @requires: U{pyproj<http:///>}
@@ -39,7 +40,7 @@ import math
 
 from pyproj import Proj
 import shapely.geometry
-import geojson
+#import geojson
 
 import lxml
 from lxml.html import builder as E
@@ -449,12 +450,20 @@ class AIVDM (object):
         if repeat_indicator is None: repeat_indicator = self.repeat_indicator
         if source_mmsi      is None: source_mmsi      = self.source_mmsi
 
+        if message_id is None or message_id<1 or message_id>63:
+            raise AisPackingException('message_id must be valid',message_id)
+        if repeat_indicator is None or repeat_indicator<0 or repeat_indicator>3:
+            raise AisPackingException('repeat_indicator must be valid',repeat_indicator)
+
         #print '\naivdm_header:',message_id,repeat_indicator,source_mmsi
         bvList = []
 	bvList.append(binary.setBitVectorSize(BitVector(intVal=message_id),6))
         bvList.append(binary.setBitVectorSize(BitVector(intVal=repeat_indicator),2))
         bvList.append(binary.setBitVectorSize(BitVector(intVal=source_mmsi),30))
-        return binary.joinBV(bvList)
+        bv = binary.joinBV(bvList)
+        if len(bv) != 38:
+            raise AisPackingExpeption('invalid  header size',len(bv))
+        return bv
 
 # See __geo_interface__
 #    def get_json(self):
@@ -583,15 +592,6 @@ class AIVDM (object):
         return '\n'.join(o)
 
 
-class m5_shipdata(AIVDM):
-    'Junk used for initial testing'
-    def __init__(self, repeat_indicator = None, source_mmsi = None):
-        AIVDM.__init__(self,5,repeat_indicator,source_mmsi)
-
-    def get_bits(self):
-        print 'm5 get_bits'
-        return binary.ais6tobitvec('55OhdP020db0pM92221E<q>0M8510hF22222220S4pW<;40Htwh00000000000000000000')[:-2] # remove pad
-
 class BBM (AIVDM):
     ''' Binary Broadcast Message - MessageID 8.  Generically support messages of this type
     BBM defined in 80_330e_PAS - IEC/PAS 61162-100 Ed.1
@@ -649,10 +649,10 @@ class BBM (AIVDM):
 
         return sentences
 
-class BbmMsgTest(BBM):
-    def get_bits(self):
-        print 'BbmMsgTest get_bits'
-        return binary.ais6tobitvec('85OhdP020db0p')[:-2] # remove pad
+#class BbmMsgTest(BBM):
+#    def get_bits(self):
+#        print 'BbmMsgTest get_bits'
+#        return binary.ais6tobitvec('85OhdP020db0p')[:-2] # remove pad
 
 class AreaNoticeSubArea(object):
     pass
@@ -672,27 +672,23 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
             assert radius >= 0 and radius < 409500
             self.radius = radius
 
-            if radius / 100. >= 4095:
-                self.scale_factor_raw = 3
-            elif radius / 10. > 4095:
-                self.scale_factor_raw = 2
-            elif radius > 4095:
-                self.scale_factor_raw = 1
-            else:
-                self.scale_factor_raw = 0
+            if radius / 100. >= 4095: self.scale_factor_raw = 3
+            elif radius / 10. > 4095: self.scale_factor_raw = 2
+            elif radius > 4095:       self.scale_factor_raw = 1
+            else:                     self.scale_factor_raw = 0
 
-            self.scale_factor = (1,10,100,100)[self.scale_factor_raw]
+            self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
             self.radius_scaled = radius / self.scale_factor
             return
 
         elif bits is not None:
-            decode_bits(bits)
+            self.decode_bits(bits)
             return
 
         return # Return an empty object
 
 
-    def decode_bits(bits):
+    def decode_bits(self,bits):
         if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
@@ -702,8 +698,8 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         self.area_shape = int( bits[:3] )
         self.scale_factor_raw = int( bits[3:5] )
         self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
-        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000
-        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000
+        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000.
+        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000.
         self.radius_scaled = int( bits[60:72] )
 
         self.radius = self.radius_scaled * self.scale_factor
@@ -715,10 +711,8 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
     def get_bits(self):
         'Build a BitVector for this area'
         bvList = []
-        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # area_shape/type = 0
-        #print self.scale_factor
-        #scale_factor = {1:0,10:1,100:2,1000:3}[self.scale_factor]
-        bvList.append( binary.setBitVectorSize( BitVector(intVal=scale_factor_raw), 2 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), self.area_shape ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
         bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
         bvList.append( binary.bvFromSignedInt( int(self.lat*600000), 27 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.radius_scaled), 12 ) )
@@ -804,20 +798,11 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
             assert 0 <= orientation_deg and orientation_deg < 360
 
-            if east_dim / 1000. >= 255 or north_dim / 1000. >= 255:
-                self.scale_factor = 1000
-                self.scale_factor_raw = 3
-
-            elif east_dim / 100. >= 255 or north_dim / 100. >= 255:
-                self.scale_factor = 100
-                self.scale_factor_raw = 2
-
-            elif east_dim / 10. >= 255 or north_dim / 10. >= 255:
-                self.scale_factor = 10
-                self.scale_factor_raw = 1
-            else:
-                self.scale_factor = 1
-                self.scale_factor_raw = 0
+            if east_dim / 100. >= 255 or north_dim / 100. >= 255:  self.scale_factor_raw = 3
+            elif east_dim / 10. >= 255 or north_dim / 100. >= 255: self.scale_factor_raw = 2
+            elif east_dim >= 255 or north_dim >= 255:              self.scale_factor_raw = 1
+            else:                                                  self.scale_factor_raw = 0
+            self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
 
             self.e_dim = east_dim
             self.n_dim = north_dim
@@ -825,12 +810,11 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             self.n_dim_scaled = east_dim / self.scale_factor
 
             self.orientation_deg = orientation_deg
-            #self.orient_rad = deg2rad(orientation)
 
         elif bits is not None:
             self.decode_bits(bits)
 
-    def decode_bits(bits):
+    def decode_bits(self,bits):
         if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
@@ -839,13 +823,13 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
         self.area_shape = int( bits[:3] )
         self.scale_factor = int( bits[3:5] )
-        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000
-        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000
+        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000.
+        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000.
         self.e_dim_scaled = int ( bits[60:68] ) 
         self.n_dim_scaled = int ( bits[68:76] ) 
 
-        self.e_dim = self.e_dim_scaled * (1,10,100,100)[self.scale_factor]
-        self.n_dim = self.n_dim_scaled * (1,10,100,100)[self.scale_factor]
+        self.e_dim = self.e_dim_scaled * (1,10,100,1000)[self.scale_factor]
+        self.n_dim = self.n_dim_scaled * (1,10,100,1000)[self.scale_factor]
 
         self.orientation_deg = int ( bits[76:85] )
 
@@ -855,13 +839,15 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         bvList = []
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # area_shape/type = 0
         #xsscale_factor = {1:0,10:1,100:2,1000:3}[self.scale_factor]
-        bvList.append( binary.setBitVectorSize( BitVector(intVal=scale_factor_raw), 2 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
         bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
         bvList.append( binary.bvFromSignedInt( int(self.lat*600000), 27 ) )
+        #print 'dim:',self.e_dim_scaled,self.n_dim_scaled, self.scale_factor
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.e_dim_scaled), 8 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.n_dim_scaled), 8 ) )
-        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.orientation), 9 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.orientation_deg), 9 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 5 ) ) # spare
+        #print '\nlen:',[len(b) for b in bvList]
         bv = binary.joinBV(bvList)
         assert 90==len(bv)
         return bv
@@ -941,7 +927,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
             elif radius / 10. > 4095: self.scale_factor_raw = 2
             elif radius > 4095:       self.scale_factor_raw = 1
             else:                     self.scale_factor_raw = 0
-            self.scale_factor = (1,10,100,100)[self.scale_factor_raw]
+            self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
             self.radius = radius
             self.radius_scaled = int( radius / self.scale_factor)
 
@@ -950,8 +936,8 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
         elif bits is not None:
             self.decode_bits(bits)
-       
-    def decode_bits(bits):
+
+    def decode_bits(self,bits):
         if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
@@ -960,14 +946,32 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
         self.area_shape = int( bits[:3] )
         self.scale_factor = int( bits[3:5] )
-        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000
-        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000
+        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000.
+        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000.
         self.radius_scaled = int ( bits[60:72] ) 
 
-        self.radius = self.radius_scaled * (1,10,100,100)[self.scale_factor]
+        self.radius = self.radius_scaled * (1,10,100,1000)[self.scale_factor]
 
         self.left_bound_deg = int ( bits[72:81] )
         self.right_bound_deg = int ( bits[81:90] )
+
+
+    def get_bits(self):
+        
+        'Build a BitVector for this area'
+        bvList = []
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape ), 3) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lat*600000), 27 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.radius_scaled), 12 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.left_bound_deg), 9 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.right_bound_deg), 9 ) )
+
+        #print 'len:',[len(bv) for bv in bvList]
+        bv = binary.joinBV(bvList)
+        assert 90==len(bv)
+        return bv
 
     def __unicode__(self):
         return 'AreaNoticeSector: (%.4f,%.4f) %d rot: %d to %d deg' % (self.lon, self.lat, self.radius, 
@@ -975,21 +979,16 @@ class AreaNoticeSector(AreaNoticeSubArea):
     def __str__(self):
         return self.__unicode__()
 
-
     def geom(self):
         'return shapely geometry object'
         zone = lon_to_utm_zone(self.lon)
         params = {'proj':'utm', 'zone':zone}
         proj = Proj(params)
 
-        # FIX: test for degenerate shapes
-
         p1 = proj(self.lon,self.lat)
 
         pts = [ vec_rot( (0,self.radius), deg2rad(-angle) ) for angle in frange(self.left_bound_deg, self.right_bound_deg+0.01, 0.5) ]
         pts = [(0,0),] + pts + [(0,0),]
-        print 'pts:',pts
-
 
         pts = [vec_add(p1,pt) for pt in pts] # Move to the right place in the world
         pts = [proj(*pt,inverse=True) for pt in pts] # Project back to geographic
@@ -1020,11 +1019,12 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         or provide bits.  You will not be able to get the geometry if you
         do not provide a lon,lat for the starting point
 
-        @param points: 1 to 4 relative offsets (angle in degrees, distance in meters) 
+        @param points: 1 to 4 relative offsets (angle in degrees [0..360] , distance in meters) 
         @param lon: WGS84 longitude of the starting point.  Must match the previous point
         @param lat: WGS84 longitude of the starting point.  Must match the previous point
         @param bits: bits to decode from
         @todo: FIX: make sure that the AreaNotice decode bits passes the lon, lat
+        @todo: FIX: Handle sectors that cross 0/360
         '''
 
         if lon is not None:
@@ -1043,12 +1043,12 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             elif max_dist / 10. > 4095: self.scale_factor_raw = 2
             elif max_dist > 4095:       self.scale_factor_raw = 1
             else:                     self.scale_factor_raw = 0
-            self.scale_factor = (1,10,100,100)[self.scale_factor_raw]
+            self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
 
         elif bits is not None:
             self.decode_bits(bits)
 
-    def decode_bits(bits):
+    def decode_bits(self,bits):
         if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
@@ -1063,7 +1063,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             base = 5 + i*21
             angle = int ( bits[base:base+10] )
             dist_scaled = int ( bits[base+10:base+10+11] )
-            dist = dist_scaled * (1,10,100,100)[self.scale_factor]
+            dist = dist_scaled * (1,10,100,1000)[self.scale_factor]
             self.points.append((angle,dist))
             if 720 == dist_scaled:
                 break
@@ -1074,12 +1074,25 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         bvList = []
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # area_shape/type = 0
 
-        bvList.append( binary.setBitVectorSize( BitVector(intVal=scale_factor_raw), 2 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
 
-        assert(False) # FIX: write
+        bvList = []
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape ), 3) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
+
+        # FIX: check range of points
+        for pt in self.points:
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=pt[0]), 10 ) )
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=pt[1] / self.scale_factor), 11 ) )
+
+        for i in range(4 - len(self.points)):
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 21 ) )
+
+        bvList.append( BitVector(intVal=0) )
 
         bv = binary.joinBV(bvList)
         assert 90==len(bv)
+        #raise AisPackingException('wrong size',len(bv))
         return bv
 
     def __unicode__(self):
@@ -1175,7 +1188,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
             self.decode_bits(bits)
 
            
-    def decode_bits(bits):
+    def decode_bits(self,bits):
         if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
