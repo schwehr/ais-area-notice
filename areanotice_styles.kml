@@ -7,11 +7,11 @@
 
 	<Style id="AreaNotice_0_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff0e5200</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff0e5200</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8039ff00</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_0_normal">
-	  <LineStyle><color>ff0e5200</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff0e5200</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8039ff00</color></PolyStyle>
 	</Style>
 
@@ -23,12 +23,12 @@
 	</StyleMap>
 	<Style id="AreaNotice_1_highlight">
 		<IconStyle><scale>1.2</scale><Icon><href>icon-001-rightwhale-64x64.png</href></Icon></IconStyle>
-		<LineStyle><color>ff000000</color><width>4</width></LineStyle>
+		<LineStyle><color>ff000000</color><width>2</width></LineStyle>
 		<PolyStyle><color>8000ecff</color></PolyStyle>
 	</Style>
 	<Style id="AreaNotice_1_normal">
 		<IconStyle><scale>1</scale><Icon><href>icon-001-rightwhale-64x64.png</href></Icon></IconStyle>
-		<LineStyle><color>ff0000ff</color><width>4</width></LineStyle>
+		<LineStyle><color>ff0000ff</color><width>2</width></LineStyle>
 		<PolyStyle><color>8000ecff</color></PolyStyle>
 	</Style>
 
@@ -40,11 +40,11 @@
 
 	<Style id="AreaNotice_2_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff000080</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff000080</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80ac1500</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_2_normal">
-	  <LineStyle><color>ff0080ff</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff0080ff</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80812c23</color></PolyStyle>
 	</Style>
 
@@ -56,11 +56,11 @@
 
 	<Style id="AreaNotice_3_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff000044</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff000044</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80ac1511</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_3_normal">
-	  <LineStyle><color>ff0000ff</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff0000ff</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80812c23</color></PolyStyle>
 	</Style>
 
@@ -72,11 +72,11 @@
 
 	<Style id="AreaNotice_4_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff72b73d</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff72b73d</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8085bbb7</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_4_normal">
-	  <LineStyle><color>ff7cd1a6</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff7cd1a6</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800a5135</color></PolyStyle>
 	</Style>
 
@@ -88,11 +88,11 @@
 
 	<Style id="AreaNotice_5_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff95fab1</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff95fab1</color><width>4</width></LineStyle>
 	  <PolyStyle><color>805f54e2</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_5_normal">
-	  <LineStyle><color>ff8f4dd0</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff8f4dd0</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8032762c</color></PolyStyle>
 	</Style>
 
@@ -104,11 +104,11 @@
 
 	<Style id="AreaNotice_6_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffe14a82</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffe14a82</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80e6d894</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_6_normal">
-	  <LineStyle><color>ffc7edd2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffc7edd2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c656af</color></PolyStyle>
 	</Style>
 
@@ -120,11 +120,11 @@
 
 	<Style id="AreaNotice_7_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffcd9a3c</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffcd9a3c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8088af10</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_7_normal">
-	  <LineStyle><color>ff456d92</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff456d92</color><width>4</width></LineStyle>
 	  <PolyStyle><color>809da530</color></PolyStyle>
 	</Style>
 
@@ -136,11 +136,11 @@
 
 	<Style id="AreaNotice_8_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff1f05fc</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff1f05fc</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c1f3b3</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_8_normal">
-	  <LineStyle><color>ff03be24</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff03be24</color><width>4</width></LineStyle>
 	  <PolyStyle><color>809f07a1</color></PolyStyle>
 	</Style>
 
@@ -152,11 +152,11 @@
 
 	<Style id="AreaNotice_9_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff8225c3</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff8225c3</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8043e083</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_9_normal">
-	  <LineStyle><color>ff546ce7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff546ce7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80ba0e8e</color></PolyStyle>
 	</Style>
 
@@ -168,11 +168,11 @@
 
 	<Style id="AreaNotice_10_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff6f83cc</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff6f83cc</color><width>4</width></LineStyle>
 	  <PolyStyle><color>804a9f04</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_10_normal">
-	  <LineStyle><color>ff1a431f</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff1a431f</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80a43671</color></PolyStyle>
 	</Style>
 
@@ -184,11 +184,11 @@
 
 	<Style id="AreaNotice_11_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffe9eaf6</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffe9eaf6</color><width>4</width></LineStyle>
 	  <PolyStyle><color>804c2b2c</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_11_normal">
-	  <LineStyle><color>ffb40572</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffb40572</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8002db62</color></PolyStyle>
 	</Style>
 
@@ -200,11 +200,11 @@
 
 	<Style id="AreaNotice_12_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff0552c1</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff0552c1</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c715e3</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_12_normal">
-	  <LineStyle><color>ff323c40</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff323c40</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80791e54</color></PolyStyle>
 	</Style>
 
@@ -216,11 +216,11 @@
 
 	<Style id="AreaNotice_13_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff4a3156</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff4a3156</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80f156a7</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_13_normal">
-	  <LineStyle><color>ff1ba1f6</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff1ba1f6</color><width>4</width></LineStyle>
 	  <PolyStyle><color>804d99c2</color></PolyStyle>
 	</Style>
 
@@ -232,11 +232,11 @@
 
 	<Style id="AreaNotice_14_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff4d3fd3</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff4d3fd3</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80df56e0</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_14_normal">
-	  <LineStyle><color>ff963d21</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff963d21</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8072b08e</color></PolyStyle>
 	</Style>
 
@@ -248,11 +248,11 @@
 
 	<Style id="AreaNotice_15_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffdb9ebd</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffdb9ebd</color><width>4</width></LineStyle>
 	  <PolyStyle><color>802df5a3</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_15_normal">
-	  <LineStyle><color>ff200a29</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff200a29</color><width>4</width></LineStyle>
 	  <PolyStyle><color>804237b7</color></PolyStyle>
 	</Style>
 
@@ -264,11 +264,11 @@
 
 	<Style id="AreaNotice_16_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffe1e042</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffe1e042</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c07ede</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_16_normal">
-	  <LineStyle><color>ff43fe6d</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff43fe6d</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80dc213a</color></PolyStyle>
 	</Style>
 
@@ -280,11 +280,11 @@
 
 	<Style id="AreaNotice_17_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff01a140</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff01a140</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80a31785</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_17_normal">
-	  <LineStyle><color>ff56c198</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff56c198</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8065b106</color></PolyStyle>
 	</Style>
 
@@ -296,11 +296,11 @@
 
 	<Style id="AreaNotice_18_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff47d11d</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff47d11d</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800d4755</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_18_normal">
-	  <LineStyle><color>ffecb9bf</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffecb9bf</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80528e2c</color></PolyStyle>
 	</Style>
 
@@ -312,11 +312,11 @@
 
 	<Style id="AreaNotice_19_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffb59ac8</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffb59ac8</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8002d2fa</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_19_normal">
-	  <LineStyle><color>ffe4ddcc</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffe4ddcc</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80db72c0</color></PolyStyle>
 	</Style>
 
@@ -328,11 +328,11 @@
 
 	<Style id="AreaNotice_20_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffb51a86</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffb51a86</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80f62559</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_20_normal">
-	  <LineStyle><color>ff6610b9</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff6610b9</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80705cd4</color></PolyStyle>
 	</Style>
 
@@ -344,11 +344,11 @@
 
 	<Style id="AreaNotice_21_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff000088</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff000088</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80375679</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_21_normal">
-	  <LineStyle><color>ff0000ff</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff0000ff</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80302379</color></PolyStyle>
 	</Style>
 
@@ -360,11 +360,11 @@
 
 	<Style id="AreaNotice_22_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffbeaad7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffbeaad7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>805339bc</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_22_normal">
-	  <LineStyle><color>ff1ff735</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff1ff735</color><width>4</width></LineStyle>
 	  <PolyStyle><color>807e4fb7</color></PolyStyle>
 	</Style>
 
@@ -376,11 +376,11 @@
 
 	<Style id="AreaNotice_23_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff803291</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff803291</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8097ef11</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_23_normal">
-	  <LineStyle><color>ff0acb4d</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff0acb4d</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80cfd8f3</color></PolyStyle>
 	</Style>
 
@@ -392,11 +392,11 @@
 
 	<Style id="AreaNotice_24_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>fff336ca</color><width>8</width></LineStyle>
+	  <LineStyle><color>fff336ca</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80057ea1</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_24_normal">
-	  <LineStyle><color>ff3a1208</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff3a1208</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8022f6b4</color></PolyStyle>
 	</Style>
 
@@ -408,11 +408,11 @@
 
 	<Style id="AreaNotice_25_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffa5b00c</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffa5b00c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>801cf29c</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_25_normal">
-	  <LineStyle><color>ffc4b448</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffc4b448</color><width>4</width></LineStyle>
 	  <PolyStyle><color>803d9863</color></PolyStyle>
 	</Style>
 
@@ -424,11 +424,11 @@
 
 	<Style id="AreaNotice_26_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffa4ba52</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffa4ba52</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80249abb</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_26_normal">
-	  <LineStyle><color>fff83235</color><width>8</width></LineStyle>
+	  <LineStyle><color>fff83235</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80fb4898</color></PolyStyle>
 	</Style>
 
@@ -440,11 +440,11 @@
 
 	<Style id="AreaNotice_27_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffc59087</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffc59087</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80bac2b2</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_27_normal">
-	  <LineStyle><color>ff99adfb</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff99adfb</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800fabee</color></PolyStyle>
 	</Style>
 
@@ -456,11 +456,11 @@
 
 	<Style id="AreaNotice_28_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff1e66ab</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff1e66ab</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80cc9369</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_28_normal">
-	  <LineStyle><color>ff6acf43</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff6acf43</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80a4678d</color></PolyStyle>
 	</Style>
 
@@ -472,11 +472,11 @@
 
 	<Style id="AreaNotice_29_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffb6f145</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffb6f145</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c0cd58</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_29_normal">
-	  <LineStyle><color>ffc7f5ec</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffc7f5ec</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c0b593</color></PolyStyle>
 	</Style>
 
@@ -488,11 +488,11 @@
 
 	<Style id="AreaNotice_30_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff648766</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff648766</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80d2e669</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_30_normal">
-	  <LineStyle><color>ff7865f0</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff7865f0</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80069673</color></PolyStyle>
 	</Style>
 
@@ -504,11 +504,11 @@
 
 	<Style id="AreaNotice_31_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff3a32e7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff3a32e7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80af30b5</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_31_normal">
-	  <LineStyle><color>ff9de796</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff9de796</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800854a9</color></PolyStyle>
 	</Style>
 
@@ -520,11 +520,11 @@
 
 	<Style id="AreaNotice_32_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffd766b2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffd766b2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80aaf003</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_32_normal">
-	  <LineStyle><color>ff771cbf</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff771cbf</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8051bfca</color></PolyStyle>
 	</Style>
 
@@ -536,11 +536,11 @@
 
 	<Style id="AreaNotice_33_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff4eb417</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff4eb417</color><width>4</width></LineStyle>
 	  <PolyStyle><color>809e0224</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_33_normal">
-	  <LineStyle><color>ff9dc54f</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff9dc54f</color><width>4</width></LineStyle>
 	  <PolyStyle><color>805afd65</color></PolyStyle>
 	</Style>
 
@@ -552,11 +552,11 @@
 
 	<Style id="AreaNotice_34_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff9e0be0</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff9e0be0</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8061e511</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_34_normal">
-	  <LineStyle><color>ffd8aca4</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffd8aca4</color><width>4</width></LineStyle>
 	  <PolyStyle><color>803aaa3d</color></PolyStyle>
 	</Style>
 
@@ -568,11 +568,11 @@
 
 	<Style id="AreaNotice_35_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff37bf73</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff37bf73</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8029372d</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_35_normal">
-	  <LineStyle><color>ff6e1a81</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff6e1a81</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80ccb047</color></PolyStyle>
 	</Style>
 
@@ -584,11 +584,11 @@
 
 	<Style id="AreaNotice_36_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff77111a</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff77111a</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80a9979f</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_36_normal">
-	  <LineStyle><color>ff7e75dc</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff7e75dc</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80972143</color></PolyStyle>
 	</Style>
 
@@ -600,11 +600,11 @@
 
 	<Style id="AreaNotice_37_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffb66674</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffb66674</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80a18a41</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_37_normal">
-	  <LineStyle><color>ffa54f7d</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffa54f7d</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80765dc1</color></PolyStyle>
 	</Style>
 
@@ -616,11 +616,11 @@
 
 	<Style id="AreaNotice_38_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffe262d3</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffe262d3</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8081ea60</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_38_normal">
-	  <LineStyle><color>ff73d733</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff73d733</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80acbfdd</color></PolyStyle>
 	</Style>
 
@@ -632,11 +632,11 @@
 
 	<Style id="AreaNotice_39_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff5eb054</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff5eb054</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c53688</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_39_normal">
-	  <LineStyle><color>ff780b76</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff780b76</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80d09034</color></PolyStyle>
 	</Style>
 
@@ -648,11 +648,11 @@
 
 	<Style id="AreaNotice_40_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff3bacb3</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff3bacb3</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80226975</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_40_normal">
-	  <LineStyle><color>ffd726e5</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffd726e5</color><width>4</width></LineStyle>
 	  <PolyStyle><color>808c103f</color></PolyStyle>
 	</Style>
 
@@ -664,11 +664,11 @@
 
 	<Style id="AreaNotice_41_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff53a2db</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff53a2db</color><width>4</width></LineStyle>
 	  <PolyStyle><color>802370aa</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_41_normal">
-	  <LineStyle><color>ff524970</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff524970</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8059111b</color></PolyStyle>
 	</Style>
 
@@ -680,11 +680,11 @@
 
 	<Style id="AreaNotice_42_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff165759</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff165759</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80bf2210</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_42_normal">
-	  <LineStyle><color>ff04f328</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff04f328</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80aed79c</color></PolyStyle>
 	</Style>
 
@@ -696,11 +696,11 @@
 
 	<Style id="AreaNotice_43_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffb5c22c</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffb5c22c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80ae8bbd</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_43_normal">
-	  <LineStyle><color>ffd4ddbd</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffd4ddbd</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80276fe2</color></PolyStyle>
 	</Style>
 
@@ -712,11 +712,11 @@
 
 	<Style id="AreaNotice_44_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffa0f2b2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffa0f2b2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80134b31</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_44_normal">
-	  <LineStyle><color>ff345a8c</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff345a8c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80698682</color></PolyStyle>
 	</Style>
 
@@ -728,11 +728,11 @@
 
 	<Style id="AreaNotice_45_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff1e0bb1</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff1e0bb1</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8052c5cf</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_45_normal">
-	  <LineStyle><color>ffec36b2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffec36b2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80e4aa8c</color></PolyStyle>
 	</Style>
 
@@ -744,11 +744,11 @@
 
 	<Style id="AreaNotice_46_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>fff1bc2c</color><width>8</width></LineStyle>
+	  <LineStyle><color>fff1bc2c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80cc2d1d</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_46_normal">
-	  <LineStyle><color>ff2d0264</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff2d0264</color><width>4</width></LineStyle>
 	  <PolyStyle><color>801f6366</color></PolyStyle>
 	</Style>
 
@@ -760,11 +760,11 @@
 
 	<Style id="AreaNotice_47_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffb28498</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffb28498</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80877ac5</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_47_normal">
-	  <LineStyle><color>ff3c1eea</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff3c1eea</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80635bfb</color></PolyStyle>
 	</Style>
 
@@ -776,11 +776,11 @@
 
 	<Style id="AreaNotice_48_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff809f60</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff809f60</color><width>4</width></LineStyle>
 	  <PolyStyle><color>809b8b33</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_48_normal">
-	  <LineStyle><color>ffa35926</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffa35926</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800694ca</color></PolyStyle>
 	</Style>
 
@@ -792,11 +792,11 @@
 
 	<Style id="AreaNotice_49_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffde34c8</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffde34c8</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80f032ed</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_49_normal">
-	  <LineStyle><color>ff774522</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff774522</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800b1467</color></PolyStyle>
 	</Style>
 
@@ -808,11 +808,11 @@
 
 	<Style id="AreaNotice_50_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff657aee</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff657aee</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8089bda8</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_50_normal">
-	  <LineStyle><color>ff77e7fc</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff77e7fc</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800d96a4</color></PolyStyle>
 	</Style>
 
@@ -824,11 +824,11 @@
 
 	<Style id="AreaNotice_51_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff204de2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff204de2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80693388</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_51_normal">
-	  <LineStyle><color>ffc1c30c</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffc1c30c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c73003</color></PolyStyle>
 	</Style>
 
@@ -840,11 +840,11 @@
 
 	<Style id="AreaNotice_52_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff7076c7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff7076c7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8012c3f4</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_52_normal">
-	  <LineStyle><color>ff550172</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff550172</color><width>4</width></LineStyle>
 	  <PolyStyle><color>803b0cf2</color></PolyStyle>
 	</Style>
 
@@ -856,11 +856,11 @@
 
 	<Style id="AreaNotice_53_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffbda701</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffbda701</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80bd29a7</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_53_normal">
-	  <LineStyle><color>ff79c8f7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff79c8f7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80b1d8af</color></PolyStyle>
 	</Style>
 
@@ -872,11 +872,11 @@
 
 	<Style id="AreaNotice_54_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff8efca4</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff8efca4</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80af638a</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_54_normal">
-	  <LineStyle><color>ff7d72c7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff7d72c7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80389483</color></PolyStyle>
 	</Style>
 
@@ -888,11 +888,11 @@
 
 	<Style id="AreaNotice_55_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff3f6252</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff3f6252</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80cfe15f</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_55_normal">
-	  <LineStyle><color>ffaff9aa</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffaff9aa</color><width>4</width></LineStyle>
 	  <PolyStyle><color>804f1635</color></PolyStyle>
 	</Style>
 
@@ -904,11 +904,11 @@
 
 	<Style id="AreaNotice_56_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>fff1bf40</color><width>8</width></LineStyle>
+	  <LineStyle><color>fff1bf40</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80e364b2</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_56_normal">
-	  <LineStyle><color>ff4ba85a</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff4ba85a</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80d9fa02</color></PolyStyle>
 	</Style>
 
@@ -920,11 +920,11 @@
 
 	<Style id="AreaNotice_57_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff48fef6</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff48fef6</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8077fbaf</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_57_normal">
-	  <LineStyle><color>ff118601</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff118601</color><width>4</width></LineStyle>
 	  <PolyStyle><color>803342d4</color></PolyStyle>
 	</Style>
 
@@ -936,11 +936,11 @@
 
 	<Style id="AreaNotice_58_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff5d78c9</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff5d78c9</color><width>4</width></LineStyle>
 	  <PolyStyle><color>808cd9f9</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_58_normal">
-	  <LineStyle><color>ff105964</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff105964</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80b71033</color></PolyStyle>
 	</Style>
 
@@ -952,11 +952,11 @@
 
 	<Style id="AreaNotice_59_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff978325</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff978325</color><width>4</width></LineStyle>
 	  <PolyStyle><color>809d2d31</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_59_normal">
-	  <LineStyle><color>ff2fd6fe</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff2fd6fe</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8030d22f</color></PolyStyle>
 	</Style>
 
@@ -968,11 +968,11 @@
 
 	<Style id="AreaNotice_60_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff18abf5</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff18abf5</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80f13457</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_60_normal">
-	  <LineStyle><color>ff778027</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff778027</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80b2bc13</color></PolyStyle>
 	</Style>
 
@@ -984,11 +984,11 @@
 
 	<Style id="AreaNotice_61_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff013ddd</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff013ddd</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80e8dc1a</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_61_normal">
-	  <LineStyle><color>ff8c93fa</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff8c93fa</color><width>4</width></LineStyle>
 	  <PolyStyle><color>805609be</color></PolyStyle>
 	</Style>
 
@@ -1000,11 +1000,11 @@
 
 	<Style id="AreaNotice_62_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff6e6e49</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff6e6e49</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8003c1cb</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_62_normal">
-	  <LineStyle><color>ff9aab87</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff9aab87</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80003c76</color></PolyStyle>
 	</Style>
 
@@ -1016,11 +1016,11 @@
 
 	<Style id="AreaNotice_63_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff154d0a</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff154d0a</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80a3ab84</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_63_normal">
-	  <LineStyle><color>ff787b93</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff787b93</color><width>4</width></LineStyle>
 	  <PolyStyle><color>803f9ad1</color></PolyStyle>
 	</Style>
 
@@ -1032,11 +1032,11 @@
 
 	<Style id="AreaNotice_64_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff8e9195</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff8e9195</color><width>4</width></LineStyle>
 	  <PolyStyle><color>801ac3c0</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_64_normal">
-	  <LineStyle><color>ff7d9444</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff7d9444</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80caf6b3</color></PolyStyle>
 	</Style>
 
@@ -1048,11 +1048,11 @@
 
 	<Style id="AreaNotice_65_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff78d0be</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff78d0be</color><width>4</width></LineStyle>
 	  <PolyStyle><color>805fe08e</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_65_normal">
-	  <LineStyle><color>ffda76c8</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffda76c8</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80161ab7</color></PolyStyle>
 	</Style>
 
@@ -1064,11 +1064,11 @@
 
 	<Style id="AreaNotice_66_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff75f4d1</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff75f4d1</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80ab4210</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_66_normal">
-	  <LineStyle><color>ff99aea7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff99aea7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80f13239</color></PolyStyle>
 	</Style>
 
@@ -1080,11 +1080,11 @@
 
 	<Style id="AreaNotice_67_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff2bc616</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff2bc616</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80aa01c6</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_67_normal">
-	  <LineStyle><color>ff75687b</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff75687b</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80b9979a</color></PolyStyle>
 	</Style>
 
@@ -1096,11 +1096,11 @@
 
 	<Style id="AreaNotice_68_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff9b8a04</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff9b8a04</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8052a945</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_68_normal">
-	  <LineStyle><color>ffd49e14</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffd49e14</color><width>4</width></LineStyle>
 	  <PolyStyle><color>801d6393</color></PolyStyle>
 	</Style>
 
@@ -1112,11 +1112,11 @@
 
 	<Style id="AreaNotice_69_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff59cd6e</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff59cd6e</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80bd0398</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_69_normal">
-	  <LineStyle><color>ff490bf2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff490bf2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80e32483</color></PolyStyle>
 	</Style>
 
@@ -1128,11 +1128,11 @@
 
 	<Style id="AreaNotice_70_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff1b4afb</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff1b4afb</color><width>4</width></LineStyle>
 	  <PolyStyle><color>809a4f49</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_70_normal">
-	  <LineStyle><color>ffed748b</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffed748b</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80502556</color></PolyStyle>
 	</Style>
 
@@ -1144,11 +1144,11 @@
 
 	<Style id="AreaNotice_71_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>fffe8d04</color><width>8</width></LineStyle>
+	  <LineStyle><color>fffe8d04</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80016b5e</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_71_normal">
-	  <LineStyle><color>ff5194ae</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff5194ae</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80d1ccb0</color></PolyStyle>
 	</Style>
 
@@ -1160,11 +1160,11 @@
 
 	<Style id="AreaNotice_72_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffaeee4d</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffaeee4d</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80359a1d</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_72_normal">
-	  <LineStyle><color>ffa9fbaa</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffa9fbaa</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8055f02a</color></PolyStyle>
 	</Style>
 
@@ -1176,11 +1176,11 @@
 
 	<Style id="AreaNotice_73_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff787c36</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff787c36</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8087f76a</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_73_normal">
-	  <LineStyle><color>ff6d1025</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff6d1025</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8077bf7d</color></PolyStyle>
 	</Style>
 
@@ -1192,11 +1192,11 @@
 
 	<Style id="AreaNotice_74_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff956b6d</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff956b6d</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80736bdd</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_74_normal">
-	  <LineStyle><color>ff247996</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff247996</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8002111e</color></PolyStyle>
 	</Style>
 
@@ -1208,11 +1208,11 @@
 
 	<Style id="AreaNotice_75_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff9b9d19</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff9b9d19</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80b1e3d5</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_75_normal">
-	  <LineStyle><color>ffdfc114</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffdfc114</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80751bab</color></PolyStyle>
 	</Style>
 
@@ -1224,11 +1224,11 @@
 
 	<Style id="AreaNotice_76_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffc097d8</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffc097d8</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8067129d</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_76_normal">
-	  <LineStyle><color>ff99c328</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff99c328</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800171b2</color></PolyStyle>
 	</Style>
 
@@ -1240,11 +1240,11 @@
 
 	<Style id="AreaNotice_77_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff333b89</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff333b89</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80892227</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_77_normal">
-	  <LineStyle><color>ff3b6da3</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff3b6da3</color><width>4</width></LineStyle>
 	  <PolyStyle><color>806c2caf</color></PolyStyle>
 	</Style>
 
@@ -1256,11 +1256,11 @@
 
 	<Style id="AreaNotice_78_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff1e606f</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff1e606f</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80b48c27</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_78_normal">
-	  <LineStyle><color>fff77107</color><width>8</width></LineStyle>
+	  <LineStyle><color>fff77107</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c8a343</color></PolyStyle>
 	</Style>
 
@@ -1272,11 +1272,11 @@
 
 	<Style id="AreaNotice_79_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff1ad205</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff1ad205</color><width>4</width></LineStyle>
 	  <PolyStyle><color>802abfb0</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_79_normal">
-	  <LineStyle><color>ff537f8c</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff537f8c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>803243c6</color></PolyStyle>
 	</Style>
 
@@ -1288,11 +1288,11 @@
 
 	<Style id="AreaNotice_80_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffed95f6</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffed95f6</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80b55bbb</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_80_normal">
-	  <LineStyle><color>ff22cd4c</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff22cd4c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8075dea3</color></PolyStyle>
 	</Style>
 
@@ -1304,11 +1304,11 @@
 
 	<Style id="AreaNotice_81_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff8ed1d7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff8ed1d7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>807c1348</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_81_normal">
-	  <LineStyle><color>fff60734</color><width>8</width></LineStyle>
+	  <LineStyle><color>fff60734</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80721d93</color></PolyStyle>
 	</Style>
 
@@ -1320,11 +1320,11 @@
 
 	<Style id="AreaNotice_82_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff03b955</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff03b955</color><width>4</width></LineStyle>
 	  <PolyStyle><color>809ae8c9</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_82_normal">
-	  <LineStyle><color>ffbdfb33</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffbdfb33</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80fc7c29</color></PolyStyle>
 	</Style>
 
@@ -1336,11 +1336,11 @@
 
 	<Style id="AreaNotice_83_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff10ee7d</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff10ee7d</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c5c37d</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_83_normal">
-	  <LineStyle><color>ff252bf7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff252bf7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80d51b8c</color></PolyStyle>
 	</Style>
 
@@ -1352,11 +1352,11 @@
 
 	<Style id="AreaNotice_84_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff315f7f</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff315f7f</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c021cd</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_84_normal">
-	  <LineStyle><color>fff2d464</color><width>8</width></LineStyle>
+	  <LineStyle><color>fff2d464</color><width>4</width></LineStyle>
 	  <PolyStyle><color>809b042a</color></PolyStyle>
 	</Style>
 
@@ -1368,11 +1368,11 @@
 
 	<Style id="AreaNotice_85_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff2cf791</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff2cf791</color><width>4</width></LineStyle>
 	  <PolyStyle><color>808e161d</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_85_normal">
-	  <LineStyle><color>ff6c35b3</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff6c35b3</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80af9bf9</color></PolyStyle>
 	</Style>
 
@@ -1384,11 +1384,11 @@
 
 	<Style id="AreaNotice_86_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff9beab1</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff9beab1</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8071e9e0</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_86_normal">
-	  <LineStyle><color>ff041b7c</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff041b7c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>808bdcc7</color></PolyStyle>
 	</Style>
 
@@ -1400,11 +1400,11 @@
 
 	<Style id="AreaNotice_87_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffddaf11</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffddaf11</color><width>4</width></LineStyle>
 	  <PolyStyle><color>805fa81c</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_87_normal">
-	  <LineStyle><color>ff851b2b</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff851b2b</color><width>4</width></LineStyle>
 	  <PolyStyle><color>807bca0b</color></PolyStyle>
 	</Style>
 
@@ -1416,11 +1416,11 @@
 
 	<Style id="AreaNotice_88_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffedc8ce</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffedc8ce</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8097b3e0</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_88_normal">
-	  <LineStyle><color>ff717a7f</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff717a7f</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80a6c318</color></PolyStyle>
 	</Style>
 
@@ -1432,11 +1432,11 @@
 
 	<Style id="AreaNotice_89_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff507118</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff507118</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80eea352</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_89_normal">
-	  <LineStyle><color>ffb0f274</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffb0f274</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80675989</color></PolyStyle>
 	</Style>
 
@@ -1448,11 +1448,11 @@
 
 	<Style id="AreaNotice_90_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff536239</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff536239</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8023da24</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_90_normal">
-	  <LineStyle><color>ff370edd</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff370edd</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c77c00</color></PolyStyle>
 	</Style>
 
@@ -1464,11 +1464,11 @@
 
 	<Style id="AreaNotice_91_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffbd1b35</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffbd1b35</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80057faf</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_91_normal">
-	  <LineStyle><color>ffc9f999</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffc9f999</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8004f9e7</color></PolyStyle>
 	</Style>
 
@@ -1480,11 +1480,11 @@
 
 	<Style id="AreaNotice_92_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff803516</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff803516</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8074440f</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_92_normal">
-	  <LineStyle><color>fffaf507</color><width>8</width></LineStyle>
+	  <LineStyle><color>fffaf507</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8002361d</color></PolyStyle>
 	</Style>
 
@@ -1496,11 +1496,11 @@
 
 	<Style id="AreaNotice_93_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff26c9b2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff26c9b2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80b3a33b</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_93_normal">
-	  <LineStyle><color>ff76d4aa</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff76d4aa</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80295d01</color></PolyStyle>
 	</Style>
 
@@ -1512,11 +1512,11 @@
 
 	<Style id="AreaNotice_94_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff5f2557</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff5f2557</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8061597b</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_94_normal">
-	  <LineStyle><color>ff2547f2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff2547f2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>804d4fd4</color></PolyStyle>
 	</Style>
 
@@ -1528,11 +1528,11 @@
 
 	<Style id="AreaNotice_95_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff70492c</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff70492c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80a6aa89</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_95_normal">
-	  <LineStyle><color>fffe606c</color><width>8</width></LineStyle>
+	  <LineStyle><color>fffe606c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80b5533d</color></PolyStyle>
 	</Style>
 
@@ -1544,11 +1544,11 @@
 
 	<Style id="AreaNotice_96_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff0d020e</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff0d020e</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80255633</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_96_normal">
-	  <LineStyle><color>ff93c7b1</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff93c7b1</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c0e022</color></PolyStyle>
 	</Style>
 
@@ -1560,11 +1560,11 @@
 
 	<Style id="AreaNotice_97_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff00e4e3</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff00e4e3</color><width>4</width></LineStyle>
 	  <PolyStyle><color>807c97e2</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_97_normal">
-	  <LineStyle><color>ff5f3bd6</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff5f3bd6</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80681c93</color></PolyStyle>
 	</Style>
 
@@ -1576,11 +1576,11 @@
 
 	<Style id="AreaNotice_98_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>fffcc617</color><width>8</width></LineStyle>
+	  <LineStyle><color>fffcc617</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80bed693</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_98_normal">
-	  <LineStyle><color>ff6dac62</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff6dac62</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8067524d</color></PolyStyle>
 	</Style>
 
@@ -1592,11 +1592,11 @@
 
 	<Style id="AreaNotice_99_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffbf4492</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffbf4492</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80028255</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_99_normal">
-	  <LineStyle><color>ff5a5783</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff5a5783</color><width>4</width></LineStyle>
 	  <PolyStyle><color>806bf8bd</color></PolyStyle>
 	</Style>
 
@@ -1608,11 +1608,11 @@
 
 	<Style id="AreaNotice_100_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>fff20472</color><width>8</width></LineStyle>
+	  <LineStyle><color>fff20472</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80a452aa</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_100_normal">
-	  <LineStyle><color>fffea8c5</color><width>8</width></LineStyle>
+	  <LineStyle><color>fffea8c5</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80add72f</color></PolyStyle>
 	</Style>
 
@@ -1624,11 +1624,11 @@
 
 	<Style id="AreaNotice_101_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff159d20</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff159d20</color><width>4</width></LineStyle>
 	  <PolyStyle><color>809dde62</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_101_normal">
-	  <LineStyle><color>ff0f8369</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff0f8369</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80734d45</color></PolyStyle>
 	</Style>
 
@@ -1640,11 +1640,11 @@
 
 	<Style id="AreaNotice_102_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff48e656</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff48e656</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8010bf25</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_102_normal">
-	  <LineStyle><color>ffa69132</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffa69132</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80c4c7a3</color></PolyStyle>
 	</Style>
 
@@ -1656,11 +1656,11 @@
 
 	<Style id="AreaNotice_103_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff91e2e7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff91e2e7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80563ffc</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_103_normal">
-	  <LineStyle><color>ff4d52b2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff4d52b2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8040a62d</color></PolyStyle>
 	</Style>
 
@@ -1672,11 +1672,11 @@
 
 	<Style id="AreaNotice_104_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff9e0c8f</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff9e0c8f</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80341a07</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_104_normal">
-	  <LineStyle><color>ffaeb2e2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffaeb2e2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>802eb779</color></PolyStyle>
 	</Style>
 
@@ -1688,11 +1688,11 @@
 
 	<Style id="AreaNotice_105_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>fff32ec8</color><width>8</width></LineStyle>
+	  <LineStyle><color>fff32ec8</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800bc9e2</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_105_normal">
-	  <LineStyle><color>ff7a9436</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff7a9436</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80990a13</color></PolyStyle>
 	</Style>
 
@@ -1704,11 +1704,11 @@
 
 	<Style id="AreaNotice_106_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff4b5937</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff4b5937</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8091f9a9</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_106_normal">
-	  <LineStyle><color>ff04ad81</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff04ad81</color><width>4</width></LineStyle>
 	  <PolyStyle><color>804a4ebc</color></PolyStyle>
 	</Style>
 
@@ -1720,11 +1720,11 @@
 
 	<Style id="AreaNotice_107_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff3f0e55</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff3f0e55</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8058dee2</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_107_normal">
-	  <LineStyle><color>ffad2230</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffad2230</color><width>4</width></LineStyle>
 	  <PolyStyle><color>808f2823</color></PolyStyle>
 	</Style>
 
@@ -1736,11 +1736,11 @@
 
 	<Style id="AreaNotice_108_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffd7adc9</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffd7adc9</color><width>4</width></LineStyle>
 	  <PolyStyle><color>802d3617</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_108_normal">
-	  <LineStyle><color>ffb298de</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffb298de</color><width>4</width></LineStyle>
 	  <PolyStyle><color>805f70f7</color></PolyStyle>
 	</Style>
 
@@ -1752,11 +1752,11 @@
 
 	<Style id="AreaNotice_109_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff315e49</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff315e49</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80047b12</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_109_normal">
-	  <LineStyle><color>ff5db536</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff5db536</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8091ab7e</color></PolyStyle>
 	</Style>
 
@@ -1768,11 +1768,11 @@
 
 	<Style id="AreaNotice_110_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff47d723</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff47d723</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80130dd0</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_110_normal">
-	  <LineStyle><color>ff75e8fb</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff75e8fb</color><width>4</width></LineStyle>
 	  <PolyStyle><color>806c3d68</color></PolyStyle>
 	</Style>
 
@@ -1784,11 +1784,11 @@
 
 	<Style id="AreaNotice_111_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff4ab228</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff4ab228</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80bf807d</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_111_normal">
-	  <LineStyle><color>ff3a72f6</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff3a72f6</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80d79d59</color></PolyStyle>
 	</Style>
 
@@ -1800,11 +1800,11 @@
 
 	<Style id="AreaNotice_112_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff23b9f6</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff23b9f6</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80993eed</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_112_normal">
-	  <LineStyle><color>ff2cd637</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff2cd637</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800f42d7</color></PolyStyle>
 	</Style>
 
@@ -1816,11 +1816,11 @@
 
 	<Style id="AreaNotice_113_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffbccb5b</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffbccb5b</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80dc6864</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_113_normal">
-	  <LineStyle><color>ff9d31ac</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff9d31ac</color><width>4</width></LineStyle>
 	  <PolyStyle><color>805228d9</color></PolyStyle>
 	</Style>
 
@@ -1832,11 +1832,11 @@
 
 	<Style id="AreaNotice_114_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff3237f5</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff3237f5</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8081e962</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_114_normal">
-	  <LineStyle><color>ffa7b668</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffa7b668</color><width>4</width></LineStyle>
 	  <PolyStyle><color>804462d4</color></PolyStyle>
 	</Style>
 
@@ -1848,11 +1848,11 @@
 
 	<Style id="AreaNotice_115_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>fff513a7</color><width>8</width></LineStyle>
+	  <LineStyle><color>fff513a7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8060642f</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_115_normal">
-	  <LineStyle><color>ff6bf09f</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff6bf09f</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80ae8922</color></PolyStyle>
 	</Style>
 
@@ -1864,11 +1864,11 @@
 
 	<Style id="AreaNotice_116_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffd1fc4a</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffd1fc4a</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80697311</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_116_normal">
-	  <LineStyle><color>ff9af73e</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff9af73e</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80b399e9</color></PolyStyle>
 	</Style>
 
@@ -1880,11 +1880,11 @@
 
 	<Style id="AreaNotice_117_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffbadf58</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffbadf58</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80e0aedb</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_117_normal">
-	  <LineStyle><color>ff5977b2</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff5977b2</color><width>4</width></LineStyle>
 	  <PolyStyle><color>801791a5</color></PolyStyle>
 	</Style>
 
@@ -1896,11 +1896,11 @@
 
 	<Style id="AreaNotice_118_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff8b692b</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff8b692b</color><width>4</width></LineStyle>
 	  <PolyStyle><color>806887ce</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_118_normal">
-	  <LineStyle><color>ff309ad5</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff309ad5</color><width>4</width></LineStyle>
 	  <PolyStyle><color>805cd75a</color></PolyStyle>
 	</Style>
 
@@ -1912,11 +1912,11 @@
 
 	<Style id="AreaNotice_119_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffc811fb</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffc811fb</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80f7bbb3</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_119_normal">
-	  <LineStyle><color>ff60be3d</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff60be3d</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8003d8e8</color></PolyStyle>
 	</Style>
 
@@ -1928,11 +1928,11 @@
 
 	<Style id="AreaNotice_120_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>fffc90f3</color><width>8</width></LineStyle>
+	  <LineStyle><color>fffc90f3</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80841900</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_120_normal">
-	  <LineStyle><color>ffdc58ae</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffdc58ae</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80932467</color></PolyStyle>
 	</Style>
 
@@ -1944,11 +1944,11 @@
 
 	<Style id="AreaNotice_121_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffbde296</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffbde296</color><width>4</width></LineStyle>
 	  <PolyStyle><color>807b534c</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_121_normal">
-	  <LineStyle><color>ff91fba7</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff91fba7</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8043c60e</color></PolyStyle>
 	</Style>
 
@@ -1960,11 +1960,11 @@
 
 	<Style id="AreaNotice_122_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>fffede0f</color><width>8</width></LineStyle>
+	  <LineStyle><color>fffede0f</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80a239b8</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_122_normal">
-	  <LineStyle><color>ffeb5762</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffeb5762</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80e0fd4d</color></PolyStyle>
 	</Style>
 
@@ -1976,11 +1976,11 @@
 
 	<Style id="AreaNotice_123_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffc75a42</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffc75a42</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8022a007</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_123_normal">
-	  <LineStyle><color>ffb7e1ac</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffb7e1ac</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8006ce1a</color></PolyStyle>
 	</Style>
 
@@ -1992,11 +1992,11 @@
 
 	<Style id="AreaNotice_124_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff19c319</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff19c319</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80039082</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_124_normal">
-	  <LineStyle><color>ffe6276c</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffe6276c</color><width>4</width></LineStyle>
 	  <PolyStyle><color>800dd1f9</color></PolyStyle>
 	</Style>
 
@@ -2008,11 +2008,11 @@
 
 	<Style id="AreaNotice_125_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ff2290b8</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff2290b8</color><width>4</width></LineStyle>
 	  <PolyStyle><color>801281fb</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_125_normal">
-	  <LineStyle><color>ff792fcd</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff792fcd</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80985643</color></PolyStyle>
 	</Style>
 
@@ -2024,11 +2024,11 @@
 
 	<Style id="AreaNotice_126_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffbd6fed</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffbd6fed</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80475ffd</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_126_normal">
-	  <LineStyle><color>ffe336da</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffe336da</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8054b92d</color></PolyStyle>
 	</Style>
 
@@ -2040,10 +2040,10 @@
 
 	<Style id="AreaNotice_127_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>ffedaf5b</color><width>8</width></LineStyle>
+	  <LineStyle><color>ffedaf5b</color><width>4</width></LineStyle>
 	  <PolyStyle><color>80f2164f</color></PolyStyle>
         </Style>
 	<Style id="AreaNotice_127_normal">
-	  <LineStyle><color>ff272cb8</color><width>8</width></LineStyle>
+	  <LineStyle><color>ff272cb8</color><width>4</width></LineStyle>
 	  <PolyStyle><color>8086608d</color></PolyStyle>
 	</Style>

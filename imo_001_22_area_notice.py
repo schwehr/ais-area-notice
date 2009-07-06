@@ -25,6 +25,9 @@ Trying to do a more sane design for AIS BBM message
 @since: 2009-Jun-01
 @status: under development
 @organization: U{CCOM<http://ccom.unh.edu/>} 
+
+@todo: handle polyline and polygons that span multiple subareas
+@todo: handle text that spans adjacent subareas
 '''
 
 # http://blog.lucanatali.it/2006/12/nmea-checksum-in-python.html
@@ -510,8 +513,6 @@ class AIVDM (object):
         header = self.get_bits_header(repeat_indicator=repeat_indicator,source_mmsi=source_mmsi)
         payload, pad = binary.bitvectoais6(header + self.get_bits())
 
-        print 'FIX_len:',len(payload)
-
         if sequence_num is None:
             sequence_num = ''
         
@@ -652,7 +653,10 @@ class BBM (AIVDM):
         return sentences
 
 class AreaNoticeSubArea(object):
-    pass
+
+    def __str__(self):
+        return self.__unicode__()
+
 
 class AreaNoticeCirclePt(AreaNoticeSubArea):
     area_shape = 0
@@ -717,7 +721,8 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         bv = binary.joinBV(bvList)
         if 90 != len(bv):
             print 'len:',[len(b) for b in bvList]
-        assert 90==len(bv)
+            raise AisPackingException('area not 90 bits',len(bv))
+        #assert 90==len(bv)
         return bv
 
     def __unicode__(self):
@@ -725,8 +730,8 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
             return 'AreaNoticeCirclePt: Point at (%.4f,%.4f)' % (self.lon,self.lat)
         return 'AreaNoticeCirclePt: Circle centered at (%.4f,%.4f) - radius %dm' % (self.lon,self.lat,self.radius)
 
-    def __str__(self):
-        return self.__unicode__()
+#    def __str__(self):
+#        return self.__unicode__()
 
     def geom(self):
         #if 'geom_geographic' not in self.__dict__:
@@ -792,8 +797,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             assert lat >= -90. and lat <= 90.
             self.lat = lat
 
-            assert 0 <=  east_dim and  east_dim <= 25500
-            assert 0 <= north_dim and north_dim <= 25500
+            assert 0 <=  east_dim and  east_dim <= 255000 # 25.5 km
+            assert 0 <= north_dim and north_dim <= 255000
 
             assert 0 <= orientation_deg and orientation_deg < 360
 
@@ -1038,9 +1043,9 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             self.points = points
 
             max_dist = max([pt[1] for pt in points])
-            if max_dist / 100. >= 4095: self.scale_factor_raw = 3
-            elif max_dist / 10. > 4095: self.scale_factor_raw = 2
-            elif max_dist > 4095:       self.scale_factor_raw = 1
+            if max_dist / 100. >= 2047: self.scale_factor_raw = 3
+            elif max_dist / 10. > 2047: self.scale_factor_raw = 2
+            elif max_dist > 2047:       self.scale_factor_raw = 1
             else:                     self.scale_factor_raw = 0
             self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
 
@@ -1081,6 +1086,8 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
         # FIX: check range of points
         for pt in self.points:
+            #print 'scale_factor:',self.scale_factor
+            #print 'polyline_seg:',pt,self.scale_factor, pt[1] / self.scale_factor, len(BitVector(intVal=pt[1] / self.scale_factor))
             bvList.append( binary.setBitVectorSize( BitVector(intVal=pt[0]), 10 ) )
             bvList.append( binary.setBitVectorSize( BitVector(intVal=pt[1] / self.scale_factor), 11 ) )
 
@@ -1090,15 +1097,18 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         bvList.append( BitVector(intVal=0) )
 
         bv = binary.joinBV(bvList)
-        assert 90==len(bv)
+        if len(bv) != 90:
+            print 'len:',[len(b) for b in bvList]
+            raise AisPackingException('area not 90 bits',len(bv))
+
         #raise AisPackingException('wrong size',len(bv))
         return bv
 
     def __unicode__(self):
         return 'AreaNoticePolyline: (%.4f,%.4f) %d points' % ( self.lon, self.lat, len(self.points) )
 
-    def __str__(self):
-        return self.__unicode__()
+#    def __str__(self):
+#        return self.__unicode__()
 
     def geom(self):
         zone = lon_to_utm_zone(self.lon)
@@ -1139,6 +1149,9 @@ class AreaNoticePolygon(AreaNoticePolyline):
     area_shape = 4
     area_name = 'polygon'
 
+    def __unicode__(self):
+        return 'AreaNoticePolylon: (%.4f,%.4f) %d points' % ( self.lon, self.lat, len(self.points) )
+
     def geom(self):
         zone = lon_to_utm_zone(self.lon)
         params = {'proj':'utm','zone':zone}
@@ -1156,7 +1169,7 @@ class AreaNoticePolygon(AreaNoticePolyline):
             pts.append(cur)
 
 
-        print 'pts:',pts
+        #print 'pts:',pts
 
         pts = [vec_add(p1,pt) for pt in pts]
         pts = [proj(*pt,inverse=True) for pt in pts]
@@ -1211,6 +1224,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
         bv = binary.joinBV(bvList)
         if 90 != len(bv):
             print 'len_freetext:',[len(b) for b in bvList]
+            # FIX raise
         assert 90==len(bv)
         return bv
 
@@ -1320,7 +1334,8 @@ class AreaNotice(BBM):
         return r
 
     def add_subarea(self,area):
-        assert len(self.areas) < 11
+        #print 'len_subareas_before:',len(self.areas)
+        assert len(self.areas) < 10
         self.areas.append(area)
 
     def get_bits(self,include_bin_hdr=False, mmsi=None, no_include_dac_fi=False):
@@ -1332,7 +1347,6 @@ class AreaNotice(BBM):
             bvList.append( binary.setBitVectorSize( BitVector(intVal=mmsi), 30 ) )
 
         if include_bin_hdr or not no_include_dac_fi:
-            print 'fix: adding header for bbm'
             bvList.append( BitVector( bitstring = '00' ) ) # Spare
             bvList.append( binary.setBitVectorSize( BitVector(intVal=self.dac), 10 ) )
             bvList.append( binary.setBitVectorSize( BitVector(intVal=self.fi), 6 ) )
@@ -1348,12 +1362,9 @@ class AreaNotice(BBM):
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.duration), 18 ) )
 
         stdlen = sum([len(b) for b in bvList])
-        print 'stdlen:',stdlen
 
-        #print '\narea_count:',len(self.areas)
         for i,area in enumerate(self.areas):
             bvList.append(area.get_bits())
-            print 'subarea_len:',i,len(bvList[-1])
         return binary.joinBV(bvList)
            
 
@@ -1361,11 +1372,5 @@ class AreaNotice(BBM):
 #        '''return string for USCG/Alion fetcher formatter'''
 #        pass
 
-def test():
-    an = AreaNotice(0,datetime.datetime.utcnow(),24*60)
-    
-
-if __name__ == '__main__':
-    test()
 
 
