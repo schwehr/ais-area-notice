@@ -7,7 +7,7 @@ __copyright__ = '2009'
 __license__   = 'GPL v3'
 __contact__   = 'kurt at ccom.unh.edu'
 
-# @requires: U{geojson<http:///>}
+
 
 __doc__ ='''
 Trying to do a more sane design for AIS BBM message
@@ -15,10 +15,10 @@ Trying to do a more sane design for AIS BBM message
 @requires: U{Python<http://python.org/>} >= 2.6
 @requires: U{epydoc<http://epydoc.sourceforge.net/>} >= 3.0.1
 @requires: U{lxml<http://codespeak.net/lxml/lxmlhtml.html>} >= 2.0
-@requires: U{shapely<http:///>}
-@requires: U{BitVector<http:///>}
-@requires: U{BitVector<http:///>}
-@requires: U{pyproj<http:///>}
+@requires: U{shapely<http://pypi.python.org/pypi/Shapely/>}
+@requires: U{BitVector<http://pypi.python.org/pypi/BitVector/>}
+@requires: U{pyproj<http://code.google.com/p/pyproj/>}
+@requires: U{geojson<http://pypi.python.org/pypi/geojson/>}
 
 @license: GPL v3
 @undocumented: __doc__
@@ -395,7 +395,7 @@ def rad2deg(radians):
 def geom2kml(geom_dict):
     '''Convert a geointerface geometry to KML
     
-    @param geo_dict: Dictionary containing 'geometry' as defined by the geo interface / geojson / shapely
+    @param geom_dict: Dictionary containing 'geometry' as defined by the geo interface / geojson / shapely
     '''
     geom_type = geom_dict['geometry']['type']
     geom_coords = geom_dict['geometry']['coordinates']
@@ -553,7 +553,8 @@ class AIVDM (object):
 
     def kml(self,with_style=False,full=False,with_time=False):
         '''return kml str for google earth
-        @param style: if style is True, it will use the standard style.  Set to a name for a custom style
+        @param with_style: if style is True, it will use the standard style.  Set to a name for a custom style
+        @param with_time: enable timestamps in Google Earth
         '''
         o = []
         if full:
@@ -859,8 +860,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
     def __unicode__(self):
         return 'AreaNoticeRectangle: (%.4f,%.4f) [%d,%d]m rot: %d deg' % (self.lon,self.lat,self.e_dim,self.n_dim,self.orientation_deg)
 
-    def __str__(self):
-        return self.__unicode__()
+#    def __str__(self):
+#        return self.__unicode__()
 
 
     def geom(self):
@@ -876,7 +877,6 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         #print 'before:',pts
         rot = deg2rad(-self.orientation_deg)
         pts = [vec_rot(pt,rot) for pt in pts]
-        #print 'rot:',pts
 
         pts = [vec_add(p1,pt) for pt in pts]
         pts = [proj(*pt,inverse=True) for pt in pts]
@@ -980,8 +980,8 @@ class AreaNoticeSector(AreaNoticeSubArea):
     def __unicode__(self):
         return 'AreaNoticeSector: (%.4f,%.4f) %d rot: %d to %d deg' % (self.lon, self.lat, self.radius, 
                                                                        self.left_bound_deg, self.right_bound_deg)
-    def __str__(self):
-        return self.__unicode__()
+#    def __str__(self):
+#        return self.__unicode__()
 
     def geom(self):
         'return shapely geometry object'
@@ -1231,8 +1231,8 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
     def __unicode__(self):
         return 'AreaNoticeFreeText: "%s"' % (self.text,)
 
-    def __str__(self):
-        return self.__unicode__()
+#    def __str__(self):
+#        return self.__unicode__()
 
     def geom(self):
         # FIX: should this somehow have a position?
@@ -1338,7 +1338,7 @@ class AreaNotice(BBM):
         assert len(self.areas) < 10
         self.areas.append(area)
 
-    def get_bits(self,include_bin_hdr=False, mmsi=None, no_include_dac_fi=False):
+    def get_bits(self, include_bin_hdr=False, mmsi=None, include_dac_fi=True):
         '''@param include_bin_hdr: If true, include the standard message header with source mmsi'''
         bvList = []
         if include_bin_hdr:
@@ -1346,8 +1346,8 @@ class AreaNotice(BBM):
             bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 2 ) ) # Repeat Indicator
             bvList.append( binary.setBitVectorSize( BitVector(intVal=mmsi), 30 ) )
 
-        if include_bin_hdr or not no_include_dac_fi:
-            bvList.append( BitVector( bitstring = '00' ) ) # Spare
+        if include_bin_hdr or include_dac_fi:
+            bvList.append( BitVector( bitstring = '00' ) ) # Should this be here or in the bin_hdr?
             bvList.append( binary.setBitVectorSize( BitVector(intVal=self.dac), 10 ) )
             bvList.append( binary.setBitVectorSize( BitVector(intVal=self.fi), 6 ) )
 

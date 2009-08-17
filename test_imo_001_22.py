@@ -82,10 +82,11 @@ class TestAreaNoticeCirclePt(unittest.TestCase):
 class TestAreaNotice(unittest.TestCase):
     def test_simple(self):
         an1 = an.AreaNotice(0,datetime.datetime.utcnow(),100)
-        self.failUnlessEqual(16+10+7+4+5+5+6+18,len(an1.get_bits()))
-        self.failUnlessEqual(   10+7+4+5+5+6+18,len(an1.get_bits(include_dac_fi=False)))
-        self.failUnlessEqual(16+10+7+4+5+5+6+18,len(an1.get_bits(include_dac_fi=True)))
-        self.failUnlessEqual(40+16+10+7+4+5+5+6+18,len(an1.get_bits(include_bin_hdr=True, mmsi=123456789, include_dac_fi=True)))
+        self.failUnlessEqual(   2+16+10+7+4+5+5+6+18,len(an1.get_bits()))
+        self.failUnlessEqual(        10+7+4+5+5+6+18,len(an1.get_bits(include_dac_fi=False)))
+        self.failUnlessEqual(   2+16+10+7+4+5+5+6+18,len(an1.get_bits(include_dac_fi=True)))
+        self.failUnlessEqual(38+2+16+10+7+4+5+5+6+18,len(an1.get_bits(include_bin_hdr=True, mmsi=123456789)))
+        self.failUnlessEqual(38+2+16+10+7+4+5+5+6+18,len(an1.get_bits(include_bin_hdr=True, mmsi=123456789, include_dac_fi=True)))
 
         self.failUnlessEqual(1,len(an1.get_bbm()))
 
