@@ -440,9 +440,10 @@ class AisUnpackingException(AisException):
 
 
 def nmea_checksum_hex(sentence):
-    nmea = map(ord, sentence.split('*')[0])
+    '8-bit XOR of everything between the [!$] and the &'
+    nmea = map(ord, sentence.split('*')[0][1:])
     checksum = reduce(xor, nmea)
-    #print 'checksum:',checksum, hex(checksum)
+    print 'checksum:',checksum, hex(checksum)
     return hex(checksum).split('x')[1].upper()
 
 class AIVDM (object):
@@ -662,7 +663,7 @@ class AreaNoticeSubArea(object):
 class AreaNoticeCirclePt(AreaNoticeSubArea):
     area_shape = 0
     def __init__(self, lon=None, lat=None, radius=0, bits=None):
-        '''@param radius: 0 is a point, otherwise less than or equal to 409500m.  Scale factor is automatic
+        '''@param radius: 0 is a point, otherwise less than or equal to 409500m.  Scale factor is automatic.  Units are m
         @param bits: string of 1's and 0's or a BitVector
         '''
         if lon is not None:
@@ -1374,3 +1375,18 @@ class AreaNotice(BBM):
 
 
 
+def main():
+    from optparse import OptionParser
+    parser = OptionParser(usage="%prog [options]",version="%prog "+__version__)
+    
+    outputChoices = ('std',) #,'html','csv','sql' , 'kml','kml-full')
+    parser.add_option('-T','--output-type',choices=outputChoices,type='choice',dest='outputType'
+                      ,default=outputChoices[0]
+                      ,help='What kind of string to output ('+', '.join(outputChoices)+') [default: %default]')
+
+    (options,args) = parser.parse_args()
+    for arg in args:
+        print AreaNotice(nmea_strings=arg)
+
+if __name__=='__main__':
+    main()
