@@ -7,8 +7,6 @@ __copyright__ = '2009'
 __license__   = 'GPL v3'
 __contact__   = 'kurt at ccom.unh.edu'
 
-
-
 __doc__ ='''
 Trying to do a more sane design for AIS BBM message
 
@@ -51,6 +49,19 @@ from lxml.html import builder as E
 from BitVector import BitVector
 
 import binary, aisstring
+
+import re
+
+ais_nmea_regex_str = r'''[!$](?P<talker>AI)(?P<stringType>VD[MO])
+,(?P<total>\d?)
+,(?P<sen_num>\d?)
+,(?P<seq_id>[0-9]?)
+,(?P<chan>[AB])
+,(?P<body>[;:=@a-zA-Z0-9<>\?\'\`]*)
+,(?P<fill_bits>\d)\*(?P<checksum>[0-9A-F][0-9A-F])'''
+'''Ignore USCG metadata'''
+
+ais_nmea_regex = re.compile(ais_nmea_regex_str,  re.VERBOSE)
 
 
 kml_head = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -355,6 +366,21 @@ notice_type = {
  info == informational
  chart == chart features'''
 
+shape_types = {
+    0: 'circle_or_point',
+    1: 'rectangle',
+    2: 'sector',
+    3: 'polyline',
+    4: 'polygon',
+    5: 'free_text',
+    'circle_or_point':0 ,
+    'rectangle': 1,
+    'sector': 2,
+    'polyline': 3,
+    'polygon': 4,
+    'free_text': 5,
+    }
+
 def _make_short_notice():
     d = {}
     for k,v in notice_type.iteritems():
@@ -431,19 +457,18 @@ class AisPackingException(AisException):
         return "Validation on %s failed (value %s) while packing" % (self.fieldname, self.value)
 
 class AisUnpackingException(AisException):
-    def __init__(self, fieldname, value):
-        self.fieldname = fieldname
-        self.value = value
+    def __init__(self, msg):
+        self.msg = msg
+        #self.fieldname = fieldname
+        #self.value = value
     def __repr__(self):
-        return "Validation on %s failed (value %s) while unpacking" % (self.fieldname, self.value)
-
+        return msg#"Validation on %s failed (value %s) while unpacking" % (self.fieldname, self.value)
 
 
 def nmea_checksum_hex(sentence):
     '8-bit XOR of everything between the [!$] and the &'
     nmea = map(ord, sentence.split('*')[0][1:])
     checksum = reduce(xor, nmea)
-    print 'checksum:',checksum, hex(checksum)
     return hex(checksum).split('x')[1].upper()
 
 class AIVDM (object):
@@ -656,6 +681,23 @@ class BBM (AIVDM):
 
 class AreaNoticeSubArea(object):
 
+
+    assert False # This is not the right place to do this
+    def __init__(self,bits=None):
+        if bits is not None:
+            return None
+        shape = int( bits[:3] )
+        if   0 == shape: return AreaNoticeCirclePt(bits=bits)
+        elif 1 == shape: return AreaNoticeRectangle(bits=bits)
+        elif 2 == shape: return AreaNoticeSector(bits=bits)
+        elif 3 == shape: return AreaNoticePolyline(bits=bits)
+        elif 4 == shape: return AreaNoticePolygon(bits=bits)
+        elif 5 == shape: return AreaNoticeFreeText(bits=bits)
+        else:
+            return None # bad bits?
+
+        
+
     def __str__(self):
         return self.__unicode__()
 
@@ -724,7 +766,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         if 90 != len(bv):
             print 'len:',[len(b) for b in bvList]
             raise AisPackingException('area not 90 bits',len(bv))
-        #assert 90==len(bv)
+        print 'subarea_bv:',bv
         return bv
 
     def __unicode__(self):
@@ -1259,6 +1301,7 @@ class AreaNotice(BBM):
         '''
         if nmea_strings != None:
             self.decode_nmea(nmea_strings)
+            return
 
         elif area_type is not None and when is not None and duration is not None:
             # We are creating a new message
@@ -1367,13 +1410,89 @@ class AreaNotice(BBM):
         for i,area in enumerate(self.areas):
             bvList.append(area.get_bits())
         return binary.joinBV(bvList)
-           
 
 #    def get_fetcher_formatter(self):
 #        '''return string for USCG/Alion fetcher formatter'''
 #        pass
 
+    def decode_nmea(self, strings):
+        '''unpack nmea instrings into objects.
+        The strings will be aggregated into one message
+        '''
+        for msg in strings:
+            msg_dict = ais_nmea_regex.search(msg).groupdict()
+            if  msg_dict['checksum'] != nmea_checksum_hex(msg):
+                raise AisUnpackingException('Checksum failed')
 
+        try: 
+            msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
+        except AttributeError:
+            raise AisUnpackingException('one or more NMEA lines did were malformed (1)' )
+        if None in msgs:
+            raise AisUnpackingException('one or more NMEA lines did were malformed')
+
+        bits = []
+        print 'len_msgs:',len(msgs)
+        for msg in msgs:
+            msg['fill_bits'] = int(msg['fill_bits'])
+            bv = binary.ais6tobitvec(msg['body'])
+            if int(msg['fill_bits']) > 0:
+                bv = bv[:-msg['fill_bits']]
+            bits.append(bv)
+        bits = binary.joinBV(bits)
+        self.decode_bits(bits)
+
+    def decode_bits(self, bits):
+        '''decode the bits for a message'''
+        r = {}
+        r['message_id']       = int( bits[:6] )
+	r['repeat_indicator'] = int(bits[6:8])
+	r['mmsi']             = int( bits[8:38] )
+        r['spare']            = int( bits[38:40] )
+        r['dac']       = int( bits[40:50] )
+        r['fi']        = int( bits[50:56] )
+        r['link_id']   = int( bits[56:66] )
+        r['area_type'] = int( bits[66:73] )
+        r['utc_month'] = int( bits[73:77] )
+        r['utc_day']   = int( bits[77:82] )
+        r['utc_hour']  = int( bits[82:87] )
+        r['utc_min']   = int( bits[87:93] )
+        r['duration_min'] = int( bits[93:111] )
+        r['sub_areas'] = []
+        print r
+
+        sub_areas_bits = bits[111:]
+        del bits  # be safe
+        assert 0 == len(sub_areas_bits) % 90
+        #print len(sub_area_bits), len(sub_area_bits) % 90
+        for i in range(len(sub_areas_bits) / 90):
+            bits = sub_areas_bits[ i*90 : (i+1)*90 ]
+            
+            sa = {}
+            sa['area_shape'] = int( bits[:3] )
+            sa['area_shape_name'] = shape_types[sa['area_shape']]
+            #print sa['area_shape'], shape_types[sa['area_shape']]
+            print 'sub_area:',sa
+
+                #sa['scale_factor_raw'] = int( bits[3:5] )
+                #sa['scale_factor'] = 10**sa['scale_factor_raw']
+                #sa['lon'] = binary.signedIntFromBV(bits[5:33]) / 600000.
+                #sa['lat'] = binary.signedIntFromBV(bits[33:60]) / 600000.
+                #sa['r_raw'] = int( bits[60:72] )
+                #sa['r_m'] = sa['r_raw'] * sa['scale_factor']
+                #sa['spare'] = int( bits[72:90] )
+            # sa_obj = None
+            # if 0 == sa['area_shape']: sa_obj = AreaNoticeCirclePt(bits=bits)
+            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
+            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
+            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
+            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
+            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
+            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
+                
+            #print 'sub_area:',sa
+            sa_obj = AreaNoticeSubArea(bits=bits)
+            print 'obj:', str(sa_obj)
 
 def main():
     from optparse import OptionParser
@@ -1385,8 +1504,10 @@ def main():
                       ,help='What kind of string to output ('+', '.join(outputChoices)+') [default: %default]')
 
     (options,args) = parser.parse_args()
-    for arg in args:
-        print AreaNotice(nmea_strings=arg)
-
+    #for arg in args:
+    #    print 'Trying:',arg
+    an = AreaNotice(nmea_strings=args)
+    #print an
+    
 if __name__=='__main__':
     main()
