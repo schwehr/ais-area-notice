@@ -8,6 +8,13 @@ default:
 	@echo "     *** Welcome to ${PKG} ${VERSION} ***"
 	@echo
 	@echo "  AIS Binary Message Reference Implementation"
+	@echo ""
+	@echo "\t - test"
+	@echo "\t - "
+	@echo "\t - "
+	@echo "\t - "
+
+
 
 sdist: samples.txt
 	find . -name .DS_Store | xargs rm -f

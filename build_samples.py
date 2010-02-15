@@ -40,38 +40,58 @@ def main():
     toggle = True  # turn on  the bulk of the messages
     #toggle = False # turn off the bulk of the messages
     
-    if toggle:
+    if False: #toggle:
         print '# Point'
         pt1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
         pt1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
+        pt1.source_mmsi = 123456789
+
         lat += delta
         print str(pt1)
-        print geojson.dumps(pt1)
         for line in pt1.get_bbm():
             print line
+        aivdms = []
         for line in pt1.get_aivdm(source_mmsi=123456789):
             print line
+            aivdms.append(line)
         bits = pt1.get_bits(mmsi=123456789,include_bin_hdr=True)
         print str(bits)
 
+        notice = an.AreaNotice(nmea_strings=aivdms)
+        print 'decoded:',str(notice)
+        print 'original_geojson:',geojson.dumps(pt1)
+        print 'decoded_geojson: ',geojson.dumps(notice)
+
         pt1.name = 'point-1'
         kmlfile.write(pt1.kml(with_style=True))
-
 
     if toggle:
         print '\n# Circle'
         circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
         circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
+        circle1.source_mmsi = 987654321
+        
         lat += delta
         print str(circle1)
-        print geojson.dumps(circle1)
         print circle1.get_bbm()[0]
-        print circle1.get_aivdm(source_mmsi=123456789)[0]
+        aivdms = []
+        for line in circle1.get_aivdm():# (source_mmsi=123456789):
+            print line
+            aivdms.append(line)
         print str(circle1.get_bits())
+
+        print geojson.dumps(circle1)
+        notice = an.AreaNotice(nmea_strings=aivdms)
+        print 'decoded:',str(notice)
+        print 'original_geojson:',geojson.dumps(circle1)
+        print 'decoded_geojson: ',geojson.dumps(notice)
 
         circle1.name = 'circle-1'
         kmlfile.write(circle1.kml(with_style=True))
 
+
+    print 'early exit'
+    sys.exit()
     
     if toggle:
         print '\n# Rectangle'

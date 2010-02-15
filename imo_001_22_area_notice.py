@@ -680,24 +680,6 @@ class BBM (AIVDM):
         return sentences
 
 class AreaNoticeSubArea(object):
-
-
-    assert False # This is not the right place to do this
-    def __init__(self,bits=None):
-        if bits is not None:
-            return None
-        shape = int( bits[:3] )
-        if   0 == shape: return AreaNoticeCirclePt(bits=bits)
-        elif 1 == shape: return AreaNoticeRectangle(bits=bits)
-        elif 2 == shape: return AreaNoticeSector(bits=bits)
-        elif 3 == shape: return AreaNoticePolyline(bits=bits)
-        elif 4 == shape: return AreaNoticePolygon(bits=bits)
-        elif 5 == shape: return AreaNoticeFreeText(bits=bits)
-        else:
-            return None # bad bits?
-
-        
-
     def __str__(self):
         return self.__unicode__()
 
@@ -766,7 +748,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         if 90 != len(bv):
             print 'len:',[len(b) for b in bvList]
             raise AisPackingException('area not 90 bits',len(bv))
-        print 'subarea_bv:',bv
+        #print 'subarea_bv:',bv
         return bv
 
     def __unicode__(self):
@@ -855,7 +837,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             self.e_dim = east_dim
             self.n_dim = north_dim
             self.e_dim_scaled = east_dim / self.scale_factor
-            self.n_dim_scaled = east_dim / self.scale_factor
+            self.n_dim_scaled = north_dim / self.scale_factor
 
             self.orientation_deg = orientation_deg
 
@@ -864,6 +846,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
     def decode_bits(self,bits):
         if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        #print 'decoded:',bits
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
         elif isinstance(bits, list) or isinstance(bits,tuple):
@@ -885,7 +868,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
     def get_bits(self):
         bvList = []
-        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # area_shape/type = 0
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape), 3 ) )
         #xsscale_factor = {1:0,10:1,100:2,1000:3}[self.scale_factor]
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
         bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
@@ -898,6 +881,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         #print '\nlen:',[len(b) for b in bvList]
         bv = binary.joinBV(bvList)
         assert 90==len(bv)
+        #print 'rect bits... initial'
+        #print 'encoded:',bv
         return bv
     
     def __unicode__(self):
@@ -1114,12 +1099,12 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             self.points.append((angle,dist))
             if 720 == dist_scaled:
                 break
-
+        
 
     def get_bits(self):
         'Build a BitVector for this area'
         bvList = []
-        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # area_shape/type = 0
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape), 3 ) ) # area_shape/type = 0
 
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
 
@@ -1150,8 +1135,8 @@ class AreaNoticePolyline(AreaNoticeSubArea):
     def __unicode__(self):
         return 'AreaNoticePolyline: (%.4f,%.4f) %d points' % ( self.lon, self.lat, len(self.points) )
 
-#    def __str__(self):
-#        return self.__unicode__()
+    def __str__(self):
+        return self.__unicode__()
 
     def geom(self):
         zone = lon_to_utm_zone(self.lon)
@@ -1291,7 +1276,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
                 }
 
 class AreaNotice(BBM):
-    def __init__(self,area_type=None,when=None,duration=None,link_id=0, nmea_strings=None):
+    def __init__(self,area_type=None, when=None, duration=None, link_id=0, nmea_strings=None, source_mmsi=None):
         '''
         @param area_type: 0..127 based on table 11.10
         @param when: when the notice starts
@@ -1318,6 +1303,8 @@ class AreaNotice(BBM):
         self.fi = 22
 
         BBM.__init__(self, message_id = 8) # FIX: move to the beginning of this method
+
+        self.source_mmsi = source_mmsi
 
     def __unicode__(self,verbose=False):
         result = 'AreaNotice: type=%d  start=%s  duration=%d m  link_id=%d  sub-areas: %d' % (
@@ -1379,6 +1366,8 @@ class AreaNotice(BBM):
 
     def add_subarea(self,area):
         #print 'len_subareas_before:',len(self.areas)
+        if not hasattr(self,'areas'):
+            self.areas = []
         assert len(self.areas) < 10
         self.areas.append(area)
 
@@ -1388,7 +1377,13 @@ class AreaNotice(BBM):
         if include_bin_hdr:
             bvList.append( binary.setBitVectorSize( BitVector(intVal=8), 6 ) ) # Messages ID
             bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 2 ) ) # Repeat Indicator
-            bvList.append( binary.setBitVectorSize( BitVector(intVal=mmsi), 30 ) )
+            if mmsi is not None:
+                bvList.append( binary.setBitVectorSize( BitVector(intVal=mmsi), 30 ) )
+            elif self.source_mmsi is not None:
+                bvList.append( binary.setBitVectorSize( BitVector(intVal=self.source_mmsi), 30 ) )
+            else:
+                print 'WARNING: using a default mmsi'
+                bvList.append( binary.setBitVectorSize( BitVector(intVal=999999999), 30 ) )
 
         if include_bin_hdr or include_dac_fi:
             bvList.append( BitVector( bitstring = '00' ) ) # Should this be here or in the bin_hdr?
@@ -1432,7 +1427,7 @@ class AreaNotice(BBM):
             raise AisUnpackingException('one or more NMEA lines did were malformed')
 
         bits = []
-        print 'len_msgs:',len(msgs)
+        #print 'len_msgs:',len(msgs)
         for msg in msgs:
             msg['fill_bits'] = int(msg['fill_bits'])
             bv = binary.ais6tobitvec(msg['body'])
@@ -1459,7 +1454,24 @@ class AreaNotice(BBM):
         r['utc_min']   = int( bits[87:93] )
         r['duration_min'] = int( bits[93:111] )
         r['sub_areas'] = []
-        print r
+        #print r
+
+        self.area_type = r['area_type']
+
+        # FIX: handle Dec - Jan transition
+        now = datetime.datetime.utcnow()
+        self.when = datetime.datetime(year=now.year,month=r['utc_month'],day=r['utc_day'],
+                                      hour=12,minute=r['utc_min'])
+        self.duration = r['duration_min']
+        self.link_id = r['link_id']
+
+        self.dac = r['dac']
+        self.fi = r['fi']
+
+        # AIVDM data
+        self.message_id = r['message_id']
+        self.repeat_indicator = r['repeat_indicator']
+        self.source_mmsi = r['mmsi'] # This will probably get ignored
 
         sub_areas_bits = bits[111:]
         del bits  # be safe
@@ -1467,32 +1479,25 @@ class AreaNotice(BBM):
         #print len(sub_area_bits), len(sub_area_bits) % 90
         for i in range(len(sub_areas_bits) / 90):
             bits = sub_areas_bits[ i*90 : (i+1)*90 ]
-            
-            sa = {}
-            sa['area_shape'] = int( bits[:3] )
-            sa['area_shape_name'] = shape_types[sa['area_shape']]
-            #print sa['area_shape'], shape_types[sa['area_shape']]
-            print 'sub_area:',sa
+            #print bits
+            #print bits[:3]
+            sa_obj = self.subarea_factory(bits=bits)
+            #print 'obj:', str(sa_obj)
+            self.add_subarea(sa_obj)
 
-                #sa['scale_factor_raw'] = int( bits[3:5] )
-                #sa['scale_factor'] = 10**sa['scale_factor_raw']
-                #sa['lon'] = binary.signedIntFromBV(bits[5:33]) / 600000.
-                #sa['lat'] = binary.signedIntFromBV(bits[33:60]) / 600000.
-                #sa['r_raw'] = int( bits[60:72] )
-                #sa['r_m'] = sa['r_raw'] * sa['scale_factor']
-                #sa['spare'] = int( bits[72:90] )
-            # sa_obj = None
-            # if 0 == sa['area_shape']: sa_obj = AreaNoticeCirclePt(bits=bits)
-            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
-            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
-            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
-            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
-            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
-            # if  == sa['area_shape']: sa_obj = AreaNotice(bits=bits)
-                
-            #print 'sub_area:',sa
-            sa_obj = AreaNoticeSubArea(bits=bits)
-            print 'obj:', str(sa_obj)
+    #@classmethod
+    def subarea_factory(self,bits):
+        shape = int( bits[:3] )
+        if   0 == shape: return AreaNoticeCirclePt(bits=bits)
+        elif 1 == shape: return AreaNoticeRectangle(bits=bits)
+        elif 2 == shape: return AreaNoticeSector(bits=bits)
+        elif 3 == shape: return AreaNoticePolyline(bits=bits)
+        elif 4 == shape: return AreaNoticePolygon(bits=bits)
+        elif 5 == shape: return AreaNoticeFreeText(bits=bits)
+        else:
+            sys.stderr.write('Warning: unknown shape type %d' % shape )
+            return None # bad bits?
+
 
 def main():
     from optparse import OptionParser

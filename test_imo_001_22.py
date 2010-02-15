@@ -19,6 +19,7 @@ Testing for Area Notice AIS binary mesage
 @organization: U{CCOM<http://ccom.unh.edu/>} 
 '''
 
+import sys
 import datetime
 import unittest
 import geojson
@@ -37,108 +38,77 @@ def almost_equal(v1,v2,epsilon=0.2):
             return False
     return True
 
-class TestAIVDM(unittest.TestCase):
-    def test_aivdm(self):
-        a = an.AIVDM()
-        # Can't get_aivdm of nothing... it's really a pure virtual type class
-        # message_id
-        self.failUnlessRaises(an.AisPackingException, a.get_aivdm, 
-                              sequence_num=0, channel='A', source_mmsi=123456789)
-        a.message_id = 5
-        self.failUnlessRaises(an.AisPackingException, a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789)
-        self.failUnlessRaises(NotImplementedError,a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789, repeat_indicator=0)
+def short_str(s, max_len=20):
+    s = str(s)
+    if len(s) > max_len-3:
+        s = s[:max_len-3]+'...'
+    return s
 
-class TestAreaNoticeCirclePt(unittest.TestCase):
-    ''' 
-    '''
-    def test_geom(self):
-        'circle geom'
-        #print 'FIX: make a test out of these'
+def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
+    'Compare two geojson dicts and make sure they are the same withing epsilon'
 
-        pt1 = an.AreaNoticeCirclePt(-73,43,0)
-        self.failUnlessEqual(0,pt1.radius)
-        self.failUnless(almost_equal((-73,43),pt1.geom().coords))
-        
-        # Circle
-        pt2 = an.AreaNoticeCirclePt(-73,43,123.4)
-        self.failUnless(len(pt2.geom().boundary.coords)>10)
+    #v = verbose
+    v = True
 
-    def test_selfconsistant(self):
-        '''
-        '''
-        pt0 = an.AreaNoticeCirclePt(-73,43,0)
-        pt1 =  an.AreaNoticeCirclePt(bits=pt0.get_bits())
-        self.failUnlessAlmostEqual(-73,pt1.lon)
-        self.failUnlessAlmostEqual(43,pt1.lat)
-        self.failUnlessAlmostEqual(0,pt1.radius)
-        self.failUnless(almost_equal((-73,43),pt1.geom().coords))
+    #sys.stderr.write('almost_equal_gj: %s (%s), %s (%s)\n' % (short_str(g1),str(type(g1)),short_str(g2),str(type(g2))))
 
-        pt2 = an.AreaNoticeCirclePt(-73,43,12300)
-        pt3 = an.AreaNoticeCirclePt(bits=pt2.get_bits())
-        self.failUnlessAlmostEqual(-73,pt1.lon)
-        self.failUnlessAlmostEqual(43,pt1.lat)
-        self.failUnlessEqual(pt2.radius,12300)
+    if g1 == g2:
+        #sys.stderr.write('equal_by: ==\n')
+        return True
 
-class TestAreaNotice(unittest.TestCase):
-    def test_simple(self):
-        an1 = an.AreaNotice(0,datetime.datetime.utcnow(),100)
-        self.failUnlessEqual(   2+16+10+7+4+5+5+6+18,len(an1.get_bits()))
-        self.failUnlessEqual(        10+7+4+5+5+6+18,len(an1.get_bits(include_dac_fi=False)))
-        self.failUnlessEqual(   2+16+10+7+4+5+5+6+18,len(an1.get_bits(include_dac_fi=True)))
-        self.failUnlessEqual(38+2+16+10+7+4+5+5+6+18,len(an1.get_bits(include_bin_hdr=True, mmsi=123456789)))
-        self.failUnlessEqual(38+2+16+10+7+4+5+5+6+18,len(an1.get_bits(include_bin_hdr=True, mmsi=123456789, include_dac_fi=True)))
+    if not isinstance(g1,dict) or not isinstance(g1,dict):
+        sys.stderr.write('cp1\n')
+        if isinstance(g1,float) or isinstance(g1,int):
+            #sys.stderr.write('cp2\n')
+            if almost_equal(g1,g2):
+                #sys.stderr.write('cp3\n')
+                return True
+            else:
+                #sys.stderr.write('cp3b\n')
+                if v: sys.stderr.write( 'failed_compare: %s %s \n' % (str(g1), str(g2)) )
+                return False
+            #sys.stderr.write('cp4\n')
+        #sys.stderr.write('cp5\n')
 
-        self.failUnlessEqual(1,len(an1.get_bbm()))
-
-    def test_whale(self):
-        no_whales = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime.utcnow(),60,10)
-        no_whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
-        print 'bbm:',no_whales.get_bbm()
-        #print 'aivdm:',no_whales.get_aivdm(source_mmsi=1233456789)
-
-        no_whales.add_subarea(an.AreaNoticeCirclePt(-69, 42, radius=9260))
-        no_whales.add_subarea(an.AreaNoticeCirclePt(-68, 43, radius=9260))
-        #print'\nno_whales:', no_whales.__str__(verbose=True)
-
-        #print 'bbm:',no_whales.get_bbm()
-        #print 'aivdm:',no_whales.get_aivdm(source_mmsi=1233456789)
-    def _test_subarea_json(self):
-        'Circle point json'
-        area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260)
-        self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) > 5)
-
-        area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=0) 
-        #print 'Point:', area.__geo_interface__
-        self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) == 2)
-
-    def _test_json(self):
-        whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
-        whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
-
-
-        #print '\ntl_areas:',whales.areas
-        #print 'tl:',whales.areas[0].__geo_interface__
-        #print whales.__geo_interface__
-
-        #print '\ngeojson:', geojson.dumps(whales)
-
-    def _test_html(self):
-        whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
-        whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
-        whales.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.07, radius=0))
-        import lxml.html
-        #print lxml.html.tostring(whales.html())
-
-    def test_kml(self):
-        whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
-        whales.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.07, radius=0))
-        whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
-
-        #print whales.kml()
-
+        if v: sys.stderr.write( 'what_are_these: %s %s \n' % (str(g1), str(g2)) )
+        return False
     
+    for key in g1.keys():
+        #sys.stderr.write('in_key: %s\n' % (key,))
+        if key not in g2:
+            if v: sys.stderr.write( 'missing key: %s \n' % (key, ) )
+            return False
+        elif isinstance(g1[key],dict):
+            if not almost_equal_geojson(g1[key], g2[key], verbose=v):
+                if v: sys.stderr.write( 'recursion failed on key: %s\n' % (key,) )
+                return False
+        elif isinstance(g1[key],list):
+            sys.stderr.write('in_list: %s\n' % (key,))
+            if not (isinstance(g2[key],list) ):
+                if v: sys.stderr.write( 'list not matching list: %s\n' % (key,) )
+                return False
+            if len(g1[key]) != len(g2[key]):
+                if v: sys.stderr.write( 'lists_not_same_length: %s\n' % (key,) )
+                return False
+            for i in range(len(g1[key])):
+                sys.stderr.write( 'list: %d %s\n' % (i,short_str(g1[key][i])))
+                
+                if not almost_equal_geojson(g1[key][i], g2[key][i], verbose=v):
+                    if v: sys.stderr.write( 'list_check_failed: key: %s item number %d\n' % (key,i) )
+                    return False
+        elif isinstance(g1[key],float) or isinstance(g2[key],float):
+            if not almost_equal(g1[key],g2[key],epsilon=epsilon):
+                if v: sys.stderr.write( 'float_compair_failed: %s, %s\n' % ( str(g1[key]),str(g2[key]) ) )
+                return False
+        else:
+            if g1[key] != g2[key]:
+                if v: sys.stderr.write( 'key_compare_failed: %s %s\n' % ( str(type(g1[key])),str(type(g2[key])) ))
+                if v: sys.stderr.write( 'key_compare_failed: %s %s\n' % ( str(g1[key]),str(g2[key]) ) )
+                return False
+    print 'looking good'
+    return True
 
-class TestMath(unittest.TestCase):
+class Test0Math(): # (unittest.TestCase):
     def test_deg2rad(self):
         'deg2rad'
         self.failUnlessAlmostEqual(0,deg2rad(0))
@@ -184,8 +154,178 @@ class TestMath(unittest.TestCase):
         self.failUnless(almost_equal((0,1),vec_rot((math.sqrt(.5),math.sqrt(.5)),math.pi/4)))
 
 
+class Test1AIVDM(): # (unittest.TestCase):
+    def test_aivdm(self):
+        'aivdm'
+        a = an.AIVDM()
+        # Can't get_aivdm of nothing... it's really a pure virtual type class
+        # message_id
+        self.failUnlessRaises(an.AisPackingException, a.get_aivdm, 
+                              sequence_num=0, channel='A', source_mmsi=123456789)
+        a.message_id = 5
+        self.failUnlessRaises(an.AisPackingException, a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789)
+        self.failUnlessRaises(NotImplementedError,a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789, repeat_indicator=0)
+
+class Test3AreaNoticeCirclePt(): # (unittest.TestCase):
+    def test_geom(self):
+        'circle geom'
+        pt1 = an.AreaNoticeCirclePt(-73,43,0)
+        self.failUnlessEqual(0,pt1.radius)
+        self.failUnless(almost_equal((-73,43),pt1.geom().coords))
+        
+        # Circle
+        pt2 = an.AreaNoticeCirclePt(-73,43,123.4)
+        self.failUnless(len(pt2.geom().boundary.coords)>10)
+
+    def test_selfconsistant(self):
+        'simple geom checks'
+        pt0 = an.AreaNoticeCirclePt(-73,43,0)
+        pt1 =  an.AreaNoticeCirclePt(bits=pt0.get_bits())
+        self.failUnlessAlmostEqual(-73,pt1.lon)
+        self.failUnlessAlmostEqual(43,pt1.lat)
+        self.failUnlessAlmostEqual(0,pt1.radius)
+        self.failUnless(almost_equal((-73,43),pt1.geom().coords))
+
+        pt2 = an.AreaNoticeCirclePt(-73,43,12300)
+        pt3 = an.AreaNoticeCirclePt(bits=pt2.get_bits())
+        self.failUnlessAlmostEqual(-73,pt1.lon)
+        self.failUnlessAlmostEqual(43,pt1.lat)
+        self.failUnlessEqual(pt2.radius,12300)
+
+class Test5AreaNoticeSimple(): #(unittest.TestCase):
+    def test_simple(self):
+        'area notice simple'
+        an1 = an.AreaNotice(0,datetime.datetime.utcnow(),100)
+        self.failUnlessEqual(   2+16+10+7+4+5+5+6+18,len(an1.get_bits()))
+        self.failUnlessEqual(        10+7+4+5+5+6+18,len(an1.get_bits(include_dac_fi=False)))
+        self.failUnlessEqual(   2+16+10+7+4+5+5+6+18,len(an1.get_bits(include_dac_fi=True)))
+        self.failUnlessEqual(38+2+16+10+7+4+5+5+6+18,len(an1.get_bits(include_bin_hdr=True, mmsi=123456789)))
+        self.failUnlessEqual(38+2+16+10+7+4+5+5+6+18,len(an1.get_bits(include_bin_hdr=True, mmsi=123456789, include_dac_fi=True)))
+
+        self.failUnlessEqual(1,len(an1.get_bbm()))
+
+    def test_whale(self):
+        'whale notices'
+        no_whales = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime.utcnow(),60,10)
+        no_whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
+
+        no_whales.add_subarea(an.AreaNoticeCirclePt(-69, 42, radius=9260))
+        no_whales.add_subarea(an.AreaNoticeCirclePt(-68, 43, radius=9260))
+
+    def _test_subarea_json(self):
+        'Circle point json'
+        area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260)
+        self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) > 5)
+
+        area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=0) 
+        self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) == 2)
+
+    def _test_json(self):
+        whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
+        whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
+
+    def _test_html(self):
+        whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
+        whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
+        whales.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.07, radius=0))
+        import lxml.html
+        #print lxml.html.tostring(whales.html())
+
+    def test_kml(self):
+        'kml simple'
+        whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
+        whales.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.07, radius=0))
+        whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
+
+        kml = whales.kml()
+        # FIX: check the kml somehome
+
+    
+class TestBitDecoding(unittest.TestCase):
+    'Using the build_samples to make sure they all decode'
+    def test_point(self):
+        'point'
+        mmsi = 445566778
+        pt1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        pt1.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.0, radius=0))
+        pt1.source_mmsi = mmsi
+
+        orig = geojson.loads( geojson.dumps(pt1) )
+        decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in pt1.get_aivdm() ] )) )
+        self.failUnless( almost_equal_geojson(orig, decoded) )
+
+    def test_circle(self):
+        'circle'
+        circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],
+                                datetime.datetime(2009, 7, 6, 0, 0, 4),
+                                60, 10,
+                                source_mmsi = 2)
+        circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.1, radius=4260))
+
+        orig = geojson.loads( geojson.dumps(circle1) )
+        decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in circle1.get_aivdm() ] )) )
+        self.failUnless( almost_equal_geojson(orig, decoded) )
+
+    def test_rect(self):
+        'rectangle'
+        rect = an.AreaNotice( an.notice_type['cau_mammals_reduce_speed'],
+                               datetime.datetime(2009, 7, 6, 0, 0, 4),
+                               60, 10,
+                               source_mmsi = 123
+                               )
+        rect.add_subarea( an.AreaNoticeRectangle(-69.8, 42, 4000, 1000, 0) )
+
+        orig = geojson.loads( geojson.dumps(rect) )
+        decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in rect.get_aivdm() ] )) )
+        #print
+        #print orig
+        #print decoded
+
+        #print 'testing with almost equal'
+        self.failUnless( almost_equal_geojson(orig, decoded, verbose=True) )
+        #print 'here'
+
+    def test_sector(self):
+        'sector'
+        sec1 = an.AreaNotice(an.notice_type['cau_habitat_reduce_speed'],
+                             datetime.datetime(2009, 7, 6, 0, 0, 4), 60, 10, source_mmsi = 456)
+        sec1.add_subarea(an.AreaNoticeSector(-69.8, 42.3, 4000, 10, 50))
+        orig = geojson.loads( geojson.dumps(sec1) )
+        decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in sec1.get_aivdm() ] )) )
+        self.failUnless( almost_equal_geojson(orig, decoded, verbose=True) )
+        #print orig
+        #print decoded
+
+    def test_line(self):
+        'line'
+        line1 = an.AreaNotice(an.notice_type['report_of_icing'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi=123456)
+        line1.add_subarea(an.AreaNoticePolyline([(10,2400),], -69.8, 42.4 ))
+        print 'line1:',line1
+        print 'line1:',line1.areas[0]
+        orig = geojson.loads( geojson.dumps(line1) )
+        line2 = an.AreaNotice(nmea_strings=[ line for line in line1.get_aivdm() ] )
+        print 'line2',line2
+        print 'line2:',str(line2.areas[0])
+        decoded = geojson.loads( geojson.dumps(line2) )
+        self.failUnless( almost_equal_geojson(orig, decoded, verbose=True) )
+        #print orig
+        #print decoded
+        
 def main():
+    from optparse import OptionParser
+    parser = OptionParser(usage="%prog [options]",
+                          version="%prog "+__version__+' ('+__date__+')')
+    parser.add_option('-v', '--verbose', dest='verbose', default=False, action='store_true',
+                      help='run the tests run in verbose mode')
+
+    (options, args) = parser.parse_args()
+
+    sys.argv = [sys.argv[0],]
+    if options.verbose:
+        sys.argv.append('-v')
+
     unittest.main()
+    #print
 
 if __name__ == '__main__':
     main()
