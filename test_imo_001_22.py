@@ -212,7 +212,7 @@ class Test5AreaNoticeSimple(): #(unittest.TestCase):
         no_whales.add_subarea(an.AreaNoticeCirclePt(-69, 42, radius=9260))
         no_whales.add_subarea(an.AreaNoticeCirclePt(-68, 43, radius=9260))
 
-    def _test_subarea_json(self):
+    def test_subarea_json(self):
         'Circle point json'
         area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260)
         self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) > 5)
@@ -220,11 +220,11 @@ class Test5AreaNoticeSimple(): #(unittest.TestCase):
         area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=0) 
         self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) == 2)
 
-    def _test_json(self):
+    def test_json(self):
         whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
         whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
 
-    def _test_html(self):
+    def test_html(self):
         whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
         whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
         whales.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.07, radius=0))
@@ -243,7 +243,7 @@ class Test5AreaNoticeSimple(): #(unittest.TestCase):
     
 class TestBitDecoding(unittest.TestCase):
     'Using the build_samples to make sure they all decode'
-    def _test_point(self):
+    def test_point(self):
         'point'
         mmsi = 445566778
         pt1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
@@ -254,7 +254,7 @@ class TestBitDecoding(unittest.TestCase):
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in pt1.get_aivdm() ] )) )
         self.failUnless( almost_equal_geojson(orig, decoded) )
 
-    def _test_circle(self):
+    def test_circle(self):
         'circle'
         circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],
                                 datetime.datetime(2009, 7, 6, 0, 0, 4),
@@ -266,7 +266,7 @@ class TestBitDecoding(unittest.TestCase):
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in circle1.get_aivdm() ] )) )
         self.failUnless( almost_equal_geojson(orig, decoded) )
 
-    def _test_rect(self):
+    def test_rect(self):
         'rectangle'
         rect = an.AreaNotice( an.notice_type['cau_mammals_reduce_speed'],
                                datetime.datetime(2009, 7, 6, 0, 0, 4),
@@ -282,36 +282,54 @@ class TestBitDecoding(unittest.TestCase):
         #print decoded
 
         #print 'testing with almost equal'
-        self.failUnless( almost_equal_geojson(orig, decoded, verbose=True) )
+        self.failUnless( almost_equal_geojson(orig, decoded) ) #, verbose=True) )
         #print 'here'
 
-    def _test_sector(self):
+    def test_sector(self):
         'sector'
         sec1 = an.AreaNotice(an.notice_type['cau_habitat_reduce_speed'],
                              datetime.datetime(2009, 7, 6, 0, 0, 4), 60, 10, source_mmsi = 456)
         sec1.add_subarea(an.AreaNoticeSector(-69.8, 42.3, 4000, 10, 50))
         orig = geojson.loads( geojson.dumps(sec1) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in sec1.get_aivdm() ] )) )
-        self.failUnless( almost_equal_geojson(orig, decoded, verbose=True) )
-        #print orig
-        #print decoded
+        self.failUnless( almost_equal_geojson(orig, decoded) ) #, verbose=True) )
 
     def test_line(self):
         'line'
         line1 = an.AreaNotice(an.notice_type['report_of_icing'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi=123456)
         line1.add_subarea(an.AreaNoticePolyline([(10,2400),], -69.8, 42.4 ))
-        #print 'line1:',line1
-        #print 'line1:',line1.areas[0]
         orig = geojson.loads( geojson.dumps(line1) )
         line2 = an.AreaNotice(nmea_strings=[ line for line in line1.get_aivdm() ] )
+        decoded = geojson.loads( geojson.dumps(line2) )
+
+        self.failUnless( almost_equal_geojson(orig, decoded) ) #, verbose=True) )
+
+    def test_polygon(self):
+        'polygon'
+        poly1 = an.AreaNotice(an.notice_type['cau_divers'], datetime.datetime(2009, 7, 6, 0, 0, 4), 60, 10, source_mmsi=987123456)
+        poly1.add_subarea(an.AreaNoticePolygon([(10,1400),(90,1950)], -69.8, 42.5 ))
+        #print 'poly1:',poly1
+        #print 'poly1:',poly1.areas[0]
+        orig = geojson.loads( geojson.dumps(poly1) )
+        poly2 = an.AreaNotice(nmea_strings=[ line for line in poly1.get_aivdm() ] )
         #print 'line2',line2
         #print 'line2:',str(line2.areas[0])
-        decoded = geojson.loads( geojson.dumps(line2) )
+        decoded = geojson.loads( geojson.dumps(poly2) )
 
         #print orig
         #print decoded
-
         self.failUnless( almost_equal_geojson(orig, decoded) ) #, verbose=True) )
+
+    def test_freetext(self):
+        'freetext'
+        text1 = an.AreaNotice(an.notice_type['res_military_ops'],datetime.datetime(2009, 7, 6, 0, 0, 4), 60,10, source_mmsi=300000000)
+        text1.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.6, radius=0))
+        text1.add_subarea(an.AreaNoticeFreeText(text="Explanation"))
+
+        orig = geojson.loads( geojson.dumps(text1) )
+        text2 = an.AreaNotice(nmea_strings=[ line for line in text1.get_aivdm() ] )
+        decoded = geojson.loads( geojson.dumps(text2) )
+        self.failUnless( almost_equal_geojson(orig, decoded, verbose=True) )
         
 def main():
     from optparse import OptionParser

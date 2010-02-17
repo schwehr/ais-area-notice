@@ -1200,12 +1200,16 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
 
 class AreaNoticePolygon(AreaNoticePolyline):
-    'Polyline that wraps back to the beginning'
+    '''Polyline that wraps back to the beginning.
+
+    For GeoJson, a polygon must have the first and last coordinates
+    FIX: handle multi sub area spanning polygons
+    '''
     area_shape = 4
     area_name = 'polygon'
 
     def __unicode__(self):
-        return 'AreaNoticePolylon: (%.4f,%.4f) %d points' % ( self.lon, self.lat, len(self.points) )
+        return 'AreaNoticePolygon: (%.4f,%.4f) %d points' % ( self.lon, self.lat, len(self.points) )
 
     def geom(self):
         zone = lon_to_utm_zone(self.lon)
@@ -1222,8 +1226,6 @@ class AreaNoticePolygon(AreaNoticePolyline):
             x,y = d * math.sin(alpha), d * math.cos(alpha)
             cur = vec_add(cur,(x,y))
             pts.append(cur)
-
-
         #print 'pts:',pts
 
         pts = [vec_add(p1,pt) for pt in pts]
@@ -1242,9 +1244,10 @@ class AreaNoticePolygon(AreaNoticePolyline):
         return r
 
 class AreaNoticeFreeText(AreaNoticeSubArea):
-    area_shape = 4
+    area_shape = 5
     area_name = 'freetext'
     def __init__(self,text=None, bits=None):
+        'text must be 14 characters or less'
         if text is not None:
             text = text.upper()
             #if len(text) > 14:
@@ -1257,7 +1260,8 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
             self.decode_bits(bits)
 
            
-    def decode_bits(self,bits):
+    def decode_bits(self, bits):
+        'Removes the "@" padding'
         if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
@@ -1266,7 +1270,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
 
         area_shape = int( bits[:3] )
         assert self.area_shape == area_shape
-        self.text = aisstring.decode(bits[3:-1])
+        self.text = aisstring.decode(bits[3:-1]).rstrip('@')
         self.spare = int(bits[-1])
 
     def get_bits(self):
@@ -1299,6 +1303,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
         # FIX: should this return geometry?  Probably not as this text gets built into the message text for other geom
         return {'area_shape': self.area_shape, 
                 'area_shape_name': self.area_name,
+                'text': self.text,
                 # No geometry... 'geometry': {'type': 'Point', 'coordinates': [self.lon, self.lat] }
                 }
 
@@ -1534,6 +1539,7 @@ class AreaNotice(BBM):
         if   0 == shape: return AreaNoticeCirclePt(bits=bits)
         elif 1 == shape: return AreaNoticeRectangle(bits=bits)
         elif 2 == shape: return AreaNoticeSector(bits=bits)
+
         elif 3 == shape:
             # There has to be a point or line before the polyline to give the starting lon and lat
             assert len(self.areas) > 0
@@ -1542,19 +1548,27 @@ class AreaNotice(BBM):
             if isinstance(self.areas[-1], AreaNoticeCirclePt):
                 lon = self.areas[-1].lon
                 lat = self.areas[-1].lat
-                #print 'Destroying the point sub area as it is consumed by the polyline'
                 self.areas.pop()
             elif isinstance(self.areas[-1], AreaNoticePolyline):
                 print 'FIX: check multi packet polyline', self.areas[-1].geom
-                #assert False
                 last_pt = self.areas[-1].get_points[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
-            #print 'building_polyline: starting with', lon, lat
             return AreaNoticePolyline(bits=bits, lon=lon, lat=lat)
+
         elif 4 == shape:
-            assert False
-            return AreaNoticePolygon(bits=bits)
+            assert len(self.areas) > 0
+            lon = lat = None
+            if isinstance(self.areas[-1], AreaNoticeCirclePt):
+                lon = self.areas[-1].lon
+                lat = self.areas[-1].lat
+                self.areas.pop()
+            elif isinstance(self.areas[-1], AreaNoticePolyline):
+                print 'FIX: check multi packet polyline', self.areas[-1].geom
+                last_pt = self.areas[-1].get_points[-1]
+                lon = last_pt[0]
+                lat = last_pt[1]
+            return AreaNoticePolygon(bits=bits, lon=lon, lat=lat)
         elif 5 == shape: return AreaNoticeFreeText(bits=bits)
         else:
             sys.stderr.write('Warning: unknown shape type %d' % shape )
