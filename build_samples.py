@@ -27,6 +27,29 @@ import geojson
 import imo_001_22_area_notice as an
 
 
+def point(lat,zone_type, kmlfile):
+    print '# Point'
+    pt1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
+    pt1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
+
+    print str(pt1)
+    for line in pt1.get_bbm():
+        print line
+    aivdms = []
+    for line in pt1.get_aivdm(source_mmsi=123456789):
+        print line
+        aivdms.append(line)
+    bits = pt1.get_bits(mmsi=123456789,include_bin_hdr=True)
+    print str(bits)
+
+    notice = an.AreaNotice(nmea_strings=aivdms)
+    print 'decoded:',str(notice)
+    print 'original_geojson:',geojson.dumps(pt1)
+    print 'decoded_geojson: ',geojson.dumps(notice)
+
+    pt1.name = 'point-1'
+    kmlfile.write(pt1.kml(with_style=True))
+
 def main():
     # Start with simple one offs of all but the free text which requires something for position
 
@@ -40,30 +63,9 @@ def main():
     toggle = True  # turn on  the bulk of the messages
     #toggle = False # turn off the bulk of the messages
     
-    if False: #toggle:
-        print '# Point'
-        pt1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
-        pt1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
-        pt1.source_mmsi = 123456789
-
-        lat += delta
-        print str(pt1)
-        for line in pt1.get_bbm():
-            print line
-        aivdms = []
-        for line in pt1.get_aivdm(source_mmsi=123456789):
-            print line
-            aivdms.append(line)
-        bits = pt1.get_bits(mmsi=123456789,include_bin_hdr=True)
-        print str(bits)
-
-        notice = an.AreaNotice(nmea_strings=aivdms)
-        print 'decoded:',str(notice)
-        print 'original_geojson:',geojson.dumps(pt1)
-        print 'decoded_geojson: ',geojson.dumps(notice)
-
-        pt1.name = 'point-1'
-        kmlfile.write(pt1.kml(with_style=True))
+    if toggle: point(lat, zone_type=zone_type, kmlfile=kmlfile)
+    lat += delta
+    zone_type += 1
 
     if toggle:
         print '\n# Circle'
@@ -89,10 +91,6 @@ def main():
         circle1.name = 'circle-1'
         kmlfile.write(circle1.kml(with_style=True))
 
-
-    print 'early exit'
-    sys.exit()
-    
     if toggle:
         print '\n# Rectangle'
         rect1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
@@ -124,7 +122,6 @@ def main():
         kmlfile.write(sec1.kml(with_style=True))
 
     if toggle:
-#    if 1:
         print '\n# Line - 1 segment'
         line1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
         line1.add_subarea(an.AreaNoticePolyline([(10,2400),], -69.8, lat ))
@@ -171,8 +168,6 @@ def main():
 
         text1.name = 'text-1'
         kmlfile.write(text1.kml(with_style=True))
-
-
 
     if toggle:
         lat += delta # extra
@@ -231,13 +226,12 @@ def main():
         full1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0)) # 1
         full1.add_subarea(an.AreaNoticeFreeText(text="12345678901234")) # 2
         full1.add_subarea(an.AreaNoticeFreeText(text="More text that")) # 3
-        full1.add_subarea(an.AreaNoticeFreeText(text=" spans  across")) # 4
-        full1.add_subarea(an.AreaNoticeFreeText(text="  multiple lin")) # 5
+        full1.add_subarea(an.AreaNoticeFreeText(text=" spans across")) # 4
+        full1.add_subarea(an.AreaNoticeFreeText(text=" multiple lin")) # 5
         full1.add_subarea(an.AreaNoticeFreeText(text="es.  The text ")) # 6
         full1.add_subarea(an.AreaNoticeFreeText(text="is supposed to")) # 7
         full1.add_subarea(an.AreaNoticeFreeText(text=" be concatenat")) # 8
-        full1.add_subarea(an.AreaNoticeFreeText(text="ed together wi")) # 9
-        full1.add_subarea(an.AreaNoticeFreeText(text="th no spaces. ")) # 10
+        full1.add_subarea(an.AreaNoticeFreeText(text="ed together.")) # 9
         lat += delta
         zone_type += 1
         print str(full1)

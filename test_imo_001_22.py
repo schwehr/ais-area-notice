@@ -26,9 +26,13 @@ import geojson
 import math
 import imo_001_22_area_notice as an
 from imo_001_22_area_notice import vec_rot, vec_add, deg2rad
-
+from imo_001_22_area_notice import AisPackingException, AisUnpackingException
 
 def almost_equal(v1,v2,epsilon=0.2):
+    if isinstance(v1,float) or isinstance(v1,int):
+        delta = v1 - v2
+        if abs(delta) > epsilon: return False
+        return True
     if len(v1) != len(v2):
         return ValueError('Both sequences must be the same length')
     for i,a in enumerate(v1):
@@ -47,8 +51,9 @@ def short_str(s, max_len=20):
 def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
     'Compare two geojson dicts and make sure they are the same withing epsilon'
 
-    #v = verbose
-    v = True
+    v = verbose
+    #v = True
+    #print verbose
 
     #sys.stderr.write('almost_equal_gj: %s (%s), %s (%s)\n' % (short_str(g1),str(type(g1)),short_str(g2),str(type(g2))))
 
@@ -56,8 +61,16 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
         #sys.stderr.write('equal_by: ==\n')
         return True
 
+    if isinstance(g1,list):
+        #print 'list:',type(g1),g1
+        for i in range(len(g1)):
+            if not almost_equal_geojson(g1[i], g2[i], verbose=verbose):
+                sys.stderr.write( 'list_compare_failed: %s %s \n' % (str(g1[i]), str(g2[i])) )
+                return False
+        return True
+
     if not isinstance(g1,dict) or not isinstance(g1,dict):
-        sys.stderr.write('cp1\n')
+        if v: sys.stderr.write('cp1: %s\n' % type(g1))
         if isinstance(g1,float) or isinstance(g1,int):
             #sys.stderr.write('cp2\n')
             if almost_equal(g1,g2):
@@ -70,7 +83,9 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
             #sys.stderr.write('cp4\n')
         #sys.stderr.write('cp5\n')
 
-        if v: sys.stderr.write( 'what_are_these: %s %s \n' % (str(g1), str(g2)) )
+        if v:
+            sys.stderr.write( 'what_are_these: %s %s \n' % (str(g1), str(g2)) )
+            sys.stderr.write( '         types: %s %s \n' % (str(type(g1)), str(type(g2))) )
         return False
     
     for key in g1.keys():
@@ -83,7 +98,7 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
                 if v: sys.stderr.write( 'recursion failed on key: %s\n' % (key,) )
                 return False
         elif isinstance(g1[key],list):
-            sys.stderr.write('in_list: %s\n' % (key,))
+            if v: sys.stderr.write('in_list: %s\n' % (key,))
             if not (isinstance(g2[key],list) ):
                 if v: sys.stderr.write( 'list not matching list: %s\n' % (key,) )
                 return False
@@ -91,7 +106,7 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
                 if v: sys.stderr.write( 'lists_not_same_length: %s\n' % (key,) )
                 return False
             for i in range(len(g1[key])):
-                sys.stderr.write( 'list: %d %s\n' % (i,short_str(g1[key][i])))
+                if v: sys.stderr.write( 'list: %d %s\n' % (i,short_str(g1[key][i])))
                 
                 if not almost_equal_geojson(g1[key][i], g2[key][i], verbose=v):
                     if v: sys.stderr.write( 'list_check_failed: key: %s item number %d\n' % (key,i) )
@@ -105,7 +120,7 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
                 if v: sys.stderr.write( 'key_compare_failed: %s %s\n' % ( str(type(g1[key])),str(type(g2[key])) ))
                 if v: sys.stderr.write( 'key_compare_failed: %s %s\n' % ( str(g1[key]),str(g2[key]) ) )
                 return False
-    print 'looking good'
+    #print 'looking good'
     return True
 
 class Test0Math(): # (unittest.TestCase):
@@ -192,7 +207,7 @@ class Test3AreaNoticeCirclePt(): # (unittest.TestCase):
         self.failUnlessAlmostEqual(43,pt1.lat)
         self.failUnlessEqual(pt2.radius,12300)
 
-class Test5AreaNoticeSimple(): #(unittest.TestCase):
+class Test5AreaNoticeSimple: #(unittest.TestCase):
     def test_simple(self):
         'area notice simple'
         an1 = an.AreaNotice(0,datetime.datetime.utcnow(),100)
@@ -213,22 +228,20 @@ class Test5AreaNoticeSimple(): #(unittest.TestCase):
         no_whales.add_subarea(an.AreaNoticeCirclePt(-68, 43, radius=9260))
 
     def test_subarea_json(self):
-        'Circle point json'
+        'circle point json'
         area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260)
         self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) > 5)
 
         area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=0) 
         self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) == 2)
 
-    def test_json(self):
-        whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
-        whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
-
-    def test_html(self):
+    def _test_html(self):
+        'html'
         whales = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime.utcnow(),60,10)
         whales.add_subarea(an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
         whales.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.07, radius=0))
         import lxml.html
+        # FIX: write the test
         #print lxml.html.tostring(whales.html())
 
     def test_kml(self):
@@ -241,15 +254,12 @@ class Test5AreaNoticeSimple(): #(unittest.TestCase):
         # FIX: check the kml somehome
 
     
-class TestBitDecoding(unittest.TestCase):
+class TestBitDecoding: #(unittest.TestCase):
     'Using the build_samples to make sure they all decode'
     def test_point(self):
         'point'
-        mmsi = 445566778
-        pt1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        pt1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009,7,6,0,0,4),60,10, source_mmsi = 445566778)
         pt1.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.0, radius=0))
-        pt1.source_mmsi = mmsi
-
         orig = geojson.loads( geojson.dumps(pt1) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in pt1.get_aivdm() ] )) )
         self.failUnless( almost_equal_geojson(orig, decoded) )
@@ -330,11 +340,77 @@ class TestBitDecoding(unittest.TestCase):
         text2 = an.AreaNotice(nmea_strings=[ line for line in text1.get_aivdm() ] )
         decoded = geojson.loads( geojson.dumps(text2) )
         self.failUnless( almost_equal_geojson(orig, decoded, verbose=True) )
+
+class TestBitDecoding2(unittest.TestCase):
+    'Using the build_samples to make sure they all decode'
+    def test_point(self):
+        'one of each'
+        notice = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009,7,6,0,0,4),60,10, source_mmsi=666555444)
+        notice.add_subarea(an.AreaNoticeCirclePt(-69.8, 40.001, radius=0))
+        notice.add_subarea(an.AreaNoticeCirclePt(-69.8, 40.202, radius=2000))
+        notice.add_subarea(an.AreaNoticeRectangle(-69.6, 40.3003, 2000, 1000, 0))
+        notice.add_subarea(an.AreaNoticeSector(-69.4, 40.40004, 6000, 10, 50))
+        notice.add_subarea(an.AreaNoticePolyline([(170,7400),], -69.2, 40.5000005 ))
+        notice.add_subarea(an.AreaNoticePolygon([(10,1400),(90,1950)], -69.0, 40.6000001 ))
+        notice.add_subarea(an.AreaNoticeFreeText(text="Some Text"))
+
+        orig = geojson.loads( geojson.dumps(notice) )
+        decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in notice.get_aivdm() ] )) )
+        #print orig
+        #print decoded
+        self.failUnless( almost_equal_geojson(orig, decoded) )
+    def test_many_sectors(self):
+        'many sectors'
+        notice = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009,7,6,0,0,4),60,10, source_mmsi=1)
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 6000, 10, 40)) # 1
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 5000, 40, 80)) # 2
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 2000, 80, 110)) # 3
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 7000, 110, 130)) # 4
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 6000, 210, 220)) # 5
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) # 6
+
+        orig = geojson.loads( geojson.dumps(notice) )
+        decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in notice.get_aivdm() ] )) )
+        #print orig
+        #print decoded
+        self.failUnless( almost_equal_geojson(orig, decoded) )
+
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290))
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290))
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290))
+        self.failUnless( len(notice.get_aivdm())==4 ) # FIX: calculate this to make sure it's right
+
+        # More than 9 should raise an exception... hijack the interface to add
+        notice.areas.append(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) # how to be bad
+
+        self.assertRaises(AisPackingException, notice.get_aivdm)
+
+    def test_full_text(self):
+        'full text'
+        notice = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi=2)
+        notice.add_subarea(an.AreaNoticeCirclePt(-69.5, 42, radius=0)) # 1
+        notice.add_subarea(an.AreaNoticeFreeText(text='12345678901234')) # 2
+        notice.add_subarea(an.AreaNoticeFreeText(text='More text that')) # 3
+        notice.add_subarea(an.AreaNoticeFreeText(text=' spans  across')) # 4
+        notice.add_subarea(an.AreaNoticeFreeText(text=' multiple lin')) # 5
+        notice.add_subarea(an.AreaNoticeFreeText(text='es.  The text ')) # 6
+        notice.add_subarea(an.AreaNoticeFreeText(text='is supposed to')) # 7
+        notice.add_subarea(an.AreaNoticeFreeText(text=' be cated ')) # 8
+        notice.add_subarea(an.AreaNoticeFreeText(text='together')) # 9
+
+        expected = '12345678901234More text that spans  across multiple lines.  The text is supposed to be cated together'.upper()
+        self.failUnless(notice.get_merged_text() == expected)
         
+        orig = geojson.loads( geojson.dumps(notice) )
+        decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in notice.get_aivdm() ] )) )
+        #print orig
+        #print decoded
+        self.failUnless( almost_equal_geojson(orig, decoded) )
+
 def main():
     from optparse import OptionParser
-    parser = OptionParser(usage="%prog [options]",
-                          version="%prog "+__version__+' ('+__date__+')')
+    parser = OptionParser(usage='%prog [options]',
+                          version='%prog '+__version__+' ('+__date__+')')
     parser.add_option('-v', '--verbose', dest='verbose', default=False, action='store_true',
                       help='run the tests run in verbose mode')
 

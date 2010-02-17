@@ -9,9 +9,9 @@ default:
 	@echo
 	@echo "  AIS Binary Message Reference Implementation"
 	@echo ""
-	@echo "	- test"
-	@echo "	- "
-	@echo "	- "
+	@echo "	test - run unit tests"
+	@echo "	samples.txt - create the published test dataset"
+	@echo "	docs - run epydoc"
 	@echo "	- "
 
 

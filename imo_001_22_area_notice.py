@@ -450,11 +450,10 @@ class AisException(Exception):
     pass
 
 class AisPackingException(AisException):
-    def __init__(self, fieldname, value):
-        self.fieldname = fieldname
-        self.value = value
+    def __init__(self, msg):#fieldname, value):
+        self.msg = msg
     def __repr__(self):
-        return "Validation on %s failed (value %s) while packing" % (self.fieldname, self.value)
+        return msg
 
 class AisUnpackingException(AisException):
     def __init__(self, msg):
@@ -1316,6 +1315,8 @@ class AreaNotice(BBM):
         @param duration: minutes for the notice to be in effect
         @param nmea_strings: Pass 1 or more nmea strings as a list
         '''
+        self.areas = []
+
         if nmea_strings != None:
             self.decode_nmea(nmea_strings)
             return
@@ -1330,7 +1331,6 @@ class AreaNotice(BBM):
             self.duration = duration
             self.link_id = link_id
 
-            self.areas = []
         self.dac = 1
         self.fi = 22
 
@@ -1356,6 +1356,9 @@ class AreaNotice(BBM):
         '''return an embeddable html representation
         @param efactory: return lxml E-factory'''
         l = E.OL()
+        text = self.get_merged_text()
+        if text is not None:
+            l.append(E.LI('FreeText: '+text))
         for area in self.areas:
             l.append(E.LI(str(area)))
         if efactory:
@@ -1384,6 +1387,7 @@ class AreaNotice(BBM):
             "bbm": {
                 'bbm_type':(self.dac,self.fi), 
                 'bbm_name':'area_notice',
+                'freetext': self.get_merged_text(),
                 'areas': []
                 }
             }
@@ -1396,11 +1400,22 @@ class AreaNotice(BBM):
 
         return r
 
+    def get_merged_text(self):
+        'return the complete text for any free text sub areas'
+        strings = []
+        for a in self.areas:
+            if isinstance(a,AreaNoticeFreeText):
+                strings.append(a.text)
+        if len(strings) == 0: return None
+        return ''.join(strings)
+        
     def add_subarea(self,area):
         #print 'len_subareas_before:',len(self.areas)
         if not hasattr(self,'areas'):
             self.areas = []
-        assert len(self.areas) < 10
+        #print 'len(self.areas):',len(self.areas)
+        assert len(self.areas) < 10 - 1
+        
         self.areas.append(area)
 
     def get_bits(self, include_bin_hdr=False, mmsi=None, include_dac_fi=True):
@@ -1436,7 +1451,10 @@ class AreaNotice(BBM):
 
         for i,area in enumerate(self.areas):
             bvList.append(area.get_bits())
-        return binary.joinBV(bvList)
+        bv = binary.joinBV(bvList)
+        if len(bv) > 953:
+            raise AisPackingException('message to large.  Need %d bits, but can only use 953' % len(bv) )
+        return bv
 
 #    def get_fetcher_formatter(self):
 #        '''return string for USCG/Alion fetcher formatter'''
@@ -1514,7 +1532,7 @@ class AreaNotice(BBM):
         #print 'num_sub_areas:', len(sub_areas_bits) / 90
         shapes = self.get_shapes(sub_areas_bits)
 
-        #print 'shapes:', shapes
+        #print '\nshapes:', shapes
 
         for i in range(len(sub_areas_bits) / 90):
             bits = sub_areas_bits[ i*90 : (i+1)*90 ]
@@ -1536,15 +1554,17 @@ class AreaNotice(BBM):
     def subarea_factory(self,bits):
         'scary side effects going on in this with Polyline and Polygon'
         shape = int( bits[:3] )
+        #print 'HERE....:', len(self.areas)
         if   0 == shape: return AreaNoticeCirclePt(bits=bits)
         elif 1 == shape: return AreaNoticeRectangle(bits=bits)
         elif 2 == shape: return AreaNoticeSector(bits=bits)
 
-        elif 3 == shape:
+        elif 3 == shape: # Polyline
             # There has to be a point or line before the polyline to give the starting lon and lat
             assert len(self.areas) > 0
             lon = None
             lat = None
+            #print 'previous:',type(self.areas[-1])
             if isinstance(self.areas[-1], AreaNoticeCirclePt):
                 lon = self.areas[-1].lon
                 lat = self.areas[-1].lat
@@ -1554,6 +1574,8 @@ class AreaNotice(BBM):
                 last_pt = self.areas[-1].get_points[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
+            else:
+                raise AisPackingException('Point or another polyline must preceed a polyline')
             return AreaNoticePolyline(bits=bits, lon=lon, lat=lat)
 
         elif 4 == shape:
@@ -1569,7 +1591,11 @@ class AreaNotice(BBM):
                 lon = last_pt[0]
                 lat = last_pt[1]
             return AreaNoticePolygon(bits=bits, lon=lon, lat=lat)
-        elif 5 == shape: return AreaNoticeFreeText(bits=bits)
+        elif 5 == shape:
+            assert len(self.areas) > 0
+            assert not isinstance(self.areas[0], AreaNoticeFreeText) # As long as we have at least one geom, we are good
+            # FIX: can free text come before the geometry?
+            return AreaNoticeFreeText(bits=bits)
         else:
             sys.stderr.write('Warning: unknown shape type %d' % shape )
             return None # bad bits?
