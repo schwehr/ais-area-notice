@@ -1051,6 +1051,10 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         or provide bits.  You will not be able to get the geometry if you
         do not provide a lon,lat for the starting point
 
+        The lon, lat point comes before the line.  This makes decoding tricky.
+
+        Angles can be specified with a resolution with 0.5 degrees.
+        
         @param points: 1 to 4 relative offsets (angle in degrees [0..360] , distance in meters) 
         @param lon: WGS84 longitude of the starting point.  Must match the previous point
         @param lat: WGS84 longitude of the starting point.  Must match the previous point
@@ -1065,6 +1069,8 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             assert lat >= -90. and lat <= 90.
             self.lat = lat
 
+        # FIX: check the number of points to make sure we have room
+        # and generate multiple subareas if need be.
 
         if points is not None:
             assert len(points)>0 and len(points)<5
@@ -1078,9 +1084,13 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
 
         elif bits is not None:
-            self.decode_bits(bits)
+            assert lon is not None
+            assert lat is not None
+            self.decode_bits(bits, lon, lat)
 
-    def decode_bits(self,bits):
+    def decode_bits(self, bits, lon, lat):
+        'lon and lat are the starting point for the point'
+        
         if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
@@ -1091,9 +1101,20 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         self.scale_factor = int( bits[3:5] )
 
         self.points = []
+        done = False # used to flag when we should have no more points
         for i in range(4):
             base = 5 + i*21
             angle = int ( bits[base:base+10] )
+            #print 'angle:',angle
+            if angle == 720:
+                #print 'should be no more points'
+                done = True
+                continue
+            else:
+                if done and angle != 720:
+                    sys.stderr.write('ERROR: bad polyline.  Must have all point with angle 720 (raw) after the first\n')
+                    continue
+            angle *= 0.5
             dist_scaled = int ( bits[base+10:base+10+11] )
             dist = dist_scaled * (1,10,100,1000)[self.scale_factor]
             self.points.append((angle,dist))
@@ -1112,15 +1133,19 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape ), 3) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
 
+        # Have to emit the starting location as a point
+        start_pt_bits = AreaNoticeCirclePt(self.lon,self.lat, radius=0).get_bits()
+
         # FIX: check range of points
         for pt in self.points:
             #print 'scale_factor:',self.scale_factor
             #print 'polyline_seg:',pt,self.scale_factor, pt[1] / self.scale_factor, len(BitVector(intVal=pt[1] / self.scale_factor))
-            bvList.append( binary.setBitVectorSize( BitVector(intVal=pt[0]), 10 ) )
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=int(pt[0] * 2)), 10 ) ) # Angle increments of 0.5 degree
             bvList.append( binary.setBitVectorSize( BitVector(intVal=pt[1] / self.scale_factor), 11 ) )
 
         for i in range(4 - len(self.points)):
-            bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 21 ) )
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=720), 10 ) ) # The marker for no more points
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 11 ) ) # No marker specified.  Use 0 fill
 
         bvList.append( BitVector(intVal=0) )
 
@@ -1130,7 +1155,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             raise AisPackingException('area not 90 bits',len(bv))
 
         #raise AisPackingException('wrong size',len(bv))
-        return bv
+        return start_pt_bits + bv
 
     def __unicode__(self):
         return 'AreaNoticePolyline: (%.4f,%.4f) %d points' % ( self.lon, self.lat, len(self.points) )
@@ -1138,7 +1163,8 @@ class AreaNoticePolyline(AreaNoticeSubArea):
     def __str__(self):
         return self.__unicode__()
 
-    def geom(self):
+    def get_points(self):
+        'Convert to list of (lon,lat) tuples'
         zone = lon_to_utm_zone(self.lon)
         params = {'proj':'utm','zone':zone}
         proj = Proj(params)
@@ -1152,13 +1178,14 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             d = pt[1]
             x,y = d * math.sin(alpha), d * math.cos(alpha)
             cur = vec_add(cur,(x,y))
-            #print 'step:',pt,cur
             pts.append(cur)
-
 
         pts = [vec_add(p1,pt) for pt in pts]
         pts = [proj(*pt,inverse=True) for pt in pts]
-        return shapely.geometry.LineString(pts)
+        return pts
+
+    def geom(self):
+        return shapely.geometry.LineString(self.get_points())
 
     @property
     def __geo_interface__(self):
@@ -1439,6 +1466,8 @@ class AreaNotice(BBM):
 
     def decode_bits(self, bits):
         '''decode the bits for a message'''
+
+        #print 'decode_all_bits:',bits
         r = {}
         r['message_id']       = int( bits[:6] )
 	r['repeat_indicator'] = int(bits[6:8])
@@ -1477,6 +1506,11 @@ class AreaNotice(BBM):
         del bits  # be safe
         assert 0 == len(sub_areas_bits) % 90
         #print len(sub_area_bits), len(sub_area_bits) % 90
+        #print 'num_sub_areas:', len(sub_areas_bits) / 90
+        shapes = self.get_shapes(sub_areas_bits)
+
+        #print 'shapes:', shapes
+
         for i in range(len(sub_areas_bits) / 90):
             bits = sub_areas_bits[ i*90 : (i+1)*90 ]
             #print bits
@@ -1485,14 +1519,42 @@ class AreaNotice(BBM):
             #print 'obj:', str(sa_obj)
             self.add_subarea(sa_obj)
 
-    #@classmethod
+    def get_shapes(self,sub_areas_bits):
+        'return a list of the sub area types'
+        shapes = []
+        for i in range(len(sub_areas_bits) / 90):
+            bits = sub_areas_bits[ i*90 : (i+1)*90 ]
+            shape = int( bits[:3] )
+            shapes.append((shape, shape_types[shape]))
+        return shapes
+
     def subarea_factory(self,bits):
+        'scary side effects going on in this with Polyline and Polygon'
         shape = int( bits[:3] )
         if   0 == shape: return AreaNoticeCirclePt(bits=bits)
         elif 1 == shape: return AreaNoticeRectangle(bits=bits)
         elif 2 == shape: return AreaNoticeSector(bits=bits)
-        elif 3 == shape: return AreaNoticePolyline(bits=bits)
-        elif 4 == shape: return AreaNoticePolygon(bits=bits)
+        elif 3 == shape:
+            # There has to be a point or line before the polyline to give the starting lon and lat
+            assert len(self.areas) > 0
+            lon = None
+            lat = None
+            if isinstance(self.areas[-1], AreaNoticeCirclePt):
+                lon = self.areas[-1].lon
+                lat = self.areas[-1].lat
+                #print 'Destroying the point sub area as it is consumed by the polyline'
+                self.areas.pop()
+            elif isinstance(self.areas[-1], AreaNoticePolyline):
+                print 'FIX: check multi packet polyline', self.areas[-1].geom
+                #assert False
+                last_pt = self.areas[-1].get_points[-1]
+                lon = last_pt[0]
+                lat = last_pt[1]
+            #print 'building_polyline: starting with', lon, lat
+            return AreaNoticePolyline(bits=bits, lon=lon, lat=lat)
+        elif 4 == shape:
+            assert False
+            return AreaNoticePolygon(bits=bits)
         elif 5 == shape: return AreaNoticeFreeText(bits=bits)
         else:
             sys.stderr.write('Warning: unknown shape type %d' % shape )

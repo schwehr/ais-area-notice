@@ -9,10 +9,10 @@ default:
 	@echo
 	@echo "  AIS Binary Message Reference Implementation"
 	@echo ""
-	@echo "\t - test"
-	@echo "\t - "
-	@echo "\t - "
-	@echo "\t - "
+	@echo "	- test"
+	@echo "	- "
+	@echo "	- "
+	@echo "	- "
 
 
 
