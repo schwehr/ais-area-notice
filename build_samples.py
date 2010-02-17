@@ -39,7 +39,7 @@ def point(lat,zone_type, kmlfile):
     for line in pt1.get_aivdm(source_mmsi=123456789):
         print line
         aivdms.append(line)
-    bits = pt1.get_bits(mmsi=123456789,include_bin_hdr=True)
+    bits = pt1.get_bits(include_bin_hdr=True)
     print str(bits)
 
     notice = an.AreaNotice(nmea_strings=aivdms)
@@ -69,18 +69,19 @@ def main():
 
     if toggle:
         print '\n# Circle'
-        circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
-        circle1.source_mmsi = 987654321
+        
         
         lat += delta
         print str(circle1)
-        print circle1.get_bbm()[0]
+        for line in circle1.get_bbm():
+            print line
         aivdms = []
-        for line in circle1.get_aivdm():# (source_mmsi=123456789):
+        for line in circle1.get_aivdm():
             print line
             aivdms.append(line)
-        print str(circle1.get_bits())
+        print str(circle1.get_bits(include_bin_hdr=True))
 
         print geojson.dumps(circle1)
         notice = an.AreaNotice(nmea_strings=aivdms)
@@ -93,67 +94,75 @@ def main():
 
     if toggle:
         print '\n# Rectangle'
-        rect1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        rect1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         zone_type += 1
         rect1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 4000, 1000, 0))
         lat += delta
         print str(rect1)
         print geojson.dumps(rect1)
-        print rect1.get_bbm()[0]
-        print rect1.get_aivdm(source_mmsi=123456789)[0]
-        print str(rect1.get_bits())
+        for line in rect1.get_bbm():
+            print line
+        for line in rect1.get_aivdm():
+            print line
+        print str(rect1.get_bits(include_bin_hdr=True))
 
         rect1.name = 'rect-1'
         kmlfile.write(rect1.kml(with_style=True))
 
     if toggle:
         print '\n# Sector'
-        sec1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        sec1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         sec1.add_subarea(an.AreaNoticeSector(-69.8, lat, 4000, 10, 50))
         zone_type += 1
         lat += delta
         print str(sec1)
         print geojson.dumps(sec1)
-        print sec1.get_bbm()[0]
-        print sec1.get_aivdm(source_mmsi=123456789)[0]
-        print str(sec1.get_bits())
+        for line in sec1.get_bbm():
+            print line
+        for line in sec1.get_aivdm():
+            print line
+        print str(sec1.get_bits(include_bin_hdr=True))
 
         sec1.name = 'sec-1'
         kmlfile.write(sec1.kml(with_style=True))
 
     if toggle:
         print '\n# Line - 1 segment'
-        line1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        line1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         line1.add_subarea(an.AreaNoticePolyline([(10,2400),], -69.8, lat ))
         zone_type += 1
         lat += delta
         print str(line1)
         print geojson.dumps(line1)
-        print line1.get_bbm()[0]
-        print line1.get_aivdm(source_mmsi=123456789)[0]
-        print str(line1.get_bits())
+        for line in line1.get_bbm():
+            print line
+        for line in line1.get_aivdm():
+            print line
+        print str(line1.get_bits(include_bin_hdr=True))
 
         line1.name = 'line-111'
         kmlfile.write(line1.kml(with_style=True))
 
     if toggle:
         print '\n# Polygon - 2 segment - triangle'
-        poly1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        poly1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         poly1.add_subarea(an.AreaNoticePolygon([(10,1400),(90,1950)], -69.8, lat ))
         zone_type += 1
         lat += delta
         print str(poly1)
         print geojson.dumps(poly1)
-        print poly1.get_bbm()[0]
-        print poly1.get_aivdm(source_mmsi=123456789)[0]
-        print str(poly1.get_bits())
+        for line in poly1.get_bbm():
+            print line
+        for line in poly1.get_aivdm():
+            print line
+        print str(poly1.get_bits(include_bin_hdr=True))
 
         poly1.name = 'poly1'
         kmlfile.write(poly1.kml(with_style=True))
 
     if toggle:
         print '# Text'
-        text1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        text1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         text1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
         text1.add_subarea(an.AreaNoticeFreeText(text="Explanation"))
         lat += delta
@@ -162,9 +171,9 @@ def main():
         print geojson.dumps(text1)
         for line in  text1.get_bbm():
             print line
-        for line in text1.get_aivdm(source_mmsi=123456789):
+        for line in text1.get_aivdm():
             print line
-        print str(text1.get_bits())
+        print str(text1.get_bits(include_bin_hdr=True))
 
         text1.name = 'text-1'
         kmlfile.write(text1.kml(with_style=True))
@@ -173,7 +182,7 @@ def main():
         lat += delta # extra
 
         print '# one-of-each'
-        one_of_each = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        one_of_each = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         one_of_each.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
         one_of_each.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=2000))
         one_of_each.add_subarea(an.AreaNoticeRectangle(-69.6, lat, 2000, 1000, 0))
@@ -188,16 +197,16 @@ def main():
         print geojson.dumps(one_of_each)
         for line in  one_of_each.get_bbm():
             print line
-        for line in one_of_each.get_aivdm(source_mmsi=123456789):
+        for line in one_of_each.get_aivdm():
             print line
-        print str(one_of_each.get_bits())
+        print str(one_of_each.get_bits(include_bin_hdr=True))
 
         one_of_each.name = 'one-of-each'
         kmlfile.write(one_of_each.kml(with_style=True))
 
     if toggle:
         print '# sectors - many'
-        many_sectors = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        many_sectors = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 6000, 10, 40))
         many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 5000, 40, 80))
         many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 2000, 80, 110))
@@ -211,9 +220,9 @@ def main():
         print geojson.dumps(many_sectors)
         for line in  many_sectors.get_bbm():
             print line
-        for line in many_sectors.get_aivdm(source_mmsi=123456789):
+        for line in many_sectors.get_aivdm():
             print line
-        print str(many_sectors.get_bits())
+        print str(many_sectors.get_bits(include_bin_hdr=True))
 
         many_sectors.name = 'sectors-many'
         kmlfile.write(many_sectors.kml(with_style=True))
@@ -222,7 +231,7 @@ def main():
 
     if toggle:
         print '# full-text'
-        full1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        full1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         full1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0)) # 1
         full1.add_subarea(an.AreaNoticeFreeText(text="12345678901234")) # 2
         full1.add_subarea(an.AreaNoticeFreeText(text="More text that")) # 3
@@ -238,16 +247,16 @@ def main():
         print geojson.dumps(full1)
         for line in  full1.get_bbm():
             print line
-        for line in full1.get_aivdm(source_mmsi=123456789):
+        for line in full1.get_aivdm():
             print line
-        print str(full1.get_bits())
+        print str(full1.get_bits(include_bin_hdr=True))
 
         full1.name = 'full-text'
         kmlfile.write(full1.kml(with_style=True))
 
     if toggle:
         print '\n# rect-multi-scale'
-        rect1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10)
+        rect1 = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         zone_type += 1
         rect1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 3, 3, 0)) # scale 1
         rect1.add_subarea(an.AreaNoticeRectangle(-69.7, lat, 300, 300, 0))
@@ -260,9 +269,11 @@ def main():
         lat += delta
         print str(rect1)
         print geojson.dumps(rect1)
-        print rect1.get_bbm()[0]
-        print rect1.get_aivdm(source_mmsi=123456789)[0]
-        print str(rect1.get_bits())
+        for line in rect1.get_bbm():
+            print line
+        for line in rect1.get_aivdm():
+            print line
+        print str(rect1.get_bits(include_bin_hdr=True))
 
         rect1.name = 'rect-mult-scale'
         kmlfile.write(rect1.kml(with_style=True))
