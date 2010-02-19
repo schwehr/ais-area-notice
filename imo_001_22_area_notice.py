@@ -468,7 +468,11 @@ def nmea_checksum_hex(sentence):
     '8-bit XOR of everything between the [!$] and the &'
     nmea = map(ord, sentence.split('*')[0][1:])
     checksum = reduce(xor, nmea)
-    return hex(checksum).split('x')[1].upper()
+    checksum_str = hex(checksum).split('x')[1].upper()
+    if len(checksum_str) == 1:
+        checksum_str = '0' + checksum_str
+    assert len(checksum_str) == 2
+    return checksum_str
 
 class AIVDM (object):
     '''AIS VDM Object for AIS top level messages 1 through 64.

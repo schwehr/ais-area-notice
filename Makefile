@@ -42,7 +42,7 @@ svn-branch:
 register:
 	./setup.py register
 
-samples.txt: build_samples.py
+samples.txt: build_samples.py imo_001_22_area_notice.py
 	echo -n '# ' > samples.txt
 	date >> samples.txt
 	./build_samples.py  >> samples.txt
