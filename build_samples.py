@@ -12,7 +12,7 @@ __contact__   = 'kurt at ccom.unh.edu'
 __doc__ ='''
 Generate sample data for Area Notice / Zone msg
 
-@license: GPL v3
+@license: LGPL v3
 @undocumented: __doc__
 @since: 2009-Jul-05
 @status: under development

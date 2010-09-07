@@ -4,7 +4,7 @@ __version__   = '$Revision: 4799 $'.split()[1]
 __revision__  = __version__ # For pylint
 __date__ = '$Date: 2006-09-25 11:09:02 -0400 (Mon, 25 Sep 2006) $'.split()[1]
 __copyright__ = '2009'
-__license__   = 'GPL v3'
+__license__   = 'LGPL v3'
 __contact__   = 'kurt at ccom.unh.edu'
 
 __doc__ ='''
@@ -1335,7 +1335,8 @@ class AreaNotice(BBM):
             self.duration = duration
             self.link_id = link_id
 
-        self.dac = 1
+        #self.dac = 1 # The USCG is currently mandating something different than the IMO Circ 289
+        self.dac = 366 # US Regional Message
         self.fi = 22
 
         BBM.__init__(self, message_id = 8) # FIX: move to the beginning of this method

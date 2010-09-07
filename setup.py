@@ -4,7 +4,7 @@ __date__ = '$Date: 2008-09-24 22:45:05 -0400 (Wed, 24 Sep 2008) $'.split()[1]
 __author__ = 'Kurt Schwehr'
 __copyright__ = '2006-2008'
 __version__=file('VERSION').readline().strip()
-__license__   = 'GPL v3'
+__license__   = 'LGPL v3'
 __contact__   = 'kurt at ccom.unh.edu'
 __doc__= ''' 
 Distutils setup script for the Automatic Identification System binary message reference implmentation.
@@ -45,7 +45,7 @@ Still in development.  Definitely has bugs.
             'Development Status :: 4 - Beta',
             'Environment :: Console',
             'Intended Audience :: Science/Research',
-            'License :: OSI Approved :: GNU General Public License (GPL)',
+            'License :: OSI Approved :: GNU Lesser General Public License (GPL)',
             'Topic :: Communications',
             'Topic :: Scientific/Engineering :: Information Analysis',
             'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
