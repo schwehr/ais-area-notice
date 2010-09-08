@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 __author__    = 'Kurt Schwehr'
 __version__   = '$Revision: 4799 $'.split()[1]
 __revision__  = __version__ # For pylint
@@ -499,7 +501,7 @@ class AIVDM (object):
         if repeat_indicator is None or repeat_indicator<0 or repeat_indicator>3:
             raise AisPackingException('repeat_indicator must be valid',repeat_indicator)
 
-        #print '\naivdm_header:',message_id,repeat_indicator,source_mmsi
+        #print ('\naivdm_header:',message_id,repeat_indicator,source_mmsi)
         bvList = []
 	bvList.append(binary.setBitVectorSize(BitVector(intVal=message_id),6))
         bvList.append(binary.setBitVectorSize(BitVector(intVal=repeat_indicator),2))
@@ -593,7 +595,7 @@ class AIVDM (object):
         for area in self.areas:
             geo_i = area.__geo_interface__
             if 'geometry' not in geo_i:
-                #print 'Skipping area:',str(area)
+                #print ('Skipping area:',str(area))
                 continue
             kml_shape = geom2kml(geo_i)
 
@@ -686,7 +688,7 @@ class AreaNoticeSubArea(object):
     def __str__(self):
         return self.__unicode__()
 
-
+# FIX: Warning... there may be an issue with the precision field
 class AreaNoticeCirclePt(AreaNoticeSubArea):
     area_shape = 0
     def __init__(self, lon=None, lat=None, radius=0, bits=None):
@@ -749,7 +751,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 18 ) ) # spare
         bv = binary.joinBV(bvList)
         if 90 != len(bv):
-            print 'len:',[len(b) for b in bvList]
+            #print ('len:',[len(b) for b in bvList])
             raise AisPackingException('area not 90 bits',len(bv))
         #print 'subarea_bv:',bv
         return bv
@@ -1154,7 +1156,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
         bv = binary.joinBV(bvList)
         if len(bv) != 90:
-            print 'len:',[len(b) for b in bvList]
+            print ('len:',[len(b) for b in bvList])
             raise AisPackingException('area not 90 bits',len(bv))
 
         #raise AisPackingException('wrong size',len(bv))
@@ -1285,8 +1287,8 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
         bvList.append( BitVector( bitstring = '000' ) ) # spare
         bv = binary.joinBV(bvList)
         if 90 != len(bv):
-            print 'len_freetext:',[len(b) for b in bvList]
-            # FIX raise
+            print ('len_freetext:',[len(b) for b in bvList])
+            AisPackingException('text subarea not 90 bits',len(bv))
         assert 90==len(bv)
         return bv
 
@@ -1434,7 +1436,7 @@ class AreaNotice(BBM):
             elif self.source_mmsi is not None:
                 bvList.append( binary.setBitVectorSize( BitVector(intVal=self.source_mmsi), 30 ) )
             else:
-                print 'WARNING: using a default mmsi'
+                print ('WARNING: using a default mmsi')
                 bvList.append( binary.setBitVectorSize( BitVector(intVal=999999999), 30 ) )
 
         if include_bin_hdr or include_dac_fi:
@@ -1454,8 +1456,15 @@ class AreaNotice(BBM):
 
         stdlen = sum([len(b) for b in bvList])
 
+        #print ('pre_adding_areas:',len(bvList))
+        #for i in range(len(bvList)):
+        #    print (i,len(bvList[i]))
+        print ('About to encode',len(self.areas),'areas')
+
         for i,area in enumerate(self.areas):
             bvList.append(area.get_bits())
+            #print ('\tsubarea:',i,len(bvList[-1]))
+
         bv = binary.joinBV(bvList)
         if len(bv) > 953:
             raise AisPackingException('message to large.  Need %d bits, but can only use 953' % len(bv) )
@@ -1559,7 +1568,7 @@ class AreaNotice(BBM):
     def subarea_factory(self,bits):
         'scary side effects going on in this with Polyline and Polygon'
         shape = int( bits[:3] )
-        #print 'HERE....:', len(self.areas)
+        #print ('subarea_factory', len(self.areas), 'shape:',shape)
         if   0 == shape: return AreaNoticeCirclePt(bits=bits)
         elif 1 == shape: return AreaNoticeRectangle(bits=bits)
         elif 2 == shape: return AreaNoticeSector(bits=bits)
@@ -1575,7 +1584,7 @@ class AreaNotice(BBM):
                 lat = self.areas[-1].lat
                 self.areas.pop()
             elif isinstance(self.areas[-1], AreaNoticePolyline):
-                print 'FIX: check multi packet polyline', self.areas[-1].geom
+                print ('FIX: check multi packet polyline', self.areas[-1].geom)
                 last_pt = self.areas[-1].get_points[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
@@ -1591,7 +1600,7 @@ class AreaNotice(BBM):
                 lat = self.areas[-1].lat
                 self.areas.pop()
             elif isinstance(self.areas[-1], AreaNoticePolyline):
-                print 'FIX: check multi packet polyline', self.areas[-1].geom
+                print ('FIX: check multi packet polyline', self.areas[-1].geom)
                 last_pt = self.areas[-1].get_points[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
