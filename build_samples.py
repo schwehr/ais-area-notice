@@ -71,8 +71,8 @@ def main():
     lat = 42.0
     delta = 0.05
     zone_type = 2
-    toggle = True  # turn on  the bulk of the messages
-    #toggle = False # turn off the bulk of the messages
+    #toggle = True  # turn on  the bulk of the messages
+    toggle = False # turn off the bulk of the messages
     
     if toggle: point(lat, zone_type=zone_type, kmlfile=kmlfile)
     lat += delta
@@ -351,13 +351,20 @@ def main():
         del rect1
         lat += delta
 
-        
-#    if True: # toggle:
-#        print ('\n# SBNMS boundary')
-#        sbnms = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
-#        sbnms_boundary = ((-70.21843022378545,42.76615489511191),(-70.50115721630971,42.65050054498564),(-70.51967876543651,42.60272606451101),(-70.57304911621775,42.57377457462803),(-70.59648154279975,42.54931636682287),(-70.47022780667521,42.12880495859612),(-70.#27963801765786,42.11493035173643),(-70.21841922873237,42.13078851361118),(-70.15414112337952,42.1322179530808),(-70.03638677586507,42.09377754051238))
-#        sbnms.add_subarea(an.AreaNoticePolygon(, -69.8, lat ))
+    
+    if True: # toggle:
+        sbnms_boundary = ((-70.21843022378545,42.76615489511191),(-70.50115721630971,42.65050054498564),(-70.51967876543651,42.60272606451101),
+                          (-70.57304911621775,42.57377457462803),(-70.59648154279975,42.54931636682287),(-70.47022780667521,42.12880495859612),
+                          (-70.27963801765786,42.11493035173643),(-70.21841922873237,42.13078851361118),(-70.15414112337952,42.1322179530808),
+                          (-70.03638677586507,42.09377754051238)
+                          )
+        angles_and_offsets = an.ll_to_polyline(sbnms_boundary[:4])
+        start = sbnms_boundary[0]
+        sbnms1 = an.AreaNotice(zone_type,datetime.datetime(2010, 9, 8, 20, 0, 17), 60, 10, source_mmsi = 369871000)
+        sbnms1.add_subarea(an.AreaNoticePolyline((angles_and_offsets), start[0], start[1]))
+        sbnms1.name = 'sbnms_part1'
 
+        dump_all(sbnms1,kmlfile)
         
         
 

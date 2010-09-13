@@ -392,6 +392,49 @@ def _make_short_notice():
 
 short_notice = _make_short_notice()
 
+
+def lon_to_utm_zone(lon):
+    return int(( lon + 180 ) / 6) + 1
+
+def ll_to_delta_m (lon1, lat1, lon2, lat2):
+    'calculate dx and dy in meters between two points'
+    zone = lon_to_utm_zone( (lon1 + lon2 ) / 2.) # Just don't cross the dateline!
+    params = {'proj':'utm', 'zone':zone}
+    proj = Proj(params)
+
+    utm1 = proj(lon1,lat1)
+    utm2 = proj(lon2,lat2)
+
+    return utm2[0]-utm1[0],utm2[1]-utm1[1]
+
+def dist(p1,p2):
+    return math.sqrt( (p1[0]-p2[0])*(p1[0]-p2[0]) + (p1[1]-p2[1])*(p1[1]-p2[1]) )
+
+def deltas_to_angle_dist(deltas_m):
+    r = []
+    for i in range(1,len(deltas_m)):
+        p1 = deltas_m[i-1]
+        p2 = deltas_m[i]
+        dist_m = dist(p1, p2)
+        #print ('angle_from:',p2[1]-p1[1], dist_m)
+        angle = math.acos( (p2[1]-p1[1]) / dist_m) # cos alpha = dy / dist_m
+        r.append((math.degrees(angle),dist_m))
+    return r
+
+def ll_to_polyline(ll_points):
+    # Skips the first point as that is returned as an x,y.  ll==lonlat
+    ll = ll_points
+    assert(len(ll)>=2)
+    deltas_m = [(0,0)]
+    for i in range(1,len(ll)):
+        dx_m,dy_m = ll_to_delta_m(ll[i-1][0],ll[i-1][1], ll[i][0],ll[i][1])
+        deltas_m.append((dx_m,dy_m))
+    offsets = deltas_to_angle_dist(deltas_m)
+    print ('ll_points:',ll_points)
+    print ('deltas_m:',deltas_m)
+    print ('angles_and_offsets:',offsets)
+    return offsets
+
 def frange(start, stop=None, step=None):
     'range but with float steps'
     if stop is None:
