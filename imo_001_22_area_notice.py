@@ -542,7 +542,7 @@ class AIVDM (object):
         if message_id is None or message_id<1 or message_id>63:
             raise AisPackingException('message_id must be valid',message_id)
         if repeat_indicator is None or repeat_indicator<0 or repeat_indicator>3:
-            raise AisPackingException('repeat_indicator must be valid',repeat_indicator)
+            raise AisPackingException('repeat_indicator must be valid: [%s]' % (repeat_indicator,))
 
         #print ('\naivdm_header:',message_id,repeat_indicator,source_mmsi)
         bvList = []
@@ -568,7 +568,7 @@ class AIVDM (object):
         @rtype: list (even for normal_form for consistency)
         '''
         if sequence_num is not None and (sequence_num <= 0 or sequence_num >= 9):
-            raise AisPackingException('sequence_num',sequence_num)
+            raise AisPackingException('sequence_num %d' % sequence_num)
         if channel not in ('A','B'):
             raise AisPackingException('channel',channel)
 
@@ -1189,7 +1189,8 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             #print 'scale_factor:',self.scale_factor
             #print 'polyline_seg:',pt,self.scale_factor, pt[1] / self.scale_factor, len(BitVector(intVal=pt[1] / self.scale_factor))
             bvList.append( binary.setBitVectorSize( BitVector(intVal=int(pt[0] * 2)), 10 ) ) # Angle increments of 0.5 degree
-            bvList.append( binary.setBitVectorSize( BitVector(intVal=pt[1] / self.scale_factor), 11 ) )
+            #print ('points:',pt[1], self.scale_factor, pt[1] / self.scale_factor)
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=int(pt[1] / self.scale_factor)), 11 ) )
 
         for i in range(4 - len(self.points)):
             bvList.append( binary.setBitVectorSize( BitVector(intVal=720), 10 ) ) # The marker for no more points
@@ -1502,7 +1503,7 @@ class AreaNotice(BBM):
         #print ('pre_adding_areas:',len(bvList))
         #for i in range(len(bvList)):
         #    print (i,len(bvList[i]))
-        print ('About to encode',len(self.areas),'areas')
+        #print ('About to encode',len(self.areas),'areas')
 
         for i,area in enumerate(self.areas):
             bvList.append(area.get_bits())

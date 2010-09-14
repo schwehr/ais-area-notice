@@ -123,7 +123,7 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
     #print 'looking good'
     return True
 
-class Test0Math(): # (unittest.TestCase):
+class Test0Math(unittest.TestCase):
     def test_deg2rad(self):
         'deg2rad'
         self.failUnlessAlmostEqual(0,deg2rad(0))
@@ -169,7 +169,7 @@ class Test0Math(): # (unittest.TestCase):
         self.failUnless(almost_equal((0,1),vec_rot((math.sqrt(.5),math.sqrt(.5)),math.pi/4)))
 
 
-class Test1AIVDM(): # (unittest.TestCase):
+class Test1AIVDM(unittest.TestCase):
     def test_aivdm(self):
         'aivdm'
         a = an.AIVDM()
@@ -181,7 +181,7 @@ class Test1AIVDM(): # (unittest.TestCase):
         self.failUnlessRaises(an.AisPackingException, a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789)
         self.failUnlessRaises(NotImplementedError,a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789, repeat_indicator=0)
 
-class Test3AreaNoticeCirclePt(): # (unittest.TestCase):
+class Test3AreaNoticeCirclePt(unittest.TestCase):
     def test_geom(self):
         'circle geom'
         pt1 = an.AreaNoticeCirclePt(-73,43,0)
@@ -207,7 +207,7 @@ class Test3AreaNoticeCirclePt(): # (unittest.TestCase):
         self.failUnlessAlmostEqual(43,pt1.lat)
         self.failUnlessEqual(pt2.radius,12300)
 
-class Test5AreaNoticeSimple: #(unittest.TestCase):
+class Test5AreaNoticeSimple(unittest.TestCase):
     def test_simple(self):
         'area notice simple'
         an1 = an.AreaNotice(0,datetime.datetime.utcnow(),100)
@@ -254,7 +254,7 @@ class Test5AreaNoticeSimple: #(unittest.TestCase):
         # FIX: check the kml somehome
 
     
-class TestBitDecoding: #(unittest.TestCase):
+class TestBitDecoding(unittest.TestCase):
     'Using the build_samples to make sure they all decode'
     def test_point(self):
         'point'
