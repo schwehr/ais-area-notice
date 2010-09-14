@@ -418,6 +418,9 @@ def deltas_to_angle_dist(deltas_m):
         dist_m = dist(p1, p2)
         #print ('angle_from:',p2[1]-p1[1], dist_m)
         angle = math.acos( (p2[1]-p1[1]) / dist_m) # cos alpha = dy / dist_m
+        if p2[0]<p1[0]:
+            print ('switching_sense:',angle,2*math.pi-angle)
+            angle = 2*math.pi - angle
         r.append((math.degrees(angle),dist_m))
     return r
 
@@ -430,10 +433,38 @@ def ll_to_polyline(ll_points):
         dx_m,dy_m = ll_to_delta_m(ll[i-1][0],ll[i-1][1], ll[i][0],ll[i][1])
         deltas_m.append((dx_m,dy_m))
     offsets = deltas_to_angle_dist(deltas_m)
-    print ('ll_points:',ll_points)
-    print ('deltas_m:',deltas_m)
-    print ('angles_and_offsets:',offsets)
+    #print ('ll_points:',ll_points)
+    #print ('deltas_m:',deltas_m)
+    #print ('angles_and_offsets:',offsets)
     return offsets
+
+def polyline_to_ll(start, angles_and_offsets):
+    # start lon,lat plus a list of (angle,offset) from that point
+    # 0 is true north and runs clockwise
+    points = angles_and_offsets
+    
+    lon,lat = start
+    zone = lon_to_utm_zone(lon)
+    params = {'proj':'utm','zone':zone}
+    proj = Proj(params)
+
+    p1 = proj(lon,lat)
+
+    pts = [(0,0)]
+    cur = (0,0)
+    #print ('points:',points)
+    for pt in points:
+        alpha = deg2rad(pt[0]) # Angle
+        d = pt[1] # Offset
+        dx,dy = d * math.sin(alpha), d * math.cos(alpha)
+        cur = vec_add(cur,(dx,dy))
+        #print ('pt:',proj(*cur,inverse=True))
+        pts.append(cur)
+
+    #print (pts)
+    pts = [vec_add(p1,pt) for pt in pts]
+    pts = [proj(*pt,inverse=True) for pt in pts]
+    return pts
 
 def frange(start, stop=None, step=None):
     'range but with float steps'
@@ -1214,24 +1245,25 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
     def get_points(self):
         'Convert to list of (lon,lat) tuples'
-        zone = lon_to_utm_zone(self.lon)
-        params = {'proj':'utm','zone':zone}
-        proj = Proj(params)
+        return polyline_to_ll((self.lon,self.lat),self.points)
+        # zone = lon_to_utm_zone(self.lon)
+        # params = {'proj':'utm','zone':zone}
+        # proj = Proj(params)
 
-        p1 = proj(self.lon,self.lat)
+        # p1 = proj(self.lon,self.lat)
 
-        pts = [(0,0)]
-        cur = (0,0)
-        for pt in self.points:
-            alpha = deg2rad(pt[0])
-            d = pt[1]
-            x,y = d * math.sin(alpha), d * math.cos(alpha)
-            cur = vec_add(cur,(x,y))
-            pts.append(cur)
+        # pts = [(0,0)]
+        # cur = (0,0)
+        # for pt in self.points:
+        #     alpha = deg2rad(pt[0])
+        #     d = pt[1]
+        #     x,y = d * math.sin(alpha), d * math.cos(alpha)
+        #     cur = vec_add(cur,(x,y))
+        #     pts.append(cur)
 
-        pts = [vec_add(p1,pt) for pt in pts]
-        pts = [proj(*pt,inverse=True) for pt in pts]
-        return pts
+        # pts = [vec_add(p1,pt) for pt in pts]
+        # pts = [proj(*pt,inverse=True) for pt in pts]
+        # return pts
 
     def geom(self):
         return shapely.geometry.LineString(self.get_points())

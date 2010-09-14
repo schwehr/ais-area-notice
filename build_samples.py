@@ -359,8 +359,8 @@ def main():
                           (-70.03638677586507,42.09377754051238)
                           )
         
-        #angles_and_offsets = an.ll_to_polyline(sbnms_boundary[:2])
-        angles_and_offsets = an.ll_to_polyline((-70,42),())
+        angles_and_offsets = an.ll_to_polyline(sbnms_boundary[:5])
+        #angles_and_offsets = an.ll_to_polyline((-70,42),())
         start = sbnms_boundary[0]
         sbnms1 = an.AreaNotice(zone_type,datetime.datetime(2010, 9, 8, 20, 0, 17), 60, 10, source_mmsi = 369871000)
         sbnms1.add_subarea(an.AreaNoticePolyline((angles_and_offsets), start[0], start[1]))

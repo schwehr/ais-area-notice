@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 __author__    = 'Kurt Schwehr'
 __version__   = '$Revision: 4799 $'.split()[1]
 __revision__  = __version__ # For pylint
@@ -123,7 +125,8 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
     #print 'looking good'
     return True
 
-class Test0Math(unittest.TestCase):
+class Test0Math:
+#class Test0Math(unittest.TestCase):
     def test_deg2rad(self):
         'deg2rad'
         self.failUnlessAlmostEqual(0,deg2rad(0))
@@ -180,8 +183,8 @@ class Test1AIVDM(unittest.TestCase):
         a.message_id = 5
         self.failUnlessRaises(an.AisPackingException, a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789)
         self.failUnlessRaises(NotImplementedError,a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789, repeat_indicator=0)
-
-class Test3AreaNoticeCirclePt(unittest.TestCase):
+class Test3AreaNoticeCirclePt:
+#class Test3AreaNoticeCirclePt(unittest.TestCase):
     def test_geom(self):
         'circle geom'
         pt1 = an.AreaNoticeCirclePt(-73,43,0)
@@ -207,7 +210,8 @@ class Test3AreaNoticeCirclePt(unittest.TestCase):
         self.failUnlessAlmostEqual(43,pt1.lat)
         self.failUnlessEqual(pt2.radius,12300)
 
-class Test5AreaNoticeSimple(unittest.TestCase):
+class Test5AreaNoticeSimple:
+#class Test5AreaNoticeSimple(unittest.TestCase):
     def test_simple(self):
         'area notice simple'
         an1 = an.AreaNotice(0,datetime.datetime.utcnow(),100)
@@ -254,7 +258,8 @@ class Test5AreaNoticeSimple(unittest.TestCase):
         # FIX: check the kml somehome
 
     
-class TestBitDecoding(unittest.TestCase):
+class TestBitDecoding:
+#class TestBitDecoding(unittest.TestCase):
     'Using the build_samples to make sure they all decode'
     def test_point(self):
         'point'
@@ -341,7 +346,8 @@ class TestBitDecoding(unittest.TestCase):
         decoded = geojson.loads( geojson.dumps(text2) )
         self.failUnless( almost_equal_geojson(orig, decoded, verbose=True) )
 
-class TestBitDecoding2(unittest.TestCase):
+class TestBitDecoding2:
+#class TestBitDecoding2(unittest.TestCase):
     'Using the build_samples to make sure they all decode'
     def test_point(self):
         'one of each'
@@ -406,6 +412,83 @@ class TestBitDecoding2(unittest.TestCase):
         #print orig
         #print decoded
         self.failUnless( almost_equal_geojson(orig, decoded) )
+
+
+class TestLineTools(unittest.TestCase):
+    'Make sure that going from lon,lat pairs to angle,distance pairs works'
+    def test_one_seg_cardinal(self):
+        print ('\n\nSTART:\n')
+        p0 = (0,0); p1 = (0,1) # Due north
+        angle,offset = an.ll_to_polyline((p0,p1))[0]
+        #print (angle,offset)
+        # 60 nautical miles = 111 120 meters
+        self.failUnless(almost_equal(angle,0))
+        self.failUnless(almost_equal(offset,111120,500)) # Half a km error for 1 degree.
+        ll_coords = an.polyline_to_ll( p0, ((angle,offset),) )
+        #print ('original_coords:',ll_coords)
+        self.failUnless(almost_equal(p0[0],ll_coords[0][0])) 
+        self.failUnless(almost_equal(p0[1],ll_coords[0][1])) 
+
+        self.failUnless(almost_equal(p1[0],ll_coords[1][0])) 
+        self.failUnless(almost_equal(p1[1],ll_coords[1][1])) 
+
+        p1 = (1,0) # Due east
+        #print ('Due_east:',p0,'->',p1)
+        angle,offset = an.ll_to_polyline( (p0,p1) )[0]
+        #print (angle,offset)
+        self.failUnless(almost_equal(angle,90))
+        self.failUnless(almost_equal(offset,111120,500)) # Half a km error for 1 degree.
+        ll_coords = an.polyline_to_ll( p0, ((angle,offset),) )
+        #print ('resulting_coords:',ll_coords)
+        self.failUnless(almost_equal(p0[0],ll_coords[0][0])) 
+        self.failUnless(almost_equal(p0[1],ll_coords[0][1])) 
+
+        self.failUnless(almost_equal(p1[0],ll_coords[1][0])) 
+        self.failUnless(almost_equal(p1[1],ll_coords[1][1])) 
+
+        p1 = (0,-1) # Due south
+        #print ('Due_south:',p0,'->',p1)
+        angle,offset = an.ll_to_polyline( (p0,p1) )[0]
+        #print (angle,offset)
+        self.failUnless(almost_equal(angle,180))
+        self.failUnless(almost_equal(offset,111120,500)) # Half a km error for 1 degree.
+        ll_coords = an.polyline_to_ll( p0, ((angle,offset),) )
+        #print ('resulting_coords:',ll_coords)
+        self.failUnless(almost_equal(p0[0],ll_coords[0][0])) 
+        self.failUnless(almost_equal(p0[1],ll_coords[0][1])) 
+
+        self.failUnless(almost_equal(p1[0],ll_coords[1][0])) 
+        self.failUnless(almost_equal(p1[1],ll_coords[1][1])) 
+
+        deg_1_meters = 111120
+        r2 = math.sqrt(2)
+        for pt_angle_off in ( (0,1,0,deg_1_meters),
+                              (1,0,90,deg_1_meters),
+                              (0,-1,180,deg_1_meters),
+                              (-1,0,270,deg_1_meters),
+                              (r2,r2,45,deg_1_meters),
+                              (r2,-r2,135,deg_1_meters),
+                              (-r2,-r2,225,deg_1_meters),
+                              (-r2,r2,315,deg_1_meters),
+            ):
+            #print ('\npt_angle_off: ====>',pt_angle_off)
+            p1 = pt_angle_off[:2]
+
+            angle,offset = an.ll_to_polyline( (p0,p1) )[0]
+            #print ('  angle_off:',angle,offset)
+            if not almost_equal(angle,pt_angle_off[2],.5):
+                print ('ERROR:',angle,pt_angle_off[2])
+            self.failUnless(almost_equal(angle,pt_angle_off[2],.5))
+            self.failUnless(almost_equal(offset,111120,pt_angle_off[3])) # Half a km error for 1 degree.
+            ll_coords = an.polyline_to_ll( p0, ((angle,offset),) )
+            #print ('resulting_coords:',ll_coords)
+            self.failUnless(almost_equal(p0[0],ll_coords[0][0])) 
+            self.failUnless(almost_equal(p0[1],ll_coords[0][1])) 
+
+            self.failUnless(almost_equal(p1[0],ll_coords[1][0])) 
+            self.failUnless(almost_equal(p1[1],ll_coords[1][1])) 
+
+
 
 def main():
     from optparse import OptionParser
