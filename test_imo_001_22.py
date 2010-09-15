@@ -417,48 +417,8 @@ class TestBitDecoding2:
 class TestLineTools(unittest.TestCase):
     'Make sure that going from lon,lat pairs to angle,distance pairs works'
     def test_one_seg_cardinal(self):
-        print ('\n\nSTART:\n')
-        p0 = (0,0); p1 = (0,1) # Due north
-        angle,offset = an.ll_to_polyline((p0,p1))[0]
-        #print (angle,offset)
-        # 60 nautical miles = 111 120 meters
-        self.failUnless(almost_equal(angle,0))
-        self.failUnless(almost_equal(offset,111120,500)) # Half a km error for 1 degree.
-        ll_coords = an.polyline_to_ll( p0, ((angle,offset),) )
-        #print ('original_coords:',ll_coords)
-        self.failUnless(almost_equal(p0[0],ll_coords[0][0])) 
-        self.failUnless(almost_equal(p0[1],ll_coords[0][1])) 
-
-        self.failUnless(almost_equal(p1[0],ll_coords[1][0])) 
-        self.failUnless(almost_equal(p1[1],ll_coords[1][1])) 
-
-        p1 = (1,0) # Due east
-        #print ('Due_east:',p0,'->',p1)
-        angle,offset = an.ll_to_polyline( (p0,p1) )[0]
-        #print (angle,offset)
-        self.failUnless(almost_equal(angle,90))
-        self.failUnless(almost_equal(offset,111120,500)) # Half a km error for 1 degree.
-        ll_coords = an.polyline_to_ll( p0, ((angle,offset),) )
-        #print ('resulting_coords:',ll_coords)
-        self.failUnless(almost_equal(p0[0],ll_coords[0][0])) 
-        self.failUnless(almost_equal(p0[1],ll_coords[0][1])) 
-
-        self.failUnless(almost_equal(p1[0],ll_coords[1][0])) 
-        self.failUnless(almost_equal(p1[1],ll_coords[1][1])) 
-
-        p1 = (0,-1) # Due south
-        #print ('Due_south:',p0,'->',p1)
-        angle,offset = an.ll_to_polyline( (p0,p1) )[0]
-        #print (angle,offset)
-        self.failUnless(almost_equal(angle,180))
-        self.failUnless(almost_equal(offset,111120,500)) # Half a km error for 1 degree.
-        ll_coords = an.polyline_to_ll( p0, ((angle,offset),) )
-        #print ('resulting_coords:',ll_coords)
-        self.failUnless(almost_equal(p0[0],ll_coords[0][0])) 
-        self.failUnless(almost_equal(p0[1],ll_coords[0][1])) 
-
-        self.failUnless(almost_equal(p1[0],ll_coords[1][0])) 
-        self.failUnless(almost_equal(p1[1],ll_coords[1][1])) 
+        #print ('\n\nSTART:\n')
+        p0 = (0,0);
 
         deg_1_meters = 111120
         r2 = math.sqrt(2)
@@ -488,7 +448,11 @@ class TestLineTools(unittest.TestCase):
             self.failUnless(almost_equal(p1[0],ll_coords[1][0])) 
             self.failUnless(almost_equal(p1[1],ll_coords[1][1])) 
 
-
+    def test_two_seg(self):
+        #assert(False)
+        r2 = math.sqrt(2)
+        deg_1_meters = 111120
+        assert(False) # Currently failing on the 2nd segment
 
 def main():
     from optparse import OptionParser

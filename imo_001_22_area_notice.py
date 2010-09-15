@@ -419,7 +419,7 @@ def deltas_to_angle_dist(deltas_m):
         #print ('angle_from:',p2[1]-p1[1], dist_m)
         angle = math.acos( (p2[1]-p1[1]) / dist_m) # cos alpha = dy / dist_m
         if p2[0]<p1[0]:
-            print ('switching_sense:',angle,2*math.pi-angle)
+            #print ('switching_sense:',angle,2*math.pi-angle)
             angle = 2*math.pi - angle
         r.append((math.degrees(angle),dist_m))
     return r
