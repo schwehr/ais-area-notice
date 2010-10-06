@@ -71,8 +71,8 @@ def main():
     lat = 42.0
     delta = 0.05
     zone_type = 2
-    #toggle = True  # turn on  the bulk of the messages
-    toggle = False # turn off the bulk of the messages
+    toggle = True  # turn on  the bulk of the messages
+    #toggle = False # turn off the bulk of the messages
     
     if toggle: point(lat, zone_type=zone_type, kmlfile=kmlfile)
     lat += delta
@@ -346,7 +346,7 @@ def main():
         print ('scale:',[r.scale_factor for r in rect1.areas])
 
         rect1.name = 'rect-mult-scale'
-        dump_all(rr3,kmlfile)
+        dump_all(rect1,kmlfile)
 
         del rect1
         lat += delta

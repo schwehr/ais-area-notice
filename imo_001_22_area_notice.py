@@ -54,6 +54,9 @@ import binary, aisstring
 
 import re
 
+iso8601_timeformat = '%Y-%m-%dT%H:%M:%SZ'
+
+
 ais_nmea_regex_str = r'''[!$](?P<talker>AI)(?P<stringType>VD[MO])
 ,(?P<total>\d?)
 ,(?P<sen_num>\d?)
@@ -862,9 +865,13 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         'Provide a Geo Interface for GeoJSON serialization'
         # Would be better if there was a GeoJSON Circle type!
 
+        area_shape_desc = 'unknown'
+        if self.area_shape in notice_type:
+            area_shape_desc = notice_type[self.area_shape]
 
         if self.radius == 0.:
-            return {'area_shape': self.area_shape, 
+            return {'area_shape': self.area_shape,
+                    'area_shape_desc': area_shape_desc,
                     'area_shape_name': 'point',
                     'geometry': {'type': 'Point', 'coordinates': [self.lon, self.lat] }
                     }
@@ -872,8 +879,10 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         # self.radius > 0 ... circle
         r = {
             'area_shape': self.area_shape, 
+            'area_shape_desc': area_shape_desc,
             'area_shape_name': 'circle',
-            'radius':self.radius,
+            'center_ll': [self.lon, self.lat],
+            'radius_m':self.radius,
             'geometry': {'type': 'Polygon', 'coordinates': tuple(self.geom().boundary.coords) },
             #'geometry': {'type': 'Polygon', 'coordinates': [pt for pt in self.geom().boundary.coords]},
             # Leaving out scale_factor
@@ -1471,6 +1480,8 @@ class AreaNotice(BBM):
                 'bbm_type':(self.dac,self.fi), 
                 'bbm_name':'area_notice',
                 'freetext': self.get_merged_text(),
+                'start': self.when.strftime(iso8601_timeformat),
+                'duration_min': self.duration,
                 'areas': []
                 }
             }
