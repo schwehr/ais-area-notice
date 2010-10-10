@@ -38,10 +38,10 @@ def dump_all(area_notice,kmlfile):
     kmlfile.write(area_notice.kml(with_style=True))
 
 
-def point(lat,zone_type, kmlfile):
+def point(lon, lat,zone_type, kmlfile):
     print ('# Point')
-    pt1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
-    pt1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
+    pt1 = an.AreaNotice(zone_type, datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
+    pt1.add_subarea(an.AreaNoticeCirclePt(lon, lat, radius=0))
 
     print (str(pt1))
     for line in pt1.get_bbm():
@@ -74,15 +74,19 @@ def main():
     toggle = True  # turn on  the bulk of the messages
     #toggle = False # turn off the bulk of the messages
     
-    if toggle: point(lat, zone_type=zone_type, kmlfile=kmlfile)
+    if toggle: point(-69.8, lat, zone_type=an.notice_type['cau_mammals_not_obs'], kmlfile=kmlfile)
+    if toggle: point(-69.7, lat, zone_type=an.notice_type['cau_mammals_reduce_speed'], kmlfile=kmlfile)
+
     lat += delta
     zone_type += 1
 
+    print ()
+
     if toggle:
-        print ('\n# Circle')
-        circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
+        print ('\n# Circle - no whales')
+        print (
+        circle1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
-        
         
         lat += delta
         print (str(circle1))
@@ -102,6 +106,31 @@ def main():
 
         circle1.name = 'circle-1'
         kmlfile.write(circle1.kml(with_style=True))
+
+    if toggle:
+        print ('\n# Circle - WITH whales')
+        circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
+        circle1.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=4260))
+        
+        lat += delta
+        print (str(circle1))
+        for line in circle1.get_bbm():
+            print (line)
+        aivdms = []
+        for line in circle1.get_aivdm():
+            print (line)
+            aivdms.append(line)
+        print (str(circle1.get_bits(include_bin_hdr=True)))
+
+        print (geojson.dumps(circle1))
+        notice = an.AreaNotice(nmea_strings=aivdms)
+        print ('decoded:',str(notice))
+        print ('original_geojson:',geojson.dumps(circle1))
+        print ('decoded_geojson: ',geojson.dumps(notice))
+
+        circle1.name = 'circle-1'
+        kmlfile.write(circle1.kml(with_style=True))
+
 
     if toggle:
         print ('\n# Rectangle')
