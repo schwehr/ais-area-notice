@@ -80,11 +80,14 @@ def main():
     lat += delta
     zone_type += 1
 
-    print ()
+    if True:
+        print ('attempting empty area')
+        area = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
+        print (geojson.dumps(area))
+        
 
     if toggle:
         print ('\n# Circle - no whales')
-        print (
         circle1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
         

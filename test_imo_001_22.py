@@ -21,7 +21,10 @@ Testing for Area Notice AIS binary mesage
 @organization: U{CCOM<http://ccom.unh.edu/>} 
 '''
 
+
 import sys
+#print (sys.version)
+
 import datetime
 import unittest
 import geojson
@@ -452,27 +455,68 @@ class TestLineTools(unittest.TestCase):
 class TestWhaleNotices(unittest.TestCase):
     'Make sure the whale notices work right'
     def test_nowhales(self):
-        'no whales circle'
-        circle = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
+        'no whales circle notice'
+        zone_type = an.notice_type['cau_mammals_not_obs']
+        #zone_type = an.notice_type['cau_mammals_reduce_speed']
+        circle = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         circle.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.0, radius=4260))
         
-        print (str(circle))
-        for line in circle.get_bbm():
-            print (line)
+        self.failUnlessEqual(zone_type, 0)
+        self.failUnlessEqual(zone_type, circle.area_type)
+
+        json = geojson.dumps(circle)
+        data = geojson.loads(json) # Get the data as a dictionary so that we can verify the contents
+        self.failUnlessEqual(zone_type, data['bbm']['area_type'])
+        self.failUnlessEqual(an.notice_type[zone_type], data['bbm']['area_type_desc'])
+
+        # now try to pass the message as nmea strings and decode the message
         aivdms = []
         for line in circle.get_aivdm():
-            print (line)
             aivdms.append(line)
 
-        print ('orig: SHOULD BE: no whales... [%s]' % (an.notice_type[circle.area_type],))
-
-        #print (geojson.dumps(circle))
+        del circle
+        del data
+        del json
+            
         notice = an.AreaNotice(nmea_strings=aivdms)
-        print ('new:  SHOULD BE: no whales... [%s]' % (an.notice_type[notice.area_type],))
-        print ('decoded:',str(notice))
-        print ('original_geojson:',geojson.dumps(circle))
-        print ('decoded_geojson: ',geojson.dumps(notice))
+        self.failUnlessEqual(zone_type,notice.area_type)
 
+        json = geojson.dumps(notice)
+        data = geojson.loads(json) # Get the data as a dictionary so that we can verify the contents
+        self.failUnlessEqual(zone_type, data['bbm']['area_type'])
+        self.failUnlessEqual(an.notice_type[zone_type], data['bbm']['area_type_desc'])
+        # todo: verify other parameters like the location and times
+
+    def test_whales(self):
+        'whales observed circle notice'
+        zone_type = an.notice_type['cau_mammals_reduce_speed']
+        circle = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
+        circle.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.0, radius=4260))
+
+        self.failUnlessEqual(zone_type, 1)
+        self.failUnlessEqual(zone_type, circle.area_type)
+
+        json = geojson.dumps(circle)
+        data = geojson.loads(json) # Get the data as a dictionary so that we can verify the contents
+        self.failUnlessEqual(zone_type, data['bbm']['area_type'])
+        self.failUnlessEqual(an.notice_type[zone_type], data['bbm']['area_type_desc'])
+
+        # now try to pass the message as nmea strings and decode the message
+        aivdms = []
+        for line in circle.get_aivdm():
+            aivdms.append(line)
+
+        del circle
+        del data
+        del json
+            
+        notice = an.AreaNotice(nmea_strings=aivdms)
+        self.failUnlessEqual(zone_type,notice.area_type)
+
+        json = geojson.dumps(notice)
+        data = geojson.loads(json) # Get the data as a dictionary so that we can verify the contents
+        self.failUnlessEqual(zone_type, data['bbm']['area_type'])
+        self.failUnlessEqual(an.notice_type[zone_type], data['bbm']['area_type_desc'])
 
 
 

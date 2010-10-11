@@ -872,7 +872,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
         if self.radius == 0.:
             return {'area_shape': self.area_shape,
-                    'area_shape_desc': area_shape_desc,
+                    #'area_shape_desc': area_shape_desc,
                     'area_shape_name': 'point',
                     'geometry': {'type': 'Point', 'coordinates': [self.lon, self.lat] }
                     }
@@ -880,7 +880,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         # self.radius > 0 ... circle
         r = {
             'area_shape': self.area_shape, 
-            'area_shape_desc': area_shape_desc,
+            #'area_shape_desc': area_shape_desc,
             'area_shape_name': 'circle',
             'center_ll': [self.lon, self.lat],
             'radius_m':self.radius,
@@ -1462,6 +1462,7 @@ class AreaNotice(BBM):
     @property
     def __geo_interface__(self):
         'Return dictionary compatible with GeoJSON-AIVD'
+
         try:
             repeat = self.repeat_indicator
         except:
@@ -1480,6 +1481,8 @@ class AreaNotice(BBM):
             "bbm": {
                 'bbm_type':(self.dac,self.fi), 
                 'bbm_name':'area_notice',
+                'area_type': self.area_type,
+                'area_type_desc': notice_type[self.area_type],
                 'freetext': self.get_merged_text(),
                 'start': self.when.strftime(iso8601_timeformat),
                 'duration_min': self.duration,

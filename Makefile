@@ -22,7 +22,7 @@ sdist: samples.txt
 
 
 test:
-	./test_imo_001_22.py -v
+	/sw/bin/python test_imo_001_22.py -v
 #	./imo_001_22_area_notice.py
 
 docs:
