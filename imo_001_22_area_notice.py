@@ -865,9 +865,10 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         'Provide a Geo Interface for GeoJSON serialization'
         # Would be better if there was a GeoJSON Circle type!
 
-        area_shape_desc = 'unknown'
-        if self.area_shape in notice_type:
-            area_shape_desc = notice_type[self.area_shape]
+# NOT in the shape... crap... this is wrong
+#        area_shape_desc = 'unknown'
+#        if self.area_shape in notice_type:
+#            area_shape_desc = notice_type[self.area_shape]
 
         if self.radius == 0.:
             return {'area_shape': self.area_shape,
