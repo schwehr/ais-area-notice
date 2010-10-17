@@ -1486,7 +1486,8 @@ class AreaNotice(BBM):
                 'freetext': self.get_merged_text(),
                 'start': self.when.strftime(iso8601_timeformat),
                 'duration_min': self.duration,
-                'areas': []
+                'areas': [],
+                'link_id': self.link_id,
                 }
             }
 
