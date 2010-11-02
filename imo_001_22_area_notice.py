@@ -720,19 +720,25 @@ class BBM (AIVDM):
         assert message_id in (8, 19, 21)
         self.message_id = message_id
 
-    def get_bbm(self, talker='EC', sequence_num = None, channel = 'A'):
+    def get_bbm(self, talker='EC', sequence_num = None, channel = 0):
+        '''channel is:
+        0 - no pref
+        1 - A
+        2 - B
+        3 - both
+        '''        
         if not isinstance(talker,str) or len(talker) != 2:
             AisPackingException('talker',talker)
         if sequence_num is not None and (sequence_num <= 0 or sequence_num >= 9):
             raise AisPackingException('sequence_num',sequence_num)
-        if channel not in ('A','B'):
+        if channel not in (0,1,2,3): #('A','B'):
             raise AisPackingException('channel',channel)
 
         if sequence_num is None:
             sequence_num = 3
        
         payload, pad = binary.bitvectoais6(self.get_bits())
-
+        
         sentences = []
         tot_sentences = 1 + len(payload) / self.max_payload_char
         sentence_num = 0
