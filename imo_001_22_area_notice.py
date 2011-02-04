@@ -1405,7 +1405,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
                 }
 
 class AreaNotice(BBM):
-    def __init__(self,area_type=None, when=None, duration=None, link_id=0, nmea_strings=None, source_mmsi=None):
+    def __init__(self,area_type=None, when=None, duration=None, link_id=0, nmea_strings=None, source_mmsi=None, dac=1):
         '''
         @param area_type: 0..127 based on table 11.10
         @param when: when the notice starts
@@ -1429,8 +1429,9 @@ class AreaNotice(BBM):
             self.duration = duration
             self.link_id = link_id
 
+        self.dac = dac
         #self.dac = 1 # The USCG is currently mandating something different than the IMO Circ 289
-        self.dac = 366 # US Regional Message
+        #self.dac = 366 # US Regional Message
         self.fi = 22
 
         BBM.__init__(self, message_id = 8) # FIX: move to the beginning of this method
