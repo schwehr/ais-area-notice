@@ -12,6 +12,8 @@ __contact__   = 'kurt at ccom.unh.edu'
 __doc__ ='''
 Trying to do a more sane design for AIS BBM message
 
+http://vislab-ccom.unh.edu/~schwehr/papers/2010-IMO-SN.1-Circ.289.pdf
+
 @requires: U{Python<http://python.org/>} >= 2.6
 @requires: U{epydoc<http://epydoc.sourceforge.net/>} >= 3.0.1
 @requires: U{lxml<http://codespeak.net/lxml/lxmlhtml.html>} >= 2.0
@@ -145,6 +147,7 @@ BBM messages may require having EC as the prefix.
 '''
 
 notice_type = {
+    'cau_mammans': 0,# Rats, they got rid of the "NOT observed", but I will still use it that way
     'cau_mammals_not_obs': 0,
     'cau_mammals_reduce_speed': 1,
     'cau_mammals_stay_clear': 2,
@@ -152,6 +155,7 @@ notice_type = {
     'cau_habitat_reduce_speed': 4,
     'cau_habitat_stay_clear': 5,
     'cau_habitat_no_fishing_or_anchoring': 6,
+    'cau_derelicts': 7, 
     'cau_congestion': 8,
     'cau_event': 9,
     'cau_divers': 10,
@@ -180,6 +184,7 @@ notice_type = {
     'res_no_entry': 35,
     'res_military_ops': 36,
     'res_firing_danger': 37,
+    'res_drifting_mines': 38,
     'anc_open': 40,
     'anc_closed': 41,
     'anc_prohibited': 42,
@@ -206,11 +211,16 @@ notice_type = {
     'inst_contact_port_admin_here': 81,
     'inst_do_not_proceed_beyond_here': 82,
     'inst_await_instr_here': 83,
+    'proc_to_location': 84,
+    'clearance_granted': 85,
     'info_pilot_boarding': 88,
     'info_icebreaker_staging': 89,
     'info_refuge': 90,
     'info_pos_icebreakers': 91,
     'info_pos_response_units': 92,
+    'vts_active_target': 93,
+    'suspicious_vessel': 94,
+    'request_non_distress_assistance':95,
     'chart_sunken_vessel': 96,
     'chart_Submerged_obj': 97,
     'chart_Semi_submerged_obj': 98,
@@ -226,18 +236,23 @@ notice_type = {
     'chart_bridge_part_open': 107,
     'chart_bridge_fully_open': 108,
     'report_of_icing': 112,
+    # USCG version has 113 "REport from ship: Intended route"
     'report_of_see_text': 114,
+    'route_rec_route': 120,
+    'route_alt_route': 121,
+    'route_rec_through_ice': 122,
     'other_see_text': 125,
     'cancel_area_notice': 126,
     'undefined': 127,
-    0: 'Caution Area: Marine mammals NOT observed',
+    #0: 'Caution Area: Marine mammals NOT observed',
+    0: 'Caution Area: Marine mammal habitat',  # Implies that animals not observed.
     1: 'Caution Area: Marine mammals in area - Reduce Speed',
     2: 'Caution Area: Marine mammals in area - Stay Clear',
     3: 'Caution Area: Marine mammals in area - Report Sightings',
     4: 'Caution Area: Protected Habitat - Reduce Speed',
     5: 'Caution Area: Protected Habitat - Stay Clear',
     6: 'Caution Area: Protected Habitat - No fishing or anchoring',
-    7: 'Reserved',
+    7: 'Caution Area: Derelicts (drifting objects)',
     8: 'Caution Area: Traffic congestion',
     9: 'Caution Area: Marine event',
     10: 'Caution Area: Divers down',
@@ -268,7 +283,7 @@ notice_type = {
     35: 'Restricted Area: Entry prohibited',
     36: 'Restricted Area: Active military OPAREA',
     37: 'Restricted Area: Firing - danger area.',
-    38: 'Reserved',
+    38: 'Restricted Area: Drifting Mines',
     39: 'Reserved',
     40: 'Anchorage Area: Anchorage open',
     41: 'Anchorage Area: Anchorage closed',
@@ -314,8 +329,8 @@ notice_type = {
     81: 'Instruction: Contact Port Administration at this point/juncture',
     82: 'Instruction: Do not proceed beyond this point/juncture',
     83: 'Instruction: Await instructions prior to proceeding beyond this point/juncture',
-    84: 'Reserved',
-    85: 'Reserved',
+    84: 'Proceed to this location - await instructions',
+    85: 'Clearance granted - proceed to berth',
     86: 'Reserved',
     87: 'Reserved',
     88: 'Information: Pilot boarding position',
@@ -343,16 +358,16 @@ notice_type = {
     110: 'Reserved',
     111: 'Reserved',
     112: 'Report from ship: Icing info',
-    113: 'Reserved',
+    113: 'Reserved', # USCG called this report from ship: intended route
     114: 'Report from ship: Miscellaneous information - define in free text field',
     115: 'Reserved',
     116: 'Reserved',
     117: 'Reserved',
     118: 'Reserved',
     119: 'Reserved',
-    120: 'Reserved',
-    121: 'Reserved',
-    122: 'Reserved',
+    120: 'Route: Recommended route',
+    121: 'Route: Alternate route',
+    122: 'Route: Recommended route through ice',
     123: 'Reserved',
     124: 'Reserved',
     125: 'Other - Define in free text field',
@@ -378,6 +393,8 @@ shape_types = {
     3: 'polyline',
     4: 'polygon',
     5: 'free_text',
+    6: 'reserved',
+    7: 'reserved',
     'circle_or_point':0 ,
     'rectangle': 1,
     'sector': 2,
