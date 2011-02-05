@@ -56,8 +56,10 @@ import binary, aisstring
 
 import re
 
-iso8601_timeformat = '%Y-%m-%dT%H:%M:%SZ'
+SUB_AREA_SIZE = 87
+'87 Bits for IMO Circ 289 rather than the 90 for USCG and Nav 55 version'
 
+iso8601_timeformat = '%Y-%m-%dT%H:%M:%SZ'
 
 ais_nmea_regex_str = r'''[!$](?P<talker>AI)(?P<stringType>VD[MO])
 ,(?P<total>\d?)
@@ -474,7 +476,7 @@ def polyline_to_ll(start, angles_and_offsets):
     cur = (0,0)
     #print ('points:',points)
     for pt in points:
-        alpha = deg2rad(pt[0]) # Angle
+        alpha = math.radians(pt[0]) # Angle
         d = pt[1] # Offset
         dx,dy = d * math.sin(alpha), d * math.cos(alpha)
         cur = vec_add(cur,(dx,dy))
@@ -509,10 +511,13 @@ def vec_rot(a, theta):
     y1 = x * math.sin(theta) + y * math.cos(theta)
     return x1,y1
 
-def deg2rad(degrees):
-    return (degrees / 180.) * math.pi
-def rad2deg(radians):
-    return (radians / math.pi) * 180.
+# math.radians
+#def deg2rad(degrees):
+#    return (degrees / 180.) * math.pi
+
+# math.degrees
+#def rad2deg(radians):
+#    return (radians / math.pi) * 180.
 
 def geom2kml(geom_dict):
     '''Convert a geointerface geometry to KML
@@ -791,15 +796,19 @@ class AreaNoticeSubArea(object):
 # FIX: Warning... there may be an issue with the precision field
 class AreaNoticeCirclePt(AreaNoticeSubArea):
     area_shape = 0
-    def __init__(self, lon=None, lat=None, radius=0, bits=None):
+    def __init__(self, lon=None, lat=None, radius=0, precision=4, bits=None):
         '''@param radius: 0 is a point, otherwise less than or equal to 409500m.  Scale factor is automatic.  Units are m
         @param bits: string of 1's and 0's or a BitVector
+        @param precision: unless tracking of significant digits to show on a display
         '''
         if lon is not None:
             assert lon >= -180. and lon <= 180.
             self.lon = lon
             assert lat >= -90. and lat <= 90.
             self.lat = lat
+
+            assert precision >= 0 and precision <= 4
+            self.precision = precision
 
             assert radius >= 0 and radius < 409500
             self.radius = radius
@@ -821,7 +830,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
 
     def decode_bits(self,bits):
-        if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
         elif isinstance(bits, list) or isinstance(bits,tuple):
@@ -830,13 +839,16 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         self.area_shape = int( bits[:3] )
         self.scale_factor_raw = int( bits[3:5] )
         self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
-        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000.
-        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000.
-        self.radius_scaled = int( bits[60:72] )
+        self.lon = binary.signedIntFromBV( bits[ 5:30] ) / 60000.
+        self.lat = binary.signedIntFromBV( bits[30:54] ) / 60000.
+        self.precision = int( bits[54:57] )
+        
+        self.radius_scaled = int( bits[57:69] )
 
         self.radius = self.radius_scaled * self.scale_factor
 
-        spare = int( bits[72:90] )
+        spare = int( bits[69:] )
+        assert (18 == SUB_AREA_SIZE - 69)
         #assert 0 == spare
         
 
@@ -845,14 +857,15 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         bvList = []
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape ), 3) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
-        bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
-        bvList.append( binary.bvFromSignedInt( int(self.lat*600000), 27 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lon*60000), 25 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lat*60000), 24 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.precision), 3 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.radius_scaled), 12 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 18 ) ) # spare
         bv = binary.joinBV(bvList)
-        if 90 != len(bv):
+        if SUB_AREA_SIZE != len(bv):
             #print ('len:',[len(b) for b in bvList])
-            raise AisPackingException('area not 90 bits',len(bv))
+            raise AisPackingException('area not '+str(SUB_AREA_SIZE)+' bits',len(bv))
         #print 'subarea_bv:',bv
         return bv
 
@@ -915,7 +928,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
 class AreaNoticeRectangle(AreaNoticeSubArea):
     area_shape = 1
-    def __init__(self, lon=None, lat=None, east_dim=0, north_dim=0, orientation_deg=0, bits=None):
+    def __init__(self, lon=None, lat=None, east_dim=0, north_dim=0, orientation_deg=0, precision=4, bits=None):
         '''
         Rotatable rectangle
         @param lon: WGS84 longitude
@@ -934,6 +947,9 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             self.lon = lon
             assert lat >= -90. and lat <= 90.
             self.lat = lat
+
+            assert precision >= 0 and precision <= 4
+            self.precision = precision
 
             assert 0 <=  east_dim and  east_dim <= 255000 # 25.5 km
             assert 0 <= north_dim and north_dim <= 255000
@@ -957,7 +973,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             self.decode_bits(bits)
 
     def decode_bits(self,bits):
-        if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
         #print 'decoded:',bits
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
@@ -966,25 +982,28 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
         self.area_shape = int( bits[:3] )
         self.scale_factor = int( bits[3:5] )
-        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000.
-        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000.
-        self.e_dim_scaled = int ( bits[60:68] ) 
-        self.n_dim_scaled = int ( bits[68:76] ) 
+        self.lon = binary.signedIntFromBV( bits[ 5:30] ) / 60000.
+        self.lat = binary.signedIntFromBV( bits[30:54] ) / 60000.
+        self.precision = int( bits[54:57] )
+
+        self.e_dim_scaled = int ( bits[57:65] ) # was 60:68
+        self.n_dim_scaled = int ( bits[65:73] ) # was 68:76
 
         self.e_dim = self.e_dim_scaled * (1,10,100,1000)[self.scale_factor]
         self.n_dim = self.n_dim_scaled * (1,10,100,1000)[self.scale_factor]
 
-        self.orientation_deg = int ( bits[76:85] )
+        self.orientation_deg = int ( bits[73:82] ) # was 76:85
 
-        self.spare = int ( bits[85:90] )
+        self.spare = int ( bits[82:] )
 
     def get_bits(self):
         bvList = []
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape), 3 ) )
         #xsscale_factor = {1:0,10:1,100:2,1000:3}[self.scale_factor]
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
-        bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
-        bvList.append( binary.bvFromSignedInt( int(self.lat*600000), 27 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lon*60000), 25 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lat*60000), 24 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.precision), 3 ) )
         #print 'dim:',self.e_dim_scaled,self.n_dim_scaled, self.scale_factor
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.e_dim_scaled), 8 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.n_dim_scaled), 8 ) )
@@ -992,7 +1011,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 5 ) ) # spare
         #print '\nlen:',[len(b) for b in bvList]
         bv = binary.joinBV(bvList)
-        assert 90==len(bv)
+        assert SUB_AREA_SIZE==len(bv)
         #print 'rect bits... initial'
         #print 'encoded:',bv
         return bv
@@ -1015,7 +1034,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         pts = [(0,0), (self.e_dim,0), (self.e_dim,self.n_dim), (0,self.n_dim)]
 
         #print 'before:',pts
-        rot = deg2rad(-self.orientation_deg)
+        rot = math.radians(-self.orientation_deg)
         pts = [vec_rot(pt,rot) for pt in pts]
 
         pts = [vec_add(p1,pt) for pt in pts]
@@ -1039,7 +1058,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
   
 class AreaNoticeSector(AreaNoticeSubArea):
     area_shape = 2
-    def __init__(self, lon=None, lat=None, radius=0, left_bound_deg=0, right_bound_deg=0, bits=None):
+    def __init__(self, lon=None, lat=None, radius=0, left_bound_deg=0, right_bound_deg=0, precision=4, bits=None):
         '''
         A pie slice
 
@@ -1048,6 +1067,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
         @param radius: width in meters
         @param left_bound_deg: Orientation of the left boundary.  CW from True North
         @param right_bound_deg: Orientation of the right boundary.  CW from True North
+        @param precision: useless suggestion for the display.  Leave 4
 
         @todo: great get/set for dimensions and allow for setting scale factor.
         @todo: or just over rule the attribute get and sets
@@ -1059,6 +1079,9 @@ class AreaNoticeSector(AreaNoticeSubArea):
             self.lon = lon
             assert lat >= -90. and lat <= 90.
             self.lat = lat
+
+            assert precision >= 0 and precision <= 4
+            self.precision = precision
 
             assert 0 <=  radius and  radius <= 25500
 
@@ -1082,7 +1105,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
             self.decode_bits(bits)
 
     def decode_bits(self,bits):
-        if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
         elif isinstance(bits, list) or isinstance(bits,tuple):
@@ -1090,15 +1113,16 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
         self.area_shape = int( bits[:3] )
         self.scale_factor = int( bits[3:5] )
-        self.lon = binary.signedIntFromBV( bits[ 5:33] ) / 600000.
-        self.lat = binary.signedIntFromBV( bits[33:60] ) / 600000.
-        self.radius_scaled = int ( bits[60:72] ) 
+        self.lon = binary.signedIntFromBV( bits[ 5:30] ) / 60000.
+        self.lat = binary.signedIntFromBV( bits[30:54] ) / 60000.
+        self.precision = int( bits[54:57] )
+
+        self.radius_scaled = int ( bits[57:69] ) # was 60:72
 
         self.radius = self.radius_scaled * (1,10,100,1000)[self.scale_factor]
 
-        self.left_bound_deg = int ( bits[72:81] )
-        self.right_bound_deg = int ( bits[81:90] )
-
+        self.left_bound_deg = int ( bits[68:78] ) # was 72:81
+        self.right_bound_deg = int ( bits[78:87] ) # was 81:90
 
     def get_bits(self):
         
@@ -1106,15 +1130,17 @@ class AreaNoticeSector(AreaNoticeSubArea):
         bvList = []
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape ), 3) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.scale_factor_raw), 2 ) )
-        bvList.append( binary.bvFromSignedInt( int(self.lon*600000), 28 ) )
-        bvList.append( binary.bvFromSignedInt( int(self.lat*600000), 27 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lon*60000), 25 ) )
+        bvList.append( binary.bvFromSignedInt( int(self.lat*60000), 24 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.precision), 3 ) )
+
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.radius_scaled), 12 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.left_bound_deg), 9 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.right_bound_deg), 9 ) )
 
         #print 'len:',[len(bv) for bv in bvList]
         bv = binary.joinBV(bvList)
-        assert 90==len(bv)
+        assert SUB_AREA_SIZE==len(bv)
         return bv
 
     def __unicode__(self):
@@ -1131,7 +1157,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
         p1 = proj(self.lon,self.lat)
 
-        pts = [ vec_rot( (0,self.radius), deg2rad(-angle) ) for angle in frange(self.left_bound_deg, self.right_bound_deg+0.01, 0.5) ]
+        pts = [ vec_rot( (0,self.radius), math.radians(-angle) ) for angle in frange(self.left_bound_deg, self.right_bound_deg+0.01, 0.5) ]
         pts = [(0,0),] + pts + [(0,0),]
 
         pts = [vec_add(p1,pt) for pt in pts] # Move to the right place in the world
@@ -1189,10 +1215,10 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             self.points = points
 
             max_dist = max([pt[1] for pt in points])
-            if max_dist / 100. >= 2047: self.scale_factor_raw = 3
-            elif max_dist / 10. > 2047: self.scale_factor_raw = 2
-            elif max_dist > 2047:       self.scale_factor_raw = 1
-            else:                     self.scale_factor_raw = 0
+            if max_dist / 100. >= 1023: self.scale_factor_raw = 3
+            elif max_dist / 10. > 1023: self.scale_factor_raw = 2
+            elif max_dist > 1023:       self.scale_factor_raw = 1
+            else:                       self.scale_factor_raw = 0
             self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
 
         elif bits is not None:
@@ -1203,7 +1229,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
     def decode_bits(self, bits, lon, lat):
         'lon and lat are the starting point for the point'
         
-        if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
         elif isinstance(bits, list) or isinstance(bits,tuple):
@@ -1215,7 +1241,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         self.points = []
         done = False # used to flag when we should have no more points
         for i in range(4):
-            base = 5 + i*21
+            base = 5 + i*20
             angle = int ( bits[base:base+10] )
             #print 'angle:',angle
             if angle == 720:
@@ -1227,7 +1253,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
                     sys.stderr.write('ERROR: bad polyline.  Must have all point with angle 720 (raw) after the first\n')
                     continue
             angle *= 0.5
-            dist_scaled = int ( bits[base+10:base+10+11] )
+            dist_scaled = int ( bits[base+10:base+10+10] )
             dist = dist_scaled * (1,10,100,1000)[self.scale_factor]
             self.points.append((angle,dist))
             if 720 == dist_scaled:
@@ -1250,22 +1276,36 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
         # FIX: check range of points
         for pt in self.points:
+            # pt is angle, distance
             #print 'scale_factor:',self.scale_factor
             #print 'polyline_seg:',pt,self.scale_factor, pt[1] / self.scale_factor, len(BitVector(intVal=pt[1] / self.scale_factor))
             bvList.append( binary.setBitVectorSize( BitVector(intVal=int(pt[0] * 2)), 10 ) ) # Angle increments of 0.5 degree
+
+            if len(bvList[-1])!=10:
+                msg = 'Angle would not fit: %d -> %d bits != 10' % (pt[0],len(bvList[-1]))
+                #print ('ERROR:', msg)
+                AisPackingException( msg )
+                
             #print ('points:',pt[1], self.scale_factor, pt[1] / self.scale_factor)
-            bvList.append( binary.setBitVectorSize( BitVector(intVal=int(pt[1] / self.scale_factor)), 11 ) )
+            # FIX: Is ceil the right thing to do?  e.g. do we always want and area equal to or greater than that requested?
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=int(math.ceil(pt[1] / self.scale_factor))), 10 ) )
+
+            if len(bvList[-1])!=10:
+                msg = 'Distance would not fit: %d -> %d bits != 10' % (pt[1],len(bvList[-1]))
+                AisPackingException( msg )
+
+            #print ( 'len last',len(bvList[-2]),len(bvList[-1]) )
 
         for i in range(4 - len(self.points)):
             bvList.append( binary.setBitVectorSize( BitVector(intVal=720), 10 ) ) # The marker for no more points
-            bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 11 ) ) # No marker specified.  Use 0 fill
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 10 ) ) # No marker specified.  Use 0 fill
 
-        bvList.append( BitVector(intVal=0) )
+        bvList.append( BitVector(size=2) ) # 2 bit 0 values  #intVal=0) )
 
         bv = binary.joinBV(bvList)
-        if len(bv) != 90:
-            print ('len:',[len(b) for b in bvList])
-            raise AisPackingException('area not 90 bits',len(bv))
+        if len(bv) != SUB_AREA_SIZE:
+            print ('Polyline_or_gon_len_error:',[len(b) for b in bvList],'->',len(bv),'is not',SUB_AREA_SIZE)
+            raise AisPackingException('area not '+str(SUB_AREA_SIZE)+' bits %d:' % len(bv))
 
         #raise AisPackingException('wrong size',len(bv))
         return start_pt_bits + bv
@@ -1288,7 +1328,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         # pts = [(0,0)]
         # cur = (0,0)
         # for pt in self.points:
-        #     alpha = deg2rad(pt[0])
+        #     alpha = math.radians(pt[0])
         #     d = pt[1]
         #     x,y = d * math.sin(alpha), d * math.cos(alpha)
         #     cur = vec_add(cur,(x,y))
@@ -1335,7 +1375,7 @@ class AreaNoticePolygon(AreaNoticePolyline):
         pts = [(0,0)]
         cur = (0,0)
         for pt in self.points:
-            alpha = deg2rad(pt[0])
+            alpha = math.radians(pt[0])
             d = pt[1]
             x,y = d * math.sin(alpha), d * math.cos(alpha)
             cur = vec_add(cur,(x,y))
@@ -1376,7 +1416,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
            
     def decode_bits(self, bits):
         'Removes the "@" padding'
-        if len(bits) != 90: raise AisUnpackingException('bit length',len(bits))
+        if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
         elif isinstance(bits, list) or isinstance(bits,tuple):
@@ -1384,21 +1424,24 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
 
         area_shape = int( bits[:3] )
         assert self.area_shape == area_shape
-        self.text = aisstring.decode(bits[3:-1]).rstrip('@')
-        self.spare = int(bits[-1])
+        self.text = aisstring.decode(bits[3:]).rstrip('@')
 
     def get_bits(self):
         'Build a BitVector for this area'
         bvList = []
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape), 3 ))
         text = self.text.ljust(14,'@')
+        #sys.stderr.write('FIX: get_bits @ "%s" -> "%s"\n' % (self.text,text))
         bvList.append(aisstring.encode(text))
-        bvList.append( BitVector( bitstring = '000' ) ) # spare
+        # No spare
+
         bv = binary.joinBV(bvList)
-        if 90 != len(bv):
-            print ('len_freetext:',[len(b) for b in bvList])
-            AisPackingException('text subarea not 90 bits',len(bv))
-        assert 90==len(bv)
+        if SUB_AREA_SIZE != len(bv):
+            #print ('len_freetext:',[len(b) for b in bvList])
+            AisPackingException('text subarea not '+str(SUB_AREA_SIZE)+' bits: %d' % len(bv))
+        #if SUB_AREA_SIZE != len(bv):
+        #    sys.exit('REALLY BAD FREE TEXT ERROR: %d != %d' % (SUB_AREA_SIZE,len(bv)) )
+        assert SUB_AREA_SIZE==len(bv)
         return bv
 
     def __unicode__(self):
@@ -1441,7 +1484,16 @@ class AreaNotice(BBM):
             assert area_type >= 0 and area_type <= 127
             self.area_type = area_type
             assert isinstance(when,datetime.datetime)
-            self.when = when
+            #self.when = when
+            # Be safe with datetime.  We only have 1 minute precision
+            self.when = datetime.datetime(year = when.year,
+                                          month = when.month,
+                                          day = when.day,
+                                          hour = when.hour,
+                                          minute = when.minute
+                                          # No second or smaller
+                                          )
+            
             assert duration < 2**18 - 1 # Last number reserved for undefined... what does undefined mean?
             self.duration = duration
             self.link_id = link_id
@@ -1507,8 +1559,10 @@ class AreaNotice(BBM):
                 'bbm_name':'area_notice',
                 'area_type': self.area_type,
                 'area_type_desc': notice_type[self.area_type],
+                # This freetext does not handle if there are separate free text blocks for different geometry
                 'freetext': self.get_merged_text(),
                 'start': self.when.strftime(iso8601_timeformat),
+                'stop': (self.when + datetime.timedelta(minutes=self.duration)).strftime(iso8601_timeformat),
                 'duration_min': self.duration,
                 'areas': [],
                 'link_id': self.link_id,
@@ -1529,6 +1583,13 @@ class AreaNotice(BBM):
         for a in self.areas:
             if isinstance(a,AreaNoticeFreeText):
                 strings.append(a.text)
+
+        # FIX: remove
+        # if len(strings)>0:
+        #     sys.stderr.write('string_parts:\n')
+        #     for s in strings:
+        #         sys.stderr.write('   "' + s + '"\n')
+            
         if len(strings) == 0: return None
         return ''.join(strings)
         
@@ -1537,7 +1598,8 @@ class AreaNotice(BBM):
         if not hasattr(self,'areas'):
             self.areas = []
         #print 'len(self.areas):',len(self.areas)
-        assert len(self.areas) < 10 - 1
+        if len(self.areas) >= 9:
+            raise AisPackingException('Can only have 9 sub areas in an Area Notice')
         
         self.areas.append(area)
 
@@ -1566,6 +1628,7 @@ class AreaNotice(BBM):
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.when.month), 4 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.when.day), 5 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.when.hour), 5 ) )
+        #sys.stderr.write('HOUR_ENCODING: %d -> %s -> %d' % (self.when.hour, bvList[-1], int(bvList[-1])) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.when.minute), 6 ) )
 
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.duration), 18 ) )
@@ -1640,10 +1703,10 @@ class AreaNotice(BBM):
 
         self.area_type = r['area_type']
 
-        # FIX: handle Dec - Jan transition
+        # FIX: handle Dec - Jan transition / year roll over
         now = datetime.datetime.utcnow()
-        self.when = datetime.datetime(year=now.year,month=r['utc_month'],day=r['utc_day'],
-                                      hour=12,minute=r['utc_min'])
+        self.when = datetime.datetime(year=now.year, month=r['utc_month'], day=r['utc_day'],
+                                      hour=r['utc_hour'], minute=r['utc_min'])
         self.duration = r['duration_min']
         self.link_id = r['link_id']
 
@@ -1657,15 +1720,15 @@ class AreaNotice(BBM):
 
         sub_areas_bits = bits[111:]
         del bits  # be safe
-        assert 0 == len(sub_areas_bits) % 90
-        #print len(sub_area_bits), len(sub_area_bits) % 90
-        #print 'num_sub_areas:', len(sub_areas_bits) / 90
+        assert 0 == len(sub_areas_bits) % SUB_AREA_SIZE
+        #print ('sub_area_len:', len(sub_areas_bits), len(sub_areas_bits) % SUB_AREA_SIZE)
+        #print ('num_sub_areas:', len(sub_areas_bits) / SUB_AREA_SIZE)
         shapes = self.get_shapes(sub_areas_bits)
 
         #print '\nshapes:', shapes
 
-        for i in range(len(sub_areas_bits) / 90):
-            bits = sub_areas_bits[ i*90 : (i+1)*90 ]
+        for i in range(len(sub_areas_bits) / SUB_AREA_SIZE):
+            bits = sub_areas_bits[ i*SUB_AREA_SIZE : (i+1)*SUB_AREA_SIZE ]
             #print bits
             #print bits[:3]
             sa_obj = self.subarea_factory(bits=bits)
@@ -1675,8 +1738,8 @@ class AreaNotice(BBM):
     def get_shapes(self,sub_areas_bits):
         'return a list of the sub area types'
         shapes = []
-        for i in range(len(sub_areas_bits) / 90):
-            bits = sub_areas_bits[ i*90 : (i+1)*90 ]
+        for i in range(len(sub_areas_bits) / SUB_AREA_SIZE):
+            bits = sub_areas_bits[ i*SUB_AREA_SIZE : (i+1)*SUB_AREA_SIZE ]
             shape = int( bits[:3] )
             shapes.append((shape, shape_types[shape]))
         return shapes

@@ -21,6 +21,8 @@ Testing for Area Notice AIS binary mesage
 @organization: U{CCOM<http://ccom.unh.edu/>} 
 '''
 
+# FIX: need to test the year and month roll overs in time
+
 
 import sys
 #print (sys.version)
@@ -30,7 +32,7 @@ import unittest
 import geojson
 import math
 import imo_001_22_area_notice as an
-from imo_001_22_area_notice import vec_rot, vec_add, deg2rad
+from imo_001_22_area_notice import vec_rot, vec_add# , deg2rad
 from imo_001_22_area_notice import AisPackingException, AisUnpackingException
 
 def almost_equal(v1,v2,epsilon=0.2):
@@ -122,23 +124,16 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
                 return False
         else:
             if g1[key] != g2[key]:
-                if v: sys.stderr.write( 'key_compare_failed: %s %s\n' % ( str(type(g1[key])),str(type(g2[key])) ))
-                if v: sys.stderr.write( 'key_compare_failed: %s %s\n' % ( str(g1[key]),str(g2[key]) ) )
+                if v:
+                    sys.stderr.write( 'ERR_ON_KEY: "%s"\n' % key)
+                    sys.stderr.write( 'key_compare_failed: %s %s\n' % ( str(type(g1[key])),str(type(g2[key])) ))
+                    sys.stderr.write( 'key_compare_failed: %s %s\n' % ( str(g1[key]),str(g2[key]) ) )
                 return False
     #print 'looking good'
     return True
 
-class Test0Math:
-#class Test0Math(unittest.TestCase):
-    def test_deg2rad(self):
-        'deg2rad'
-        self.failUnlessAlmostEqual(0,deg2rad(0))
-        self.failUnlessAlmostEqual(math.pi/2,deg2rad(90))
-        self.failUnlessAlmostEqual(math.pi,deg2rad(180))
-
-        self.failUnlessAlmostEqual(-math.pi/4,deg2rad(-45))
-        self.failUnlessAlmostEqual(-math.pi/2,deg2rad(-90))
-        self.failUnlessAlmostEqual(-math.pi,deg2rad(-180))
+#class Test0Math:
+class Test0Math(unittest.TestCase):
 
     def test_rot(self):
         'rot about 0'
@@ -175,6 +170,7 @@ class Test0Math:
         self.failUnless(almost_equal((0,1),vec_rot((math.sqrt(.5),math.sqrt(.5)),math.pi/4)))
 
 
+#class Test1AIVDM:
 class Test1AIVDM(unittest.TestCase):
     def test_aivdm(self):
         'aivdm'
@@ -186,8 +182,9 @@ class Test1AIVDM(unittest.TestCase):
         a.message_id = 5
         self.failUnlessRaises(an.AisPackingException, a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789)
         self.failUnlessRaises(NotImplementedError,a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789, repeat_indicator=0)
-class Test3AreaNoticeCirclePt:
-#class Test3AreaNoticeCirclePt(unittest.TestCase):
+
+#class Test3AreaNoticeCirclePt:
+class Test3AreaNoticeCirclePt(unittest.TestCase):
     def test_geom(self):
         'circle geom'
         pt1 = an.AreaNoticeCirclePt(-73,43,0)
@@ -213,8 +210,8 @@ class Test3AreaNoticeCirclePt:
         self.failUnlessAlmostEqual(43,pt1.lat)
         self.failUnlessEqual(pt2.radius,12300)
 
-class Test5AreaNoticeSimple:
-#class Test5AreaNoticeSimple(unittest.TestCase):
+#class Test5AreaNoticeSimple:
+class Test5AreaNoticeSimple(unittest.TestCase):
     def test_simple(self):
         'area notice simple'
         an1 = an.AreaNotice(0,datetime.datetime.utcnow(),100)
@@ -261,33 +258,60 @@ class Test5AreaNoticeSimple:
         # FIX: check the kml somehome
 
     
-class TestBitDecoding:
-#class TestBitDecoding(unittest.TestCase):
+#class TestBitDecoding:
+class TestBitDecoding(unittest.TestCase):
     'Using the build_samples to make sure they all decode'
-    def test_point(self):
+    def test_01point(self):
         'point'
-        pt1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009,7,6,0,0,4),60,10, source_mmsi = 445566778)
+        year = datetime.datetime.utcnow().year
+        pt1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(year,8,6,0,1,0),60,10, source_mmsi = 445566778)
         pt1.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.0, radius=0))
         orig = geojson.loads( geojson.dumps(pt1) )
-        decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in pt1.get_aivdm() ] )) )
+
+        decoded_pt = an.AreaNotice(nmea_strings=[ line for line in pt1.get_aivdm() ] )
+        #sys.stderr.write('\npt1_start:       '+str(pt1.when)+'\n')
+        #sys.stderr.write('decoded_pt_start:'+str(decoded_pt.when)+'\n')
+        decoded = geojson.loads( geojson.dumps(decoded_pt) )
+
+        #sys.stderr.write('pt1:'+str(pt1)+'\n')
+        #sys.stderr.write('orig_start:'+str(   orig['bbm']['start'])+'\n')
+        #sys.stderr.write('deco_start:'+str(decoded['bbm']['start'])+'\n')
+
+        #sys.stderr.write('orig: ' + str(orig) + '\n')
+        #sys.stderr.write('deco: ' + str(decoded) + '\n')
+
+        if not almost_equal_geojson(orig, decoded, verbose=True):
+            sys.exit('1: That had better work!  But it did not!!!')
+        #else:
+        #    sys.stderr.write('try_1: ok!\n')
+
         self.failUnless( almost_equal_geojson(orig, decoded) )
 
-    def test_circle(self):
+    def test_02circle(self):
         'circle'
+        now = datetime.datetime.utcnow()
         circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],
-                                datetime.datetime(2009, 7, 6, 0, 0, 4),
+                                datetime.datetime(now.year, 7, 6, 0, 0, 0),  # Don't use seconds.  Can only use minutes
                                 60, 10,
                                 source_mmsi = 2)
         circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.1, radius=4260))
 
         orig = geojson.loads( geojson.dumps(circle1) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in circle1.get_aivdm() ] )) )
+        #print ('originl:',orig)
+        #print ('decoded:',decoded)
+
+        if not almost_equal_geojson(orig, decoded, verbose=True):
+            sys.exit('That had better work!')
+
         self.failUnless( almost_equal_geojson(orig, decoded) )
+
+
 
     def test_rect(self):
         'rectangle'
         rect = an.AreaNotice( an.notice_type['cau_mammals_reduce_speed'],
-                               datetime.datetime(2009, 7, 6, 0, 0, 4),
+                               datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
                                60, 10,
                                source_mmsi = 123
                                )
@@ -306,7 +330,7 @@ class TestBitDecoding:
     def test_sector(self):
         'sector'
         sec1 = an.AreaNotice(an.notice_type['cau_habitat_reduce_speed'],
-                             datetime.datetime(2009, 7, 6, 0, 0, 4), 60, 10, source_mmsi = 456)
+                             datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4), 60, 10, source_mmsi = 456)
         sec1.add_subarea(an.AreaNoticeSector(-69.8, 42.3, 4000, 10, 50))
         orig = geojson.loads( geojson.dumps(sec1) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in sec1.get_aivdm() ] )) )
@@ -314,7 +338,7 @@ class TestBitDecoding:
 
     def test_line(self):
         'line'
-        line1 = an.AreaNotice(an.notice_type['report_of_icing'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi=123456)
+        line1 = an.AreaNotice(an.notice_type['report_of_icing'],datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),60,10, source_mmsi=123456)
         line1.add_subarea(an.AreaNoticePolyline([(10,2400),], -69.8, 42.4 ))
         orig = geojson.loads( geojson.dumps(line1) )
         line2 = an.AreaNotice(nmea_strings=[ line for line in line1.get_aivdm() ] )
@@ -324,7 +348,7 @@ class TestBitDecoding:
 
     def test_polygon(self):
         'polygon'
-        poly1 = an.AreaNotice(an.notice_type['cau_divers'], datetime.datetime(2009, 7, 6, 0, 0, 4), 60, 10, source_mmsi=987123456)
+        poly1 = an.AreaNotice(an.notice_type['cau_divers'], datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4), 60, 10, source_mmsi=987123456)
         poly1.add_subarea(an.AreaNoticePolygon([(10,1400),(90,1950)], -69.8, 42.5 ))
         #print 'poly1:',poly1
         #print 'poly1:',poly1.areas[0]
@@ -340,21 +364,24 @@ class TestBitDecoding:
 
     def test_freetext(self):
         'freetext'
-        text1 = an.AreaNotice(an.notice_type['res_military_ops'],datetime.datetime(2009, 7, 6, 0, 0, 4), 60,10, source_mmsi=300000000)
+        text1 = an.AreaNotice(an.notice_type['res_military_ops'],datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 4, 0), 60,10, source_mmsi=300000000)
         text1.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.6, radius=0))
         text1.add_subarea(an.AreaNoticeFreeText(text="Explanation"))
 
         orig = geojson.loads( geojson.dumps(text1) )
         text2 = an.AreaNotice(nmea_strings=[ line for line in text1.get_aivdm() ] )
         decoded = geojson.loads( geojson.dumps(text2) )
+
+        if not almost_equal_geojson(orig, decoded, verbose=True):
+            sys.exit('FREE TEXT FAIL')
         self.failUnless( almost_equal_geojson(orig, decoded, verbose=True) )
 
-class TestBitDecoding2:
-#class TestBitDecoding2(unittest.TestCase):
+#class TestBitDecoding2:
+class TestBitDecoding2(unittest.TestCase):
     'Using the build_samples to make sure they all decode'
-    def test_point(self):
+    def test_02_point(self):
         'one of each'
-        notice = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009,7,6,0,0,4),60,10, source_mmsi=666555444)
+        notice = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(datetime.datetime.utcnow().year,7,6,0,0,4),60,10, source_mmsi=666555444)
         notice.add_subarea(an.AreaNoticeCirclePt(-69.8, 40.001, radius=0))
         notice.add_subarea(an.AreaNoticeCirclePt(-69.8, 40.202, radius=2000))
         notice.add_subarea(an.AreaNoticeRectangle(-69.6, 40.3003, 2000, 1000, 0))
@@ -368,9 +395,9 @@ class TestBitDecoding2:
         #print orig
         #print decoded
         self.failUnless( almost_equal_geojson(orig, decoded) )
-    def test_many_sectors(self):
+    def test_03_many_sectors(self):
         'many sectors'
-        notice = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009,7,6,0,0,4),60,10, source_mmsi=1)
+        notice = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(datetime.datetime.utcnow().year,7,6,0,0,4),60,10, source_mmsi=1)
         notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 6000, 10, 40)) # 1
         notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 5000, 40, 80)) # 2
         notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 2000, 80, 110)) # 3
@@ -384,39 +411,50 @@ class TestBitDecoding2:
         #print decoded
         self.failUnless( almost_equal_geojson(orig, decoded) )
 
-        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290))
-        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290))
-        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290))
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) # 7
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) # 8
+        notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) # 9
         self.failUnless( len(notice.get_aivdm())==4 ) # FIX: calculate this to make sure it's right
 
         # More than 9 should raise an exception... hijack the interface to add
-        notice.areas.append(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) # how to be bad
+        self.assertRaises(AisPackingException, notice.areas.append(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) )
 
-        self.assertRaises(AisPackingException, notice.get_aivdm)
-
-    def test_full_text(self):
+    def test_01_full_text(self):
         'full text'
-        notice = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi=2)
+        notice = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),60,10, source_mmsi=2)
         notice.add_subarea(an.AreaNoticeCirclePt(-69.5, 42, radius=0)) # 1
-        notice.add_subarea(an.AreaNoticeFreeText(text='12345678901234')) # 2
-        notice.add_subarea(an.AreaNoticeFreeText(text='More text that')) # 3
-        notice.add_subarea(an.AreaNoticeFreeText(text=' spans  across')) # 4
-        notice.add_subarea(an.AreaNoticeFreeText(text=' multiple lin')) # 5
-        notice.add_subarea(an.AreaNoticeFreeText(text='es.  The text ')) # 6
-        notice.add_subarea(an.AreaNoticeFreeText(text='is supposed to')) # 7
-        notice.add_subarea(an.AreaNoticeFreeText(text=' be cated ')) # 8
-        notice.add_subarea(an.AreaNoticeFreeText(text='together')) # 9
 
-        expected = '12345678901234More text that spans  across multiple lines.  The text is supposed to be cated together'.upper()
+        text_sections = (
+            '12345678901234', # 2
+            'More text that', # 3
+            ' spans across ', # 4
+            'multiple lines', # 5
+            '  The text is ', # 6
+            'supposed to be', # 7
+            ' cated togethe', # 8
+            'r. 12345678901'  # 9
+            )
+        for text in text_sections:
+            notice.add_subarea(an.AreaNoticeFreeText(text=text))
+
+        expected = ''.join(text_sections).upper()
+        # if notice.get_merged_text() != expected:
+        #     sys.exit('OH CRAP....\n  %s\n  %s\n' % (notice.get_merged_text(), expected) )
         self.failUnless(notice.get_merged_text() == expected)
         
         orig = geojson.loads( geojson.dumps(notice) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in notice.get_aivdm() ] )) )
-        #print orig
-        #print decoded
+        #sys.stderr.write('\norig:'+str(orig)+'\n')
+        #sys.stderr.write('decoded:'+str(decoded)+'\n\n')
+        #sys.stderr.write('orig:'+str(orig['bbm']['freetext'])+'\n')
+        #sys.stderr.write('deco:'+str(decoded['bbm']['freetext'])+'\n')
+
+        #if not almost_equal_geojson(orig, decoded):
+        #    sys.exit('FULL FREETEXT FAIL')
         self.failUnless( almost_equal_geojson(orig, decoded) )
 
 
+#class TestLineTools:
 class TestLineTools(unittest.TestCase):
     'Make sure that going from lon,lat pairs to angle,distance pairs works'
     def test_one_seg_cardinal(self):
@@ -458,7 +496,7 @@ class TestWhaleNotices(unittest.TestCase):
         'no whales circle notice'
         zone_type = an.notice_type['cau_mammals_not_obs']
         #zone_type = an.notice_type['cau_mammals_reduce_speed']
-        circle = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
+        circle = an.AreaNotice(zone_type,datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         circle.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.0, radius=4260))
         
         self.failUnlessEqual(zone_type, 0)
@@ -490,7 +528,7 @@ class TestWhaleNotices(unittest.TestCase):
     def test_whales(self):
         'whales observed circle notice'
         zone_type = an.notice_type['cau_mammals_reduce_speed']
-        circle = an.AreaNotice(zone_type,datetime.datetime(2009, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
+        circle = an.AreaNotice(zone_type,datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         circle.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.0, radius=4260))
 
         self.failUnlessEqual(zone_type, 1)

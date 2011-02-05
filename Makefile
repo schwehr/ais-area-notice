@@ -1,4 +1,4 @@
-SHELL:=/bin/bash
+#SHELL:=/bin/bash
 PKG:=ais-areanotice-py
 VERSION := ${shell cat VERSION}
 DIST_TAR=dist/${PKG}-${VERSION}.tar.bz2
@@ -8,11 +8,11 @@ default:
 	@echo "     *** Welcome to ${PKG} ${VERSION} ***"
 	@echo
 	@echo "  AIS Binary Message Reference Implementation"
-	@echo ""
-	@echo "	test - run unit tests"
+	@echo
+	@echo "	test        - run unit tests"
 	@echo "	samples.txt - create the published test dataset"
-	@echo "	docs - run epydoc"
-	@echo "	- "
+	@echo "	docs        - run epydoc"
+#	@echo "	- "
 
 
 
