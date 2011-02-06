@@ -10,9 +10,17 @@ __license__   = 'LGPL v3'
 __contact__   = 'kurt at ccom.unh.edu'
 
 __doc__ ='''
-Trying to do a more sane design for AIS BBM message
+Trying to do a more sane design for AIS BBM message.
 
 http://vislab-ccom.unh.edu/~schwehr/papers/2010-IMO-SN.1-Circ.289.pdf
+
+WARNING: The IMO Circ is not byte aligned.  ITU 1371-3, Annex 2,
+1.2.3.1 says that the message must be byte aligned.  And Annex 2,
+3.3.7 says "Unused bits in the last byte should be set to zero in
+order to preserve byte boundary."  That that refers to the VDL data.
+It is unclear if that is after the bit stuffing and if those extra
+bits should be returned back into into the NMEA message.  The code here
+has the option to byte align the resulting bits in get_aivdm.
 
 @requires: U{Python<http://python.org/>} >= 2.6
 @requires: U{epydoc<http://epydoc.sourceforge.net/>} >= 3.0.1
@@ -55,6 +63,9 @@ from BitVector import BitVector
 import binary, aisstring
 
 import re
+
+
+
 
 SUB_AREA_SIZE = 87
 '87 Bits for IMO Circ 289 rather than the 90 for USCG and Nav 55 version'
@@ -615,11 +626,12 @@ class AIVDM (object):
 #        'Child classes must implement this.  Return a json object'
 #        raise NotImplementedError()
 
-    def get_aivdm(self, sequence_num = None, channel = 'A', normal_form=False, source_mmsi=None, repeat_indicator=None):
+    def get_aivdm(self, sequence_num = None, channel = 'A', normal_form=False, source_mmsi=None, repeat_indicator=None, byte_align=False):
         '''return the nmea string as if it had been received.  Assumes that payload_bits has already been set
         @param sequence_num: Which channel of AIVDM on the local serial line (in 0..9)
         @param channel: VHF radio channel ("A" or "B")
         @param normal_form:  Set to true to always return aone line NMEA message.  False allows multi-sentence messages
+        @param byte_align:  The spec says messages must be byte aligned.
         @return: AIVDM sentences
         @rtype: list (even for normal_form for consistency)
         '''
@@ -641,7 +653,20 @@ class AIVDM (object):
                 raise AisPackingException('source_mmsi',source_mmsi)
 
         header = self.get_bits_header(repeat_indicator=repeat_indicator,source_mmsi=source_mmsi)
-        payload, pad = binary.bitvectoais6(header + self.get_bits())
+
+        #payload, pad = binary.bitvectoais6(header + self.get_bits())
+        bits = header + self.get_bits()
+        if byte_align:
+            bits_over = len(bits) % 8
+            bits_needed = 0 if 0==bits_over else 8 - len(bits) % 8 
+            if bits_over != 0:
+                sys.stderr.write('WARNING: non-byte aligned message %d - over: %d  need: %d\n' % (len(bits), bits_over,bits_needed ))
+                bits = bits + BitVector(size=bits_needed)
+                assert(len(bits) % 8 ==0)
+            else:
+                sys.stderr.write('byte-aligned okay\n')
+
+        payload, pad = binary.bitvectoais6(bits)
 
         if sequence_num is None:
             sequence_num = ''
@@ -1720,7 +1745,10 @@ class AreaNotice(BBM):
 
         sub_areas_bits = bits[111:]
         del bits  # be safe
-        assert 0 == len(sub_areas_bits) % SUB_AREA_SIZE
+
+        # Messages might be padded up to 7 bits to byte align the message, but no more
+        assert 8 > len(sub_areas_bits) % SUB_AREA_SIZE
+
         #print ('sub_area_len:', len(sub_areas_bits), len(sub_areas_bits) % SUB_AREA_SIZE)
         #print ('num_sub_areas:', len(sub_areas_bits) / SUB_AREA_SIZE)
         shapes = self.get_shapes(sub_areas_bits)

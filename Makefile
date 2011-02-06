@@ -42,10 +42,11 @@ svn-branch:
 register:
 	./setup.py register
 
+#	echo -n '# ' > samples.txt
+#	date >> samples.txt
 samples.txt: build_samples.py imo_001_22_area_notice.py
-	echo -n '# ' > samples.txt
-	date >> samples.txt
-	./build_samples.py  >> samples.txt
+	./build_samples.py  > samples.txt
 
 samples-upload:
-	scp samples* vislab-ccom:www/software/ais-areanotice-py/samples/
+	scp samples.txt vislab-ccom:www/software/ais-areanotice-py/samples/samples-`date +%Y%m%d`.txt
+	scp samples.kml vislab-ccom:www/software/ais-areanotice-py/samples/samples-`date +%Y%m%d`.kml

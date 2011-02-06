@@ -269,6 +269,7 @@ class TestBitDecoding(unittest.TestCase):
         orig = geojson.loads( geojson.dumps(pt1) )
 
         decoded_pt = an.AreaNotice(nmea_strings=[ line for line in pt1.get_aivdm() ] )
+        
         #sys.stderr.write('\npt1_start:       '+str(pt1.when)+'\n')
         #sys.stderr.write('decoded_pt_start:'+str(decoded_pt.when)+'\n')
         decoded = geojson.loads( geojson.dumps(decoded_pt) )
