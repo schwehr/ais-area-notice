@@ -64,7 +64,8 @@ import binary, aisstring
 
 import re
 
-
+next_sequence=1
+'Track the next value to use for multiline nmea messages'
 
 
 SUB_AREA_SIZE = 87
@@ -668,11 +669,13 @@ class AIVDM (object):
 
         payload, pad = binary.bitvectoais6(bits)
 
-        if sequence_num is None:
-            sequence_num = ''
         
         if normal_form:
             # Build one big NMEA string no matter what
+
+            if sequence_num is None:
+                sequence_num = ''
+
             sentence = '!AIVDM,{tot_sentences},{sentence_num},{sequence_num},{channel},{payload},{pad}'.format(
                 tot_sentences=1, sentence_num=1,
                 sequence_num=sequence_num, channel=channel,
@@ -685,6 +688,16 @@ class AIVDM (object):
         sentences = []
         tot_sentences = 1 + len(payload) / max_payload_char
         sentence_num = 0
+
+        if sequence_num is None:
+            if tot_sentences == 1:
+                sequence_num = ''  # Make empty
+            else:
+                global next_sequence
+                sequence_num = next_sequence
+                next_sequence += 1
+                if next_sequence > 9: next_sequence = 1
+                
         for i in range(tot_sentences-1):
             sentence_num = i+1
             payload_part = payload[i*max_payload_char:(i+1)*max_payload_char]
