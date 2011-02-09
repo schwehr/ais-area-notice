@@ -96,6 +96,26 @@ kml_tail = '''</Document>
 '''
 'Finish a kml file'
 
+def kml_lookat(time_begin=None, time_end=None,
+               x=None, y=None,
+               alt=None, heading=None,
+               tilt=None, range=None):
+    '''Create a LookAt KML entry'''
+
+    o = ['<LookAt>'] # build a list of strings to include
+    if time_begin is not None or time_end is not None:
+        o.append('<gx:TimeSpan>')
+        if time_begin is not None: o.append('<begin>'+time_begin+'</begin>')
+        if time_end   is not None: o.append('<end>'  +time_end  +'</end>')
+        o.append('</gx:TimeSpan>')
+    if x is not None: o.append('<longitude>%s</longitude>' % (x,))
+    if y is not None: o.append('<latitude>%s</latitude>' % (y,))
+    if alt is not None: o.append('<altitude>%s</altitude>' % (alt,))
+    if range is not None: o.append('<range>%s</range>' % (range,))
+    o.append('</LookAt>')
+    return '\n'.join(o)
+
+
 def lon_to_utm_zone(lon):
     return int(( lon + 180 ) / 6) + 1
 
@@ -258,8 +278,8 @@ notice_type = {
     'other_see_text': 125,
     'cancel_area_notice': 126,
     'undefined': 127,
-    #0: 'Caution Area: Marine mammals NOT observed',
-    0: 'Caution Area: Marine mammal habitat',  # Implies that animals not observed.
+    0: 'Caution Area: Marine mammals NOT observed',  # This is slightly different than in IMO 289
+    #0: 'Caution Area: Marine mammal habitat',  # IMO 289 version - going to ignore their text.
     1: 'Caution Area: Marine mammals in area - Reduce Speed',
     2: 'Caution Area: Marine mammals in area - Stay Clear',
     3: 'Caution Area: Marine mammals in area - Report Sightings',

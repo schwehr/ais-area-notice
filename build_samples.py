@@ -27,7 +27,7 @@ import geojson
 
 import imo_001_22_area_notice as an
 
-def dump_all(area_notice,kmlfile, byte_align=False):
+def dump_all(area_notice, kmlfile, byte_align=False):
     print ('#',area_notice.name)
     print (str(area_notice))
     for line in area_notice.get_bbm():
