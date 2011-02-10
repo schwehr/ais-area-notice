@@ -105,6 +105,7 @@ def joinBV(bvSeq):
 	
     return bvTotal
 
+# FIX: Should switch all calls to this to e.g. BitVector(intVal=2, size=8)
 def setBitVectorSize(bv,size=8):
     """Pad a BitVector with 0's on the left until it is at least the size specified
 

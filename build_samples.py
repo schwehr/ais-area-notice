@@ -35,6 +35,10 @@ def dump_all(area_notice, kmlfile, byte_align=False):
     for line in area_notice.get_aivdm(byte_align=byte_align):
         print (line)
     print ('bit_str:',str(area_notice.get_bits(include_bin_hdr=True)))
+
+    # USCG/AlionScience Fetcher Formatter message for Queue Manager
+    print ('ff:',an.message_2_fetcherformatter(area_notice,verbose=False))
+
     print ('geojson:',geojson.dumps(area_notice))
     print ()
     kmlfile.write(area_notice.kml(with_style=True, with_time=True, with_extended_data=True))

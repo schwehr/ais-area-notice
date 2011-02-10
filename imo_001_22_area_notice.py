@@ -44,7 +44,7 @@ has the option to byte align the resulting bits in get_aivdm.
 
 import sys
 #from decimal import Decimal
-import datetime
+import datetime, time
 from operator import xor # for checksum
 
 import operator
@@ -61,7 +61,7 @@ from lxml.html import builder as E
 from BitVector import BitVector
 
 import binary, aisstring
-
+import Queue
 import re
 
 next_sequence=1
@@ -73,17 +73,36 @@ SUB_AREA_SIZE = 87
 
 iso8601_timeformat = '%Y-%m-%dT%H:%M:%SZ'
 
-ais_nmea_regex_str = r'''[!$](?P<talker>AI)(?P<stringType>VD[MO])
+# ais_nmea_regex_str = r'''[!$](?P<talker>AI)(?P<stringType>VD[MO])
+# ,(?P<total>\d?)
+# ,(?P<sen_num>\d?)
+# ,(?P<seq_id>[0-9]?)
+# ,(?P<chan>[AB])
+# ,(?P<body>[;:=@a-zA-Z0-9<>\?\'\`]*)
+# ,(?P<fill_bits>\d)\*(?P<checksum>[0-9A-F][0-9A-F])'''
+# '''Ignore USCG metadata'''
+
+# With USCG metadata
+ais_nmea_regex_str = r'''^!(?P<talker>AI)(?P<string_type>VD[MO])
 ,(?P<total>\d?)
 ,(?P<sen_num>\d?)
 ,(?P<seq_id>[0-9]?)
 ,(?P<chan>[AB])
 ,(?P<body>[;:=@a-zA-Z0-9<>\?\'\`]*)
-,(?P<fill_bits>\d)\*(?P<checksum>[0-9A-F][0-9A-F])'''
-'''Ignore USCG metadata'''
+,(?P<fill_bits>\d)\*(?P<checksum>[0-9A-F][0-9A-F])
+(  
+  (,S(?P<slot>\d*))
+  | (,s(?P<s_rssi>\d*))
+  | (,d(?P<signal_strength>[-0-9]*))
+  | (,t(?P<t_recver_hhmmss>(?P<t_hour>\d\d)(?P<t_min>\d\d)(?P<t_sec>\d\d.\d*)))
+  | (,T(?P<time_of_arrival>[^,]*))
+  | (,x(?P<x_station_counter>[0-9]*))
+  | (,(?P<station>(?P<station_type>[rbB])[a-zA-Z0-9_]*))
+)*
+,(?P<time_stamp>\d+([.]\d+)?)?
+'''
 
 ais_nmea_regex = re.compile(ais_nmea_regex_str,  re.VERBOSE)
-
 
 kml_head = '''<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -598,7 +617,7 @@ class AisUnpackingException(AisException):
 
 
 def nmea_checksum_hex(sentence):
-    '8-bit XOR of everything between the [!$] and the &'
+    '8-bit XOR of everything between the [!$] and the *'
     nmea = map(ord, sentence.split('*')[0][1:])
     checksum = reduce(xor, nmea)
     checksum_str = hex(checksum).split('x')[1].upper()
@@ -768,7 +787,7 @@ class AIVDM (object):
 
             if with_extended_data:
                 o.append('<ExtendedData>')
-                print ('self.__dict__:',self.__dict__)
+                #print ('self.__dict__:',self.__dict__)
 
                 for key in ( 'message_id', 'source_mmsi', 'dac', 'fi', 'link_id', 'when', 'duration', 'area_type', ):
                     o.append('\t<Data name="{key}"><value>{value}</value></Data>'.format(key=key,value=self.__dict__[key]))
@@ -1726,7 +1745,10 @@ class AreaNotice(BBM):
         The strings will be aggregated into one message
         '''
         for msg in strings:
+            #print ('msg_decoding:',msg)
+            #print ('type:',type(ais_nmea_regex), type(ais_nmea_regex.search(msg)))
             msg_dict = ais_nmea_regex.search(msg).groupdict()
+
             if  msg_dict['checksum'] != nmea_checksum_hex(msg):
                 raise AisUnpackingException('Checksum failed')
 
@@ -1864,21 +1886,192 @@ class AreaNotice(BBM):
             sys.stderr.write('Warning: unknown shape type %d' % shape )
             return None # bad bits?
 
+sbnms_bbox = {
+    'ur': ( -68.3, 43.0 ),
+    'll': ( -71.3, 41.0 ),
+}
 
+# WARNING: the fetcher formatter message is a brittle design.
+def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM that response to get bits
+                             magic_number='BMS', #Always the first string
+                             site_name='SBNMS',  # Area name
+                             xmin=-71.3, xmax=-68.3,
+                             ymin=41.0, ymax=43.0,
+                             link_id=None,  # Station / Zone / Area ID.  Buoy number
+                             message_type=None, # for Zone/Area, this is 1000 + notice description field
+                             priority=0, # 0 - no priority, 10 highest priority
+                             timestamp=None, # unix UTC seconds timestamp
+                             verbose=False
+                             ):
+    'Take an AreaNotice and produce a Fetcher Formatter CSV'
+    v = verbose
+
+    if v:
+        print ('message_2_fetcherformatter:',str(msg))
+
+    if timestamp is None:
+        timestamp=int(time.time())
+    elif isinstance(timestamp,datetime.datetime):
+        timestamp = calendar.timegm(datetime.datetime.utctimetuple(timestamp))
+
+    timestamp += 24*3600
+    if v:
+        print ('Moving time up by 4 hours to deal with Windows time coding issues...')
+        print ('\t\tEDT is 4 to 5 hours off utc')
+        print ('\t\t24 hours means this code will work anywhere in the world with windows timezone troubles')
+
+    if message_type is None:
+        if isinstance(msg,AreaNotice):
+            message_type = msg.area_type
+        else:
+            raise NotImplmented
+
+    if isinstance(msg,AreaNotice):
+        if message_type < 1000:
+            # AreaNotice message type has to be greater than 1000
+            message_type += 1000
+    # if not isinstance(msg,EnvMessage) and isinstance(msg,AreaNotice):
+    #     # This mechanism is only defined for these two IMO Circ 289 messages
+    #     assert False
+
+    if link_id == None:
+        link_id = msg.link_id
+   
+    dac = BitVector(intVal=msg.dac, size=10)
+    fi  = BitVector(intVal=msg.fi,  size=6)
+
+    dacfi = dac+fi
+    bits = msg.get_bits(include_dac_fi=False)
+    if v:
+        print ('dacfi:',str(dacfi))
+        print ('bits: len=',len(bits),' ... ',str(bits))
+
+    line = [magic_number,site_name,
+            xmin,ymax,xmax,ymin,
+            link_id,message_type,priority,timestamp,dacfi,bits]
+
+    # if v:
+    #     for item in [str(item) for item in line]:
+    #         print ('\t',str(item))
+
+    return ','.join([str(item) for item in line])
+
+
+class NormQueue(Queue.Queue):
+    '''Normalized AIS messages that are multiple lines
+
+    - works based USCG dict representation of a line that comes back from the regex.
+    - not worrying about the checksum.  Assume it already has been validated
+    - 160 stations in the US with 10 seq channels... should not be too much data
+    - assumes each station will send in order messages without duplicates
+    '''
+    def __init__(self, separator='\n', maxsize=0, verbose=False):
+        self.input_buf = ''
+        self.v = verbose
+        self.separator = separator
+        self.stations = {}
+
+        Queue.Queue.__init__(self,maxsize)
+
+    def put(self, msg):
+        if not isinstance(msg, dict): raise TypeError('Message must be a dictionary')
+
+        total = int(msg['total'])
+        station = msg['station']
+        if station not in self.stations:
+            self.stations[station] = {0:[ ],1:[ ],2:[ ],3:[ ],4:[ ],
+                                      5:[ ],6:[ ],7:[ ],8:[ ],9:[ ]}
+
+        if total == 1:
+            Queue.Queue.put(self,msg) # EASY case
+            return
+
+        seq = int(msg['seq_id'])
+        sen_num = int(msg['sen_num'])
+
+        if sen_num == 1:
+            # Flush that station's seq and start it with a new msg component
+            self.stations[station][seq] = [msg['body'],] # START
+            return
+
+        if sen_num != len(self.stations[station][seq]) + 1:
+            self.stations[station][seq] = [ ] # DROP and flush... bad seq
+            return
+        
+        if sen_num == total:
+            msgs = self.stations[station][seq]
+            self.stations[station][seq] = [ ] # FLUSH
+            if len(msgs) != total - 1:
+                return # INCOMPLETE was missing part - so just drop it
+
+            # all parts should have the same metadata, but last has the fill bits
+            msg['body'] = ''.join(msgs) + msg['body']
+            msg['total'] = msg['seq_num'] = 1
+            Queue.Queue.put(self,msg)
+            return
+        
+        self.stations[station][seq].append(msg['body']) # not first, not last
+
+    
 def main():
     from optparse import OptionParser
     parser = OptionParser(usage="%prog [options]",version="%prog "+__version__)
     
-    outputChoices = ('std',) #,'html','csv','sql' , 'kml','kml-full')
-    parser.add_option('-T','--output-type',choices=outputChoices,type='choice',dest='outputType'
-                      ,default=outputChoices[0]
-                      ,help='What kind of string to output ('+', '.join(outputChoices)+') [default: %default]')
+    # outputChoices = ('std',) #,'html','csv','sql' , 'kml','kml-full')
+    # parser.add_option('-T','--output-type',choices=outputChoices,type='choice',dest='outputType'
+    #                   ,default=outputChoices[0]
+    #                   ,help='What kind of string to output ('+', '.join(outputChoices)+') [default: %default]')
 
     (options,args) = parser.parse_args()
     #for arg in args:
     #    print 'Trying:',arg
-    an = AreaNotice(nmea_strings=args)
-    #print an
+    norm_queue = NormQueue()
+
+    kmlfile = open('out.kml','w')
+    kmlfile.write(kml_head)
+    kmlfile.write(file('areanotice_styles.kml').read())
+    
+    if 0==len(args):
+        # Assume stdin
+        assert false
+    if '!AIVDM' in args[0]:
+        an = AreaNotice(nmea_strings=args)
+        print ('Area Notice:',str(an))
+    else:
+        # Assume these are files
+        
+        for filename in args:
+            
+            for line in open(filename):
+                #print ('line:',line.strip())
+                try:
+                    match = ais_nmea_regex.search(line).groupdict()
+                except AttributeError:
+                    if 'AIVDM' in line: print ('BAD_MATCH:',line)
+                    continue
+
+
+                norm_queue.put(match)
+                if norm_queue.qsize()>0:
+                    msg = norm_queue.get(False)
+                    if msg['body'][0] != '8':
+                        #print ('skipping non-8')
+                        continue
+                    #print ('msg:', msg)
+                    nmea = '!AIVDM,1,1,,A,{body},{fill_bits}*{{checksum}},{station},{time_stamp}'.format(**msg)
+                    #print ('nmea:',nmea)
+                    checksum = nmea_checksum_hex(nmea)
+                    #print ('checksum: "%s"',checksum)
+                    nmea = nmea.format(checksum=checksum)
+                    #print ('nmea:',nmea)
+                    #try:
+                    area_notice = AreaNotice(nmea_strings=(nmea,))
+                    print ('AreaNotice:',area_notice)
+                    kmlfile.write(area_notice.kml(with_style=True, with_time=True, with_extended_data=True))
+                    
+
+    kmlfile.write(kml_tail)
+
     
 if __name__=='__main__':
     main()
