@@ -739,7 +739,7 @@ class AIVDM (object):
 
         return sentences
 
-    def kml(self,with_style=False,full=False,with_time=False):
+    def kml(self,with_style=False,full=False,with_time=False, with_extended_data=False):
         '''return kml str for google earth
         @param with_style: if style is True, it will use the standard style.  Set to a name for a custom style
         @param with_time: enable timestamps in Google Earth
@@ -765,6 +765,16 @@ class AIVDM (object):
                 if isinstance(with_style,str):
                     o.append('<styleUrl>%s</styleUrl>'% (with_style,))
                 o.append('<styleUrl>#AreaNotice_%d</styleUrl>' % self.area_type)
+
+            if with_extended_data:
+                o.append('<ExtendedData>')
+                print ('self.__dict__:',self.__dict__)
+
+                for key in ( 'message_id', 'source_mmsi', 'dac', 'fi', 'link_id', 'when', 'duration', 'area_type', ):
+                    o.append('\t<Data name="{key}"><value>{value}</value></Data>'.format(key=key,value=self.__dict__[key]))
+
+                o.append('</ExtendedData>\n')
+
             o.append('<description>')
             o.append('<i>AreaNotice - %s</i>' % (notice_type[self.area_type],) )
             o.append(html)

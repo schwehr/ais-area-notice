@@ -37,7 +37,7 @@ def dump_all(area_notice, kmlfile, byte_align=False):
     print ('bit_str:',str(area_notice.get_bits(include_bin_hdr=True)))
     print ('geojson:',geojson.dumps(area_notice))
     print ()
-    kmlfile.write(area_notice.kml(with_style=True))
+    kmlfile.write(area_notice.kml(with_style=True, with_time=True, with_extended_data=True))
     kmlfile.write('\n')
 
 
