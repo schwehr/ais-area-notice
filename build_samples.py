@@ -346,16 +346,11 @@ def main():
         sbnms1.name = 'sbnms_part1'
 
         dump_all(sbnms1,kmlfile)
-        
-        
-
 
     print ()
     print ('# FIX: add a polyline that takes multiple subareas')
     print ('# FIX: add a polygon that takes multiple subareas')
     print ('# FIX: add case where lines and polygons have more than 4 points')
-
-
 
     kmlfile.write(an.kml_tail)
 

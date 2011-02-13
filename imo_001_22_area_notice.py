@@ -99,7 +99,7 @@ ais_nmea_regex_str = r'''^!(?P<talker>AI)(?P<string_type>VD[MO])
   | (,x(?P<x_station_counter>[0-9]*))
   | (,(?P<station>(?P<station_type>[rbB])[a-zA-Z0-9_]*))
 )*
-,(?P<time_stamp>\d+([.]\d+)?)?
+(,(?P<time_stamp>\d+([.]\d+)?)?)?
 '''
 
 ais_nmea_regex = re.compile(ais_nmea_regex_str,  re.VERBOSE)
