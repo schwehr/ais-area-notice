@@ -87,8 +87,8 @@ ais_nmea_regex_str = r'''^!(?P<talker>AI)(?P<string_type>VD[MO])
 ,(?P<total>\d?)
 ,(?P<sen_num>\d?)
 ,(?P<seq_id>[0-9]?)
-,(?P<chan>[AB])
-,(?P<body>[;:=@a-zA-Z0-9<>\?\'\`]*)
+,(?P<chan>[AB]?)
+,(?P<body>(?P<msg_id>[;:=@a-zA-Z0-9<>\?\'\`])[;:=@a-zA-Z0-9<>\?\'\`]*)
 ,(?P<fill_bits>\d)\*(?P<checksum>[0-9A-F][0-9A-F])
 (  
   (,S(?P<slot>\d*))
@@ -99,8 +99,10 @@ ais_nmea_regex_str = r'''^!(?P<talker>AI)(?P<string_type>VD[MO])
   | (,x(?P<x_station_counter>[0-9]*))
   | (,(?P<station>(?P<station_type>[rbB])[a-zA-Z0-9_]*))
 )*
-(,(?P<time_stamp>\d+([.]\d+)?)?)?
+(,(?P<time_stamp>\d+([.]\d+)?))?
 '''
+
+# msg_id is only valid on the first message in a group
 
 ais_nmea_regex = re.compile(ais_nmea_regex_str,  re.VERBOSE)
 

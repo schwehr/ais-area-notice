@@ -132,6 +132,113 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
     #print 'looking good'
     return True
 
+class TestRegex(unittest.TestCase):
+    def test_without_metadata(self):
+        msg_str = '!AIVDM,1,1,,A,E>b6Kpiacg`0aagRW:JJropqKLpLkD6D8AB;000000VP20,4*4C'
+        r = an.ais_nmea_regex.search(msg_str).groupdict() # r for result
+        self.failUnlessEqual(r['talker'],'AI')
+        self.failUnlessEqual(r['string_type'],'VDM')
+        self.failUnlessEqual(r['total'],'1')
+        self.failUnlessEqual(r['sen_num'],'1')
+        self.failUnlessEqual(r['seq_id'],'')
+        self.failUnlessEqual(r['chan'],'A')
+        self.failUnlessEqual(r['msg_id'],'E')
+        self.failUnlessEqual(r['body'],'E>b6Kpiacg`0aagRW:JJropqKLpLkD6D8AB;000000VP20')
+        self.failUnlessEqual(r['fill_bits'],'4')
+        self.failUnlessEqual(r['checksum'],'4C')
+
+    def test_with_metadata_simple(self):
+        msg_str='!AIVDM,1,1,,B,15N8ac?P00ISgOBA4VU:lOv028Rq,0*4A,b003669953,1297555217'
+        r = an.ais_nmea_regex.search(msg_str).groupdict() # r for result
+        self.failUnlessEqual(r['talker'],'AI')
+        self.failUnlessEqual(r['string_type'],'VDM')
+        self.failUnlessEqual(r['total'],'1')
+        self.failUnlessEqual(r['sen_num'],'1')
+        self.failUnlessEqual(r['seq_id'],'')
+        self.failUnlessEqual(r['chan'],'B')
+        self.failUnlessEqual(r['msg_id'],'1')
+        self.failUnlessEqual(r['body'],'15N8ac?P00ISgOBA4VU:lOv028Rq')
+        self.failUnlessEqual(r['fill_bits'],'0')
+        self.failUnlessEqual(r['checksum'],'4A')
+        self.failUnlessEqual(r['station'],'b003669953')
+        self.failUnlessEqual(r['time_stamp'],'1297555217')
+        
+    def test_with_metadata(self):
+        msg_str='!AIVDM,1,1,,A,15Muq2PP00J64Bf?ktmFpwvl0L0P,0*3F,d-091,S0977,t080226.00,T26.05630183,r07RCED1,1297584148'
+        
+        r = an.ais_nmea_regex.search(msg_str).groupdict() # r for result
+        #print ('msg_dict:',r)
+        self.failUnlessEqual(r['talker'],'AI')
+        self.failUnlessEqual(r['string_type'],'VDM')
+        self.failUnlessEqual(r['total'],'1')
+        self.failUnlessEqual(r['sen_num'],'1')
+        self.failUnlessEqual(r['seq_id'],'')
+        self.failUnlessEqual(r['chan'],'A')
+        self.failUnlessEqual(r['body'],'15Muq2PP00J64Bf?ktmFpwvl0L0P')
+        self.failUnlessEqual(r['fill_bits'],'0')
+        self.failUnlessEqual(r['checksum'],'3F')
+        self.failUnlessEqual(r['signal_strength'],'-091')
+        self.failUnlessEqual(r['slot'],'0977')
+        self.failUnlessEqual(r['t_recver_hhmmss'],'080226.00')
+        self.failUnlessEqual(r['time_of_arrival'],'26.05630183')
+        self.failUnlessEqual(r['station'],'r07RCED1')
+        self.failUnlessEqual(r['station_type'],'r')
+        self.failUnlessEqual(r['time_stamp'],'1297584148')
+
+    def test_with_x(self):
+        msg_str = '!AIVDM,1,1,,B,3018lEU000rA?L@>sp;8L5<>0000,0*26,x367022,s32171,d-079,T08.48347459,r003669976,1166058609'
+        r = an.ais_nmea_regex.search(msg_str).groupdict() # r for result
+        self.failUnlessEqual(r['talker'],'AI')
+        self.failUnlessEqual(r['string_type'],'VDM')
+        self.failUnlessEqual(r['total'],'1')
+        self.failUnlessEqual(r['sen_num'],'1')
+        self.failUnlessEqual(r['seq_id'],'')
+        self.failUnlessEqual(r['chan'],'B')
+        self.failUnlessEqual(r['msg_id'],'3')
+        self.failUnlessEqual(r['body'],'3018lEU000rA?L@>sp;8L5<>0000')
+        self.failUnlessEqual(r['fill_bits'],'0')
+        self.failUnlessEqual(r['checksum'],'26')
+        self.failUnlessEqual(r['x_station_counter'],'367022')
+        self.failUnlessEqual(r['s_rssi'],'32171')
+        self.failUnlessEqual(r['signal_strength'],'-079')
+        self.failUnlessEqual(r['time_of_arrival'],'08.48347459')
+        self.failUnlessEqual(r['station'],'r003669976')
+        self.failUnlessEqual(r['time_stamp'],'1166058609')
+
+    def test_multi_line_1of2(self):
+        msg_str = '!AIVDM,2,1,6,B,54eGK=h00000<O;C?H104<THT>10ThuB1ALt00000000040000000000,0*58,b003669705,1297584166'
+        r = an.ais_nmea_regex.search(msg_str).groupdict() # r for result
+        self.failUnlessEqual(r['talker'],'AI')
+        self.failUnlessEqual(r['string_type'],'VDM')
+        self.failUnlessEqual(r['total'],'2')
+        self.failUnlessEqual(r['sen_num'],'1')
+        self.failUnlessEqual(r['seq_id'],'6')
+        self.failUnlessEqual(r['chan'],'B')
+        self.failUnlessEqual(r['msg_id'],'5')
+
+
+    def test_multi_line_2of2(self):
+        msg_str = '!AIVDM,2,2,6,B,000000000000000,2*21,b003669705,1297584166'
+        r = an.ais_nmea_regex.search(msg_str).groupdict() # r for result
+        self.failUnlessEqual(r['talker'],'AI')
+        self.failUnlessEqual(r['string_type'],'VDM')
+        self.failUnlessEqual(r['total'],'2')
+        self.failUnlessEqual(r['sen_num'],'2')
+        self.failUnlessEqual(r['seq_id'],'6')
+        self.failUnlessEqual(r['chan'],'B')
+
+    def test_own_ship(self):
+        msg_str = '!AIVDO,1,1,,,13tfD@?P7BJsWhhHb5eBtwwL0000,0*05,rnhjel,1297555200.32'
+        r = an.ais_nmea_regex.search(msg_str).groupdict() # r for result
+        self.failUnlessEqual(r['talker'],'AI')
+        self.failUnlessEqual(r['string_type'],'VDO')
+        self.failUnlessEqual(r['total'],'1')
+        self.failUnlessEqual(r['sen_num'],'1')
+        self.failUnlessEqual(r['seq_id'],'')
+        self.failUnlessEqual(r['chan'],'') # No channel on AIVDO???  Guess that makes sense
+
+        
+        
 #class Test0Math:
 class Test0Math(unittest.TestCase):
 
@@ -143,7 +250,6 @@ class Test0Math(unittest.TestCase):
         self.failUnlessEqual((0,0),vec_rot(p1,math.pi/2))
         self.failUnlessEqual((0,0),vec_rot(p1,math.pi/4))
         self.failUnlessEqual((0,0),vec_rot(p1,-math.pi/4))
-
 
     def test_rot2(self):
         'rot of 1,0'
@@ -168,7 +274,6 @@ class Test0Math(unittest.TestCase):
         self.failUnless(almost_equal((-math.sqrt(.5),math.sqrt(.5)),vec_rot(p1,math.pi/4)))
         self.failUnless(almost_equal( (-1,0), vec_rot(vec_rot(p1,math.pi/4),math.pi/4)))
         self.failUnless(almost_equal((0,1),vec_rot((math.sqrt(.5),math.sqrt(.5)),math.pi/4)))
-
 
 #class Test1AIVDM:
 class Test1AIVDM(unittest.TestCase):
@@ -556,7 +661,6 @@ class TestWhaleNotices(unittest.TestCase):
         data = geojson.loads(json) # Get the data as a dictionary so that we can verify the contents
         self.failUnlessEqual(zone_type, data['bbm']['area_type'])
         self.failUnlessEqual(an.notice_type[zone_type], data['bbm']['area_type_desc'])
-
 
 
 print ('TODO: write the two segment test and make it work')
