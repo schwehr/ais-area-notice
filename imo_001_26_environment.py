@@ -22,11 +22,31 @@ from BitVector import BitVector
 
 SENSOR_REPORT_SIZE = 112
 
+sensor_report_lut = {
+    0: 'Site Location',
+    1: 'Station ID',
+    2: 'Wind',
+    3: 'Water level',
+    4: 'Current Flow (2D)',
+    5: 'Current Flow (3D)',
+    6: 'Horizontal Current Flow',
+    7: 'Sea State',
+    8: 'Salinity',
+    9: 'Weather',
+    10: 'Air gap/Air draft',
+    }
+
 class SensorReport(object):
     def __init__(self, report_type=None, day=None, hour=None, minute=None, site_id=None, bits=None):
         if bits is not None:
             self.decode_bits(bits)
             return
+        if day is None:
+            now = datetime.datetime.utcnow()
+            day = now.day
+            hour = now.hour
+            minute = now.minute
+        
         self.report_type = report_type
         self.day = day
         self.hour = hour
@@ -34,7 +54,11 @@ class SensorReport(object):
         self.site_id = site_id
 
     def __unicode__(self):
-        return 'SensorReport: site_id={site_id} type={report_type} day={day} hour={hour} min={minute}'.format(**self.__dict__)
+        return 'SensorReport: site_id={site_id} type={report_type} day={day} hour={hour} min={minute}'.format(
+            type_str = sensor_report_lut[self.report_type],
+            **self.__dict__
+            )
+
     def __str__(self):
         return self.__unicode__()
 
@@ -57,15 +81,97 @@ class SensorReport(object):
         bv = binary.joinBV(bv_list)
         assert (len(bv) == 4 + 5 + 5 + 6 + 7)
         return bv
-    
+
+sensor_owner_lut = {
+    0: 'unknown',
+    1: 'hydrographic office',
+    2: 'inland waterway authority',
+    3: 'coastal directorate',
+    4: 'meteorological service',
+    5: 'port authority',
+    6: 'coast guard',
+    }
+
+data_timeout_hrs_lut = {
+    0: None, #no time-out period = default
+    1: 1/6., #10 min
+    2: 1,
+    3: 6,
+    4: 12,
+    5: 24 #hrs
+}
+
+class SensorReportSiteLocation(SensorReport):
+    def __init__(self,
+                 day=None, hour=None, minute=None, site_id=None,
+                 lon=None, lat=None, alt=None, owner=None, timeout=None,
+                 # or
+                 bits=None):
+
+        if bits is not None:
+            self.decode_bits(bits)
+            return
+
+        print ('sl:',lon, lat)
+        assert (lon >= -180. and lon <= 180.) or lon == 181
+        assert (lat >= -90. and lat <= 90.) or lat == 91
+        assert (alt >= 0 and alt < 200.3) # 2002 is non-available
+        assert (owner >= 0 and owner <= 6) or owner == 14
+        assert (timeout >= 0 and timeout <= 5)
+
+        SensorReport.__init__(self, report_type=0, day=day, hour=hour, minute=minute, site_id=site_id)
+
+        self.lon = lon
+        self.lat = lat
+        self.alt = alt
+        self.owner = owner
+        self.timeout = timeout
+
+    def decode_bits(self, bits):
+        if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
+        SensorReport.decode_bits(self, bits)
+        self.lon = binary.signedIntFromBV(bits[27:55])/600000.
+        self.lat = binary.signedIntFromBV(bits[55:82])/600000.
+        self.alt = int ( bits[82:93] ) / 10.
+        self.owner = int ( bits[93:97] )
+        self.timeout = int ( bits[97:100] )
+        # 12 spare
+
+    def get_bits(self):
+        bv_list = [SensorReport.get_bits(self),
+                   binary.bvFromSignedInt(int(self.lon * 600000), 28),
+                   binary.bvFromSignedInt(int(self.lat * 600000), 27),
+                   BitVector(intVal=int(self.alt*10), size=11),
+                   BitVector(intVal=self.owner, size=4),
+                   BitVector(intVal=self.timeout, size=3),
+                   BitVector(size=12)
+                   ]
+        bits = binary.joinBV(bv_list)
+        print ('siteloc_len:',len(bits))
+        assert len(bits) == SENSOR_REPORT_SIZE
+        return bits
+
+    def __unicode__(self):
+        return ('\tSensorReport Location: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'+
+                ' x={lon} y={lat} z={alt} owner={owner_str} timeout={timeout_str} (hrs)').format(
+            type_str = sensor_report_lut[self.report_type],
+            owner_str = sensor_owner_lut[self.owner],
+            timeout_str = data_timeout_hrs_lut[self.timeout],
+            **self.__dict__
+            )
+            
 class Environment(BBM):
     # It might not work to put the dac, fi here
     dac = 1
     fi = 26
-    def __init__(self, timestamp = None, site_id =0, source_mmsi=None, name = None,
+    def __init__(self,
+                 #timestamp = None,
+                 site_id =0, source_mmsi=None, name = None,
                  # OR
                  nmea_strings=None):
         'Initialize a Environmental AIS binary broadcast message (1:8:22)'
+        # FIX: should I get rid of this timestamp since it really belongs in the sensor reports?
+
         BBM.__init__(self, message_id = 8)
 
         self.sensor_reports = []
@@ -74,30 +180,31 @@ class Environment(BBM):
             self.decode_nmea(nmea_strings)
             return
 
-        if timestamp is None:
-            timestamp = datetime.datetime.utcnow()
+        # if timestamp is None:
+        #     timestamp = datetime.datetime.utcnow()
 
-        # Only allow minute accuracy.  Round down.
-        self.timestamp = datetime.datetime(year = timestamp.year,
-                                           month = timestamp.month,
-                                           day = timestamp.day,
-                                           hour = timestamp.hour,
-                                           minute = timestamp.minute,
-                                           # No seccond or smaller
-                                           )
-                
+        # # Only allow minute accuracy.  Round down.
+        # self.timestamp = datetime.datetime(year = timestamp.year,
+        #                                    month = timestamp.month,
+        #                                    day = timestamp.day,
+        #                                    hour = timestamp.hour,
+        #                                    minute = timestamp.minute,
+        #                                    # No seccond or smaller
+        #                                    )
+        
         self.site_id = site_id;
         self.source_mmsi = source_mmsi
 
     def __unicode__(self, verbose=False):
         r = []
-        r.append('Environment: timestamp={ts} site_id={site_id} sensor_reports: [{num_reports}]'.format(
+        #timestamp={ts}
+        r.append('Environment: site_id={site_id} sensor_reports: [{num_reports}]'.format(
             num_reports = len(self.sensor_reports),
-            ts = self.timestamp.strftime('%m%dT%H:%MZ'),
+            #ts = self.timestamp.strftime('%m%dT%H:%MZ'),
             **self.__dict__)
                  )
         if not verbose: return r[0]
-        for rpt in sensor_reports:
+        for rpt in self.sensor_reports:
             r.append('\t'+str(rpt))
         return '\n'.join(r)
     

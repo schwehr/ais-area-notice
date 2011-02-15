@@ -918,7 +918,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         return # Return an empty object
 
 
-    def decode_bits(self,bits):
+    def decode_bits(self, bits):
         if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
@@ -1554,7 +1554,9 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
                 }
 
 class AreaNotice(BBM):
-    def __init__(self,area_type=None, when=None, duration=None, link_id=0, nmea_strings=None, source_mmsi=None, dac=1):
+    #dac = 1
+    #fi = 22
+    def __init__(self,area_type=None, when=None, duration=None, link_id=0, nmea_strings=None, source_mmsi=None):
         '''
         @param area_type: 0..127 based on table 11.10
         @param when: when the notice starts
@@ -1587,9 +1589,11 @@ class AreaNotice(BBM):
             self.duration = duration
             self.link_id = link_id
 
-        self.dac = dac
-        #self.dac = 1 # The USCG is currently mandating something different than the IMO Circ 289
-        #self.dac = 366 # US Regional Message
+        else:
+            # FIX: raise an exception for not enough info
+            assert False
+
+        self.dac = 1
         self.fi = 22
 
         BBM.__init__(self, message_id = 8) # FIX: move to the beginning of this method
@@ -1722,7 +1726,7 @@ class AreaNotice(BBM):
 
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.duration), 18 ) )
 
-        stdlen = sum([len(b) for b in bvList])
+        #stdlen = sum([len(b) for b in bvList])
 
         #print ('pre_adding_areas:',len(bvList))
         #for i in range(len(bvList)):
@@ -1818,7 +1822,7 @@ class AreaNotice(BBM):
 
         #print ('sub_area_len:', len(sub_areas_bits), len(sub_areas_bits) % SUB_AREA_SIZE)
         #print ('num_sub_areas:', len(sub_areas_bits) / SUB_AREA_SIZE)
-        shapes = self.get_shapes(sub_areas_bits)
+        #shapes = self.get_shapes(sub_areas_bits)
 
         #print '\nshapes:', shapes
 
