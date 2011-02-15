@@ -11,11 +11,16 @@ __contact__   = 'kurt at ccom.unh.edu'
 
 __doc__ ='''
 Implement IMO Circ 289 Msg 8:1:26 Environmental
+
+Issues:
+- What does the sensor data description apply to?  e.g. with wind, does it apply to the last 10 minutes or the forecast?
+
 '''
 
 from imo_001_22_area_notice import BBM, AisPackingException, AisUnpackingException
 
 import binary
+import aisstring
 
 import datetime
 from BitVector import BitVector
@@ -36,6 +41,36 @@ sensor_report_lut = {
     10: 'Air gap/Air draft',
     }
 
+sensor_type_lut = {
+    0: 'no data = default',
+    1: 'raw real time',
+    2: 'real time with quality control',
+    3: 'predicted (based historical statistics)',
+    4: 'forecast (predicted, refined with real-time information)',
+    5: 'nowcast (a continuous forecast)',
+    #6: '(reserved for future use)',
+    7: 'sensor not available',
+}
+
+vdatum_lut = {
+    0: 'MLLW', #'Mean Lower Low Water (MLLW)',
+    1: 'IGLD-85', #'International Great Lakes Datum (IGLD-85)',
+    2: 'Local river datum',
+    3: 'STND', #'Station Datum (STND)',
+    4: 'MHHW', #'Mean Higher High Water (MHHW)',
+    5: 'MHW', #'Mean High Water (MHW)',
+    6: 'MSL', #'Mean Sea Level (MSL)',
+    7: 'MLW', #'Mean Low Water (MLW)',
+    8: 'NGVD-29', #'National Geodetic Vertical Datum (NGVD-29)',
+    9: 'NAVD-88', #'North American Vertical Datum (NAVD-88)',
+    10: 'WGS-84', #'World Geodetic System (WGS-84)',
+    11: 'LAT', #'Lowest Astronomical Tide (LAT)',
+    12: 'pool',
+    13: 'gauge',
+    14: 'unknown', #'unknown/not available = default'
+    #15 - 30 (reserved for future use)
+    }
+
 class SensorReport(object):
     def __init__(self, report_type=None, day=None, hour=None, minute=None, site_id=None, bits=None):
         if bits is not None:
@@ -46,6 +81,13 @@ class SensorReport(object):
             day = now.day
             hour = now.hour
             minute = now.minute
+        print('ts:', day, hour , minute, '  site_id:', site_id)
+        assert(report_type in sensor_report_lut)
+        assert(day>=1 and day <= 31)
+        assert(hour>=0 and hour <= 23)
+        assert(minute>=0 and minute<=59)
+        assert(site_id>=0 and site_id<=127)
+        assert(bits is None)
         
         self.report_type = report_type
         self.day = day
@@ -112,7 +154,7 @@ class SensorReportSiteLocation(SensorReport):
             self.decode_bits(bits)
             return
 
-        print ('sl:',lon, lat)
+        #print ('sl:',lon, lat)
         assert (lon >= -180. and lon <= 180.) or lon == 181
         assert (lat >= -90. and lat <= 90.) or lat == 91
         assert (alt >= 0 and alt < 200.3) # 2002 is non-available
@@ -159,14 +201,223 @@ class SensorReportSiteLocation(SensorReport):
             timeout_str = data_timeout_hrs_lut[self.timeout],
             **self.__dict__
             )
-            
+
+class SensorReportId(SensorReport):
+    def __init__(self, day=None, hour=None, minute=None, site_id=None, id_str=None, bits=None):
+        if bits is not None:
+            self.decode_bits(bits)
+            return
+        assert(len(id_str) <= 14)
+        print('ts_id:', day, hour, minute,'  site_id:', site_id, '  id_str="%s"' %(id_str,))
+        SensorReport.__init__(self, report_type=0, day=day, hour=hour, minute=minute, site_id=site_id)
+        self.id_str = id_str
+
+    def decode_bits(self, bits):
+        if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
+        SensorReport.decode_bits(self, bits)
+        self.id_str = aisstring.decode(bits[27:-1]).rstrip('@')
+        # 1 spare bit
+
+    def get_bits(self):
+        bv_list = [SensorReport.get_bits(self),
+                   aisstring.encode(self.id_str.ljust(14, '@')),
+                   BitVector(size=1) # spare
+                   ]
+        bits = binary.joinBV(bv_list)
+        if len(bits) != SENSOR_REPORT_SIZE: raise AisPackingException('bit length'+str(len(bits))+'not equal to'+str(SENSOR_REPORT_SIZE))
+        return bits
+
+    def __unicode__(self):
+        return ('\tSensorReport Id: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'+
+                ' id={id_str}').format(**self.__dict__)
+
+
+class SensorReportWind(SensorReport):
+    def __init__(self,
+                 day=None, hour=None, minute=None, site_id=None,
+                 speed=None, gust=None, dir=None, gust_dir=None,
+                 data_descr=None,
+                 forecast_speed=None, forecast_gust=None, forecast_dir=None,
+                 forecast_day=None, forecast_hour=None, forecast_minute=None,
+                 duration_min=None,
+                 # of
+                 bits=None):
+        if bits is not None:
+            self.decode_bits(bits)
+            return
+
+        # FIX: update the defaults in the method parameters and ditch the if stuff
+        self.speed = speed if speed is not None else  122
+        self.gust = gust if gust is not None else  122
+        self.dir = dir if dir is not None else  360
+        self.gust_dir = gust_dir if gust_dir is not None else 360
+        self.data_descr = data_descr if data_descr is not None else 0
+        self.forecast_speed = forecast_speed if forecast_speed is not None else 122
+        self.forecast_gust = forecast_gust if forecast_gust is not None else 122
+        self.forecast_dir = forecast_dir if forecast_dir is not None else 360
+        self.forecast_day = forecast_day if forecast_day is not None else 0
+        self.forecast_hour = forecast_hour if forecast_hour is not None else 24
+        self.forecast_minute = forecast_minute if forecast_minute is not None else 60
+        self.duration_min = duration_min if duration_min is not None else 0
+
+        assert(self.speed >= 0 and self.speed <=122)
+        assert(self.gust >= 0 and self.gust <= 122)
+        assert(self.dir >= 0 and self.dir <= 360)
+        assert(self.gust_dir >= 0 and self.gust_dir <= 360)
+        assert(self.data_descr in sensor_type_lut)
+        assert(self.forecast_speed >= 0 and self.forecast_speed <= 122)
+        assert(self.forecast_gust >= 0 and self.forecast_gust <= 122)
+        assert(self.forecast_dir >= 0 and self.forecast_dir <= 360)
+        assert(self.forecast_day >= 0 and self.forecast_day <= 31)
+        assert(self.forecast_hour >= 0 and self.forecast_hour <= 24)
+        assert(self.forecast_minute >= 0 and self.forecast_minute <= 60)
+        assert(self.duration_min >= 0 and self.duration_min<= 255)
+
+        print('ts_wind:', day, hour, minute,'  site_id:', site_id)
+        SensorReport.__init__(self, report_type=0, day=day, hour=hour, minute=minute, site_id=site_id)
+
+    def decode_bits(self, bits):
+        if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
+        SensorReport.decode_bits(self, bits)
+        self.speed = int ( bits[27:34] )
+        self.gust = int ( bits[34:41] )
+        self.dir = int ( bits[41:50] )
+        self.gust_dir = int ( bits[50:59] )
+
+        self.data_descr = int ( bits[59:62] )
+
+        self.forecast_speed = int ( bits[62:69] )
+        self.forecast_gust = int ( bits[69:76] )
+        self.forecast_dir = int ( bits[76:85] )
+        self.forecast_day = int ( bits[85:90] )
+        self.forecast_hour = int ( bits[90:95] )
+        self.forecast_minute = int ( bits[95:101] )
+        self.duration_min = int ( bits[101:106] )
+        # 3 spare bits
+
+    def get_bits(self):
+        bv_list = [SensorReport.get_bits(self),
+                   BitVector(intVal=self.speed, size=7),
+                   BitVector(intVal=self.gust, size=7),
+                   BitVector(intVal=self.dir, size=9),
+                   BitVector(intVal=self.gust_dir, size=9),
+                   BitVector(intVal=self.data_descr, size=3),
+                   BitVector(intVal=self.forecast_speed, size=7),
+                   BitVector(intVal=self.forecast_gust, size=7),
+                   BitVector(intVal=self.forecast_dir, size=9),
+                   BitVector(intVal=self.forecast_day, size=5),
+                   BitVector(intVal=self.forecast_hour, size=5),
+                   BitVector(intVal=self.forecast_minute, size=6),
+                   BitVector(intVal=self.duration_min, size=8),
+                   BitVector(size=3) # spare
+                   ]
+        bits = binary.joinBV(bv_list)
+        if len(bits) != SENSOR_REPORT_SIZE: raise AisPackingException('bit length'+str(len(bits))+'not equal to'+str(SENSOR_REPORT_SIZE))
+        return bits
+
+    def __unicode__(self):
+        r = ['\tSensorReport Wind: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+            ]
+        r.append('\t\tsensor data description: {data_descr} - {data_descr_str}'.format(data_descr = self.data_descr,
+            data_descr_str = sensor_type_lut[self.data_descr],
+            ))
+                 
+        #if self.data_descr in (1,2,3,4,5):
+        if not (self.speed == 122 and self.dir == 360):
+            r.append('\t\tspeed={speed} gust={gust} dir={dir} gust_dir={gust_dir}'.format(**self.__dict__))
+        if self.forecast_speed != 122 or self.forecast_dir != 360:
+            r.append('\t\tforecast: speed={forecast_speed} gust={forecast_gust} dir={forecast_dir}'.format(**self.__dict__))
+            r.append('\t\tforecast_time: {forecast_day:02}T{forecast_hour:02}:{forecast_minute:02}Z  duration: {duration_min:3} (min)'.format(**self.__dict__))
+        return '\n'.join(r)
+
+class SensorReportWaterLevel(SensorReport):
+    def __init__(self,
+                 day=None, hour=None, minute=None, site_id=None,
+                 wl_type=0, wl=-327.68, trend=3, vdatum=14,
+                 data_descr=0,
+                 forecast_type=0, forecast_wl=-327.68,
+                 forecast_day=0, forecast_hour=24, forecast_minute=60,
+                 duration_min=0,
+                 # of
+                 bits=None):
+        if bits is not None:
+            self.decode_bits(bits)
+            return
+        self.wl_type=wl_type
+        self.wl = wl
+        self.trend = trend
+        self.vdatum = vdatum
+        self.data_descr = data_descr
+        self.forecast_type = forecast_type
+        self.forecast_wl = forecast_wl
+        self.forecast_day = forecast_day
+        self.forecast_hour = forecast_hour
+        self.forecast_minute = forecast_minute
+        self.duration_min = duration_min
+
+        SensorReport.__init__(self, report_type=0, day=day, hour=hour, minute=minute, site_id=site_id)
+        # FIX: check all the parameters
+
+    def decode_bits(self, bits):
+        if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
+        SensorReport.decode_bits(self, bits)
+        self.wl_type = int ( bits[27:28] )
+        self.wl = binary.signedIntFromBV( bits[28:44] ) / 100.
+        self.trend = int ( bits[44:46] )
+        self.vdatum = int ( bits[46:51] )
+        self.data_descr = int ( bits[51:54] )
+        self.forecast_type = int ( bits[54:55] )
+        self.forecast_wl = binary.signedIntFromBV( bits[55:71] ) / 100.
+        self.forecast_day = int ( bits[71:76] )
+        self.forecast_hour = int ( bits[76:81] )
+        self.forecast_minute = int ( bits[81:87] )
+        self.duration_min = int ( bits[87:95] )
+        # 17 spare bits
+
+    def get_bits(self):
+        wl_bits = binary.bvFromSignedInt(int(self.wl*100), bitSize=16)
+        bv_list = [SensorReport.get_bits(self),
+                   BitVector(intVal=self.wl_type, size=1),
+                   binary.bvFromSignedInt(int(self.wl*100), 16),
+                   BitVector(intVal=self.trend, size=2),
+                   BitVector(intVal=self.vdatum, size=5),
+                   BitVector(intVal=self.data_descr, size=3),
+                   BitVector(intVal=self.forecast_type, size=1),
+                   binary.bvFromSignedInt(int(self.forecast_wl*100), 16),
+                   BitVector(intVal=self.forecast_day, size=5),
+                   BitVector(intVal=self.forecast_hour, size=5),
+                   BitVector(intVal=self.forecast_minute, size=6),
+                   BitVector(intVal=self.duration_min, size=8),
+                   BitVector(size=17) # spare
+                   ]
+        bits = binary.joinBV(bv_list)
+        if len(bits) != SENSOR_REPORT_SIZE:
+            raise AisPackingException('bit length %d not equal to %d' % (len(bits),SENSOR_REPORT_SIZE))
+        return bits
+
+    def __unicode__(self):
+        r = ['\tSensorReport WaterLevel: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+            ]
+        r.append('\t\tsensor data description: {data_descr} - {data_descr_str}'.format(data_descr = self.data_descr,
+            data_descr_str = sensor_type_lut[self.data_descr],
+            ))
+                 
+        #if self.data_descr in (1,2,3,4,5):
+        if self.wl != -327.68:  # FIX: almost equal
+            r.append('\t\twl_type={wl_type} wl={wl} m trend={trend} vdatum={vdatum} - vdatum_str'.format(vdatum_str = vdatum_lut[self.vdatum], **self.__dict__))
+        if self.forecast_wl != -327.68: # FIX: almost_equal
+            r.append('\t\tforecast: wl={forecast_wl} type={forecast_type}'.format(**self.__dict__))
+            r.append('\t\tforecast_time: {forecast_day:02}T{forecast_hour:02}:{forecast_minute:02}Z  duration: {duration_min:3} (min)'.format(**self.__dict__))
+        return '\n'.join(r)
+
+
 class Environment(BBM):
     # It might not work to put the dac, fi here
     dac = 1
     fi = 26
     def __init__(self,
                  #timestamp = None,
-                 site_id =0, source_mmsi=None, name = None,
+                 site_id=0, source_mmsi=None, name = None,
                  # OR
                  nmea_strings=None):
         'Initialize a Environmental AIS binary broadcast message (1:8:22)'

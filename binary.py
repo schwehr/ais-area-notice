@@ -105,7 +105,6 @@ def joinBV(bvSeq):
 	
     return bvTotal
 
-# FIX: Should switch all calls to this to e.g. BitVector(intVal=2, size=8)
 def setBitVectorSize(bv,size=8):
     """Pad a BitVector with 0's on the left until it is at least the size specified
 
@@ -176,7 +175,7 @@ def subone(bv):
 
 def bvFromSignedInt(intVal,bitSize=None):
     '''
-    Create a twos complement BitVector from a signed integer.
+    Create a twos complement BitVector from a signed integer.  Not that 110 and 10 are both -2.
 
     Positives must have a '0' in the left hand position.
 
@@ -189,12 +188,25 @@ def bvFromSignedInt(intVal,bitSize=None):
 
     Negative numbers must have a '1' in the left hand position.
 
+    >>> print bvFromSignedInt(-2,bitSize=2)
+    10
+
     >>> print bvFromSignedInt(-1,bitSize=4)
     1111
     >>> print bvFromSignedInt(-2,bitSize=4)
     1110
     >>> print bvFromSignedInt(-7,bitSize=4)
     1001
+    >>> print bvFromSignedInt(-8,bitSize=4)
+    1000
+
+    >>> print bvFromSignedInt(-2,bitSize=2)
+    10
+
+    >>> print bvFromSignedInt(-32768,bitSize=16)
+    1000000000000000
+
+    
 
     @param intVal: integer value to turn into a bit vector
     @type intVal: int
@@ -208,10 +220,11 @@ def bvFromSignedInt(intVal,bitSize=None):
         bv = BitVector(intVal=abs(intVal))
     else:
         bv = setBitVectorSize(BitVector(intVal=abs(intVal)),bitSize-1)
-        if (bitSize-1!=len(bv)):
+        if (bitSize-1!=len(bv) and bv[0] != 1 and bv[-1] != 0):
             print 'ERROR: bitsize not right'
             print '  ',bitSize-1,len(bv)
             assert(False)
+        if len(bv) == bitSize and bv[0] == 1: return bv
     if intVal>=0:
 	bv = BitVector(intVal=0) + bv
     else:
@@ -247,6 +260,13 @@ def signedIntFromBV(bv):
     -7
     >>> signedIntFromBV(BitVector(bitstring='1000'))
     -8
+
+    >>> signedIntFromBV(BitVector(bitstring='10'))
+    -2
+
+    >>> signedIntFromBV(BitVector(bitstring='1000000000000000'))
+    -32768
+
 
     @param bv: Bits to treat as an signed int
     @type bv: BitVector
@@ -294,8 +314,6 @@ def ais6chartobitvec(char6):
     >>> print int(ais6chartobitvec('R'))
     34
 
-    >>> print int(ais6chartobitvec('Z'))
-    34
     >>> print int(ais6chartobitvec('a'))
     41
     >>> print int(ais6chartobitvec('w'))
@@ -424,7 +442,7 @@ def ais6tobitvec(str6):
     >>> print ais6tobitvec('6b')
     000110101010
     
-    >>> print ais6tobitvec('6bF:Z')
+    >>> print ais6tobitvec('6bF:R')
     000110101010010110001010100010
 
     @bug: Need to add pad bit handling
@@ -463,8 +481,10 @@ def getPadding(bv):
     0
     >>> getPadding(BitVector(bitstring='0101010'))
     5
+
     @rtype: int
     @return: number of pad bits required for this bitvector to make it bit aligned to the ais nmea string
+
     '''
     pad = 6-(len(bv)%6)
     if 6==pad: pad = 0
@@ -474,11 +494,11 @@ def bitvectoais6(bv,doPadding=True):
     """Convert bit vector int an ITU AIS 6 bit string.  Each character represents 6 bits
 
     >>> print bitvectoais6(BitVector(bitstring='000110101010010110001010100010'))
-    ('6bF:Z', 0)
+    ('6bF:R', 0)
 
     @param bv: message bits (must be already stuffed)
     @type bv: BitVector
-    @return: str6 ASCII that as it appears in the NMEA string and the number of pad bits
+    @return: str6 ASCII that as it appears in the NMEA string
     @rtype: str, pad
 
     @todo: make a test base for needing padding
