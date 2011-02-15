@@ -1,0 +1,13 @@
+LGPL v3 by Kurt Schwehr
+
+This is a reference implementation of the AIS Binary Messages
+described in the IMO Circular 289 specification:
+
+  IMO, Guidance on the Use of AIS Application-Specific Messages, IMO,
+  SN.1/Circ.289, Ref. T2-OSS/2.7.1, 2 June 2010.
+
+This library started for just the area notice (aka Zone) to support
+the Rightwhale AIS Project (RAP).  Since then, the project is trying
+to include the other messages defined in that document to help create
+a free and public test set of messages to support other software
+projects.
