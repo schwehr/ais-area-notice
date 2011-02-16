@@ -4,8 +4,10 @@ from __future__ import print_function
 import imo_001_26_environment as env
 
 import sys
+import unittest
+import datetime
 
-def main():
+def main_old():
     sr_ag = env.SensorReportAirGap(site_id=45)
     print ('sr_ag:', sr_ag)
     bits = sr_ag.get_bits()
@@ -89,14 +91,6 @@ def main():
     for line in lines:
         print (line)
 
-    sr1 = env.SensorReport(2, 28, 2, 0, 8)
-    bits = sr1.get_bits()
-    print ('sr:',str(sr1))
-    print ('sr_bits:',bits)
-    sr2 = env.SensorReport(bits=bits)
-    print ('sr:',str(sr2))
-    del sr1
-    del sr2
 
     sr = env.SensorReportSiteLocation(site_id = 42, lon = -72, lat = 41, alt=0, owner=0, timeout=0)
     print ('sr_sl:',str(sr))
@@ -108,5 +102,53 @@ def main():
     e.add_sensor_report(sr)
     print ('env_with_sr_sl:',e.__str__(verbose=True))
 
+class TestSensorReports(unittest.TestCase):
+    'SensorReports'
+    def setUp(self):
+        now = datetime.datetime.utcnow()
+        self.day = now.day
+        self.hour = now.hour
+        self.minute = now.minute
+    def test_SensorReport(self):
+        'SensorReport'
+        report_type = 0
+        site_id = 0
+        sr = env.SensorReport(report_type, site_id=site_id)
+        self.assertEqual(report_type, sr.report_type)
+        self.assertEqual(site_id, sr.site_id)
+        
+        report_type = 2
+        site_id=9
+        sr = env.SensorReport(report_type, self.day, self.hour, self.minute, site_id)
+        self.assertEqual(report_type, sr.report_type)
+        self.assertEqual(self.day, sr.day)
+        self.assertEqual(self.hour, sr.hour)
+        self.assertEqual(self.minute, sr.minute)
+        self.assertEqual(site_id, sr.site_id)
+        
+        bits = sr.get_bits()
+        self.assertEqual(len(bits), env.SENSOR_REPORT_HDR_SIZE)
+        sr2 = env.SensorReport(bits=bits)
+    def test_SrLocation(self):
+        'SensorReportLocation'
+        
+
+
+
+#def main():
+    # import argparse
+
+    # parser = argparse.ArgumentParser(description='Test the environmental message from IMO Circ 289')
+    # parser.add_argument('-v', '--verbose', default=False, action='store_true',
+    #                     help='make the tests more talkative')
+    # args = parser.parse_args()
+    # print (args.verbose)
+
+    # sys.argv = [sys.argv[0],]
+    # if args.verbose:
+    #     sys.argv.append('-v')
+
+
 if __name__ == '__main__':
-    main()
+    unittest.main()
+    #main()

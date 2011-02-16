@@ -25,7 +25,9 @@ import aisstring
 import datetime
 from BitVector import BitVector
 
+SENSOR_REPORT_HDR_SIZE = 27
 SENSOR_REPORT_SIZE = 112
+
 
 sensor_report_lut = {
     0: 'Site Location',
@@ -115,7 +117,7 @@ class SensorReport(object):
             day = now.day
             hour = now.hour
             minute = now.minute
-        print('ts:', day, hour , minute, '  site_id:', site_id)
+        #print('ts:', day, hour , minute, '  site_id:', site_id)
         assert(report_type in sensor_report_lut)
         assert(day>=1 and day <= 31)
         assert(hour>=0 and hour <= 23)
@@ -139,7 +141,7 @@ class SensorReport(object):
         return self.__unicode__()
 
     def decode_bits(self,bits):
-        assert(len(bits) >= 27)
+        assert(len(bits) >= SENSOR_REPORT_HDR_SIZE)
         assert(len(bits) <= SENSOR_REPORT_SIZE)
         self.report_type = int( bits[:4] )
         self.day = int( bits[4:9] )
@@ -156,6 +158,7 @@ class SensorReport(object):
         bv_list.append( BitVector(intVal=self.site_id, size=7) )
         bv = binary.joinBV(bv_list)
         assert (len(bv) == 4 + 5 + 5 + 6 + 7)
+        assert (SENSOR_REPORT_HDR_SIZE == len(bv))
         return bv
 
 sensor_owner_lut = {
@@ -177,7 +180,7 @@ data_timeout_hrs_lut = {
     5: 24 #hrs
 }
 
-class SensorReportSiteLocation(SensorReport):
+class SensorReportLocation(SensorReport):
     report_type = 0
     def __init__(self,
                  day=None, hour=None, minute=None, site_id=None,
@@ -245,7 +248,7 @@ class SensorReportId(SensorReport):
             self.decode_bits(bits)
             return
         assert(len(id_str) <= 14)
-        print('ts_id:', day, hour, minute,'  site_id:', site_id, '  id_str="%s"' %(id_str,))
+        #print('ts_id:', day, hour, minute,'  site_id:', site_id, '  id_str="%s"' %(id_str,))
         SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
         self.id_str = id_str
 
@@ -481,7 +484,7 @@ class SensorReportCurrent2d(SensorReport):
         SensorReport.decode_bits(self, bits)
         self.cur = []
         for i in range(3):
-            base = 27 + i*26
+            base = SENSOR_REPORT_HDR_SIZE + i*26
             self.cur.append({
                 'speed': int( bits[base:base+8] ) / 10.,
                 'dir': int( bits[base+8:base+17] ),
@@ -546,7 +549,7 @@ class SensorReportCurrent3d(SensorReport):
         SensorReport.decode_bits(self, bits)
         self.cur = []
         for i in range(2):
-            base = 27 + i*33
+            base = SENSOR_REPORT_HDR_SIZE + i*33
             self.cur.append({
                 'n': int( bits[base   :base+ 8] ) / 10.,
                 'e': int( bits[base+ 8:base+16] ) / 10.,
@@ -612,7 +615,7 @@ class SensorReportCurrentHorz(SensorReport):
         SensorReport.decode_bits(self, bits)
         self.cur = []
         for i in range(2):
-            base = 27 + i*42
+            base = SENSOR_REPORT_HDR_SIZE + i*42
             self.cur.append({
                 'bearing': int( bits[base   :base+ 9] ),
                 'dist':    int( bits[base+ 9:base+16] ),
@@ -1128,7 +1131,7 @@ class Environment(BBM):
         #raise NotImplmented
         assert(len(bits) == SENSOR_REPORT_SIZE)
         report_type = int( bits[:3] )
-        if 0 == report_type: return SensorReportSiteLocation(bits=bits)
+        if 0 == report_type: return SensorReportLocation(bits=bits)
 	elif 1 == report_type: return SensorReportStationId(bits=bits)
 	elif 2 == report_type: return SensorReportWind(bits=bits)
 	elif 3 == report_type: return SensorReportWaterLevel(bits=bits)

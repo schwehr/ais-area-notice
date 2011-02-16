@@ -675,7 +675,7 @@ def main():
     from optparse import OptionParser
     parser = OptionParser(usage='%prog [options]',
                           version='%prog '+__version__+' ('+__date__+')')
-    parser.add_option('-v', '--verbose', dest='verbose', default=False, action='store_true',
+    parser.add_option('v', 'verbose', dest='verbose', default=False, action='store_true',
                       help='run the tests run in verbose mode')
 
     (options, args) = parser.parse_args()
