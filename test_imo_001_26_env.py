@@ -6,12 +6,44 @@ import imo_001_26_environment as env
 import sys
 
 def main():
+    sr_ag = env.SensorReportAirGap(site_id=45)
+    print ('sr_ag:', sr_ag)
+    bits = sr_ag.get_bits()
+    print ('sr_ag:', bits)
+    print ('sr_ag:', env.SensorReportAirGap(bits=bits))
+
+    sys.exit('EARLY')
+
+    sr_wx = env.SensorReportWeather(site_id=45)
+    print ('sr_wx:', sr_wx)
+    bits = sr_wx.get_bits()
+    print ('sr_wx:', bits)
+    print ('sr_wx:', env.SensorReportWeather(bits=bits))
+
+    sr_s = env.SensorReportSalinity(site_id=47)
+    print ('sr_s:', sr_s)
+    bits = sr_s.get_bits()
+    print ('sr_s:', bits)
+    print ('sr_s:', env.SensorReportSalinity(bits=bits))
+
+    sr_ss = env.SensorReportSeaState(site_id=47)
+    print ('sr_ss:', sr_ss)
+    bits = sr_ss.get_bits()
+    print ('sr_ss:', bits)
+    print ('sr_ss:', env.SensorReportSeaState(bits=bits))
+
+    sr_ch = env.SensorReportCurrentHorz(site_id=63)
+    print ('sr_ch:', sr_ch)
+    bits = sr_ch.get_bits()
+    print ('sr_ch:', bits)
+    print ('sr_ch:', env.SensorReportCurrentHorz(bits=bits))
+
+
     sr_c3d = env.SensorReportCurrent3d(site_id=87)
     print ('sr_c3d:', sr_c3d)
     bits = sr_c3d.get_bits()
     print ('sr_c3d:', bits)
     print ('sr_c3d:', env.SensorReportCurrent3d(bits=bits))
-    sys.exit('EARLY')
 
     sr_c2d = env.SensorReportCurrent2d(site_id=99)
     print ('sr_c2d:', sr_c2d)
