@@ -71,6 +71,9 @@ vdatum_lut = {
     #15 - 30 (reserved for future use)
     }
 
+def almost_equal(a,b,epsilon=0.0001):
+    if (a<b+epsilon) and (a>b-epsilon): return True
+
 class SensorReport(object):
     def __init__(self, report_type=None, day=None, hour=None, minute=None, site_id=None, bits=None):
         if bits is not None:
@@ -144,6 +147,7 @@ data_timeout_hrs_lut = {
 }
 
 class SensorReportSiteLocation(SensorReport):
+    report_type = 0
     def __init__(self,
                  day=None, hour=None, minute=None, site_id=None,
                  lon=None, lat=None, alt=None, owner=None, timeout=None,
@@ -161,7 +165,7 @@ class SensorReportSiteLocation(SensorReport):
         assert (owner >= 0 and owner <= 6) or owner == 14
         assert (timeout >= 0 and timeout <= 5)
 
-        SensorReport.__init__(self, report_type=0, day=day, hour=hour, minute=minute, site_id=site_id)
+        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
 
         self.lon = lon
         self.lat = lat
@@ -171,6 +175,7 @@ class SensorReportSiteLocation(SensorReport):
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
+        assert(self.report_type == int(bits[:4]))
         SensorReport.decode_bits(self, bits)
         self.lon = binary.signedIntFromBV(bits[27:55])/600000.
         self.lat = binary.signedIntFromBV(bits[55:82])/600000.
@@ -203,17 +208,19 @@ class SensorReportSiteLocation(SensorReport):
             )
 
 class SensorReportId(SensorReport):
+    report_type = 1
     def __init__(self, day=None, hour=None, minute=None, site_id=None, id_str=None, bits=None):
         if bits is not None:
             self.decode_bits(bits)
             return
         assert(len(id_str) <= 14)
         print('ts_id:', day, hour, minute,'  site_id:', site_id, '  id_str="%s"' %(id_str,))
-        SensorReport.__init__(self, report_type=0, day=day, hour=hour, minute=minute, site_id=site_id)
+        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
         self.id_str = id_str
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
+        assert(self.report_type == int(bits[:4]))
         SensorReport.decode_bits(self, bits)
         self.id_str = aisstring.decode(bits[27:-1]).rstrip('@')
         # 1 spare bit
@@ -233,32 +240,32 @@ class SensorReportId(SensorReport):
 
 
 class SensorReportWind(SensorReport):
+    report_type = 2
     def __init__(self,
                  day=None, hour=None, minute=None, site_id=None,
-                 speed=None, gust=None, dir=None, gust_dir=None,
-                 data_descr=None,
-                 forecast_speed=None, forecast_gust=None, forecast_dir=None,
-                 forecast_day=None, forecast_hour=None, forecast_minute=None,
-                 duration_min=None,
+                 speed=122, gust=122, dir=360, gust_dir=360,
+                 data_descr=0,
+                 forecast_speed=122, forecast_gust=122, forecast_dir=360,
+                 forecast_day=0, forecast_hour=24, forecast_minute=60,
+                 duration_min=0,
                  # of
                  bits=None):
         if bits is not None:
             self.decode_bits(bits)
             return
 
-        # FIX: update the defaults in the method parameters and ditch the if stuff
-        self.speed = speed if speed is not None else  122
-        self.gust = gust if gust is not None else  122
-        self.dir = dir if dir is not None else  360
-        self.gust_dir = gust_dir if gust_dir is not None else 360
-        self.data_descr = data_descr if data_descr is not None else 0
-        self.forecast_speed = forecast_speed if forecast_speed is not None else 122
-        self.forecast_gust = forecast_gust if forecast_gust is not None else 122
-        self.forecast_dir = forecast_dir if forecast_dir is not None else 360
-        self.forecast_day = forecast_day if forecast_day is not None else 0
-        self.forecast_hour = forecast_hour if forecast_hour is not None else 24
-        self.forecast_minute = forecast_minute if forecast_minute is not None else 60
-        self.duration_min = duration_min if duration_min is not None else 0
+        self.speed = speed
+        self.gust = gust
+        self.dir = dir
+        self.gust_dir = gust_dir
+        self.data_descr = data_descr
+        self.forecast_speed = forecast_speed
+        self.forecast_gust = forecast_gust
+        self.forecast_dir = forecast_dir
+        self.forecast_day = forecast_day
+        self.forecast_hour = forecast_hour
+        self.forecast_minute = forecast_minute
+        self.duration_min = duration_min
 
         assert(self.speed >= 0 and self.speed <=122)
         assert(self.gust >= 0 and self.gust <= 122)
@@ -273,11 +280,12 @@ class SensorReportWind(SensorReport):
         assert(self.forecast_minute >= 0 and self.forecast_minute <= 60)
         assert(self.duration_min >= 0 and self.duration_min<= 255)
 
-        print('ts_wind:', day, hour, minute,'  site_id:', site_id)
-        SensorReport.__init__(self, report_type=0, day=day, hour=hour, minute=minute, site_id=site_id)
+        #print('ts_wind:', day, hour, minute,'  site_id:', site_id)
+        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
+        assert(self.report_type == int(bits[:4]))
         SensorReport.decode_bits(self, bits)
         self.speed = int ( bits[27:34] )
         self.gust = int ( bits[34:41] )
@@ -331,6 +339,7 @@ class SensorReportWind(SensorReport):
         return '\n'.join(r)
 
 class SensorReportWaterLevel(SensorReport):
+    report_type = 3
     def __init__(self,
                  day=None, hour=None, minute=None, site_id=None,
                  wl_type=0, wl=-327.68, trend=3, vdatum=14,
@@ -338,7 +347,7 @@ class SensorReportWaterLevel(SensorReport):
                  forecast_type=0, forecast_wl=-327.68,
                  forecast_day=0, forecast_hour=24, forecast_minute=60,
                  duration_min=0,
-                 # of
+                 # or
                  bits=None):
         if bits is not None:
             self.decode_bits(bits)
@@ -355,11 +364,12 @@ class SensorReportWaterLevel(SensorReport):
         self.forecast_minute = forecast_minute
         self.duration_min = duration_min
 
-        SensorReport.__init__(self, report_type=0, day=day, hour=hour, minute=minute, site_id=site_id)
+        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
         # FIX: check all the parameters
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
+        assert(self.report_type == int(bits[:4]))
         SensorReport.decode_bits(self, bits)
         self.wl_type = int ( bits[27:28] )
         self.wl = binary.signedIntFromBV( bits[28:44] ) / 100.
@@ -375,7 +385,6 @@ class SensorReportWaterLevel(SensorReport):
         # 17 spare bits
 
     def get_bits(self):
-        wl_bits = binary.bvFromSignedInt(int(self.wl*100), bitSize=16)
         bv_list = [SensorReport.get_bits(self),
                    BitVector(intVal=self.wl_type, size=1),
                    binary.bvFromSignedInt(int(self.wl*100), 16),
@@ -403,11 +412,147 @@ class SensorReportWaterLevel(SensorReport):
             ))
                  
         #if self.data_descr in (1,2,3,4,5):
-        if self.wl != -327.68:  # FIX: almost equal
+        if not almost_equal(self.wl, -327.68):  # FIX: almost equal
             r.append('\t\twl_type={wl_type} wl={wl} m trend={trend} vdatum={vdatum} - vdatum_str'.format(vdatum_str = vdatum_lut[self.vdatum], **self.__dict__))
         if self.forecast_wl != -327.68: # FIX: almost_equal
             r.append('\t\tforecast: wl={forecast_wl} type={forecast_type}'.format(**self.__dict__))
             r.append('\t\tforecast_time: {forecast_day:02}T{forecast_hour:02}:{forecast_minute:02}Z  duration: {duration_min:3} (min)'.format(**self.__dict__))
+        return '\n'.join(r)
+
+class SensorReportCurrent2d(SensorReport):
+    report_type = 4
+    def __init__(self,
+                 day=None, hour=None, minute=None, site_id=None,
+                 speed_1=24.7, dir_1=360, level_1=362,
+                 speed_2=24.7, dir_2=360, level_2=362,
+                 speed_3=24.7, dir_3=360, level_3=362,
+                 data_descr=0,
+                 # or
+                 bits=None):
+        if bits is not None:
+            self.decode_bits(bits)
+            return
+        # FIX: a better data structure might help
+        self.cur = [
+            {'speed': speed_1, 'dir': dir_1, 'level': level_1},
+            {'speed': speed_2, 'dir': dir_2, 'level': level_2},
+            {'speed': speed_3, 'dir': dir_3, 'level': level_3}
+            ]
+        self.data_descr = data_descr
+
+        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
+        # FIX: check all the parameters
+
+    def decode_bits(self, bits):
+        if len(bits) != SENSOR_REPORT_SIZE:
+            #print ('ERROR: c2d',len(bits), SENSOR_REPORT_SIZE)
+            raise AisUnpackingException('bit length'+str(len(bits)))
+        assert(self.report_type == int(bits[:4]))
+        SensorReport.decode_bits(self, bits)
+        self.cur = []
+        for i in range(3):
+            base = 27 + i*26
+            self.cur.append({
+                'speed': int( bits[base:base+8] ) / 10.,
+                'dir': int( bits[base+8:base+17] ),
+                'level': int( bits[base+17:base+26] ),
+                })
+        self.data_descr = int ( bits[105:108] )
+        # 4 spare bits
+
+    def get_bits(self):
+        bv_list = [SensorReport.get_bits(self),]
+        for c in self.cur:
+            bv_list.append(BitVector(intVal=(int(c['speed']*10)), size=8))
+            bv_list.append(BitVector(intVal=c['dir'],             size=9))
+            bv_list.append(BitVector(intVal=c['level'],           size=9))
+        bv_list.append(BitVector(intVal=self.data_descr, size=3))
+        bv_list.append(BitVector(size=4)) # spare
+        bits = binary.joinBV(bv_list)
+        if len(bits) != SENSOR_REPORT_SIZE:
+            #print ('ERROR: c2d',len(bits), SENSOR_REPORT_SIZE)
+            raise AisPackingException('bit length %d not equal to %d' % (len(bits),SENSOR_REPORT_SIZE))
+        return bits
+    
+    def __unicode__(self):
+        r = ['\tSensorReport Current2d: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+            ]
+        r.append('\t\tsensor data description: {data_descr} - {data_descr_str}'.format(data_descr = self.data_descr,
+            data_descr_str = sensor_type_lut[self.data_descr],
+            ))
+        for c in self.cur:
+            # FIX: use almost_equal
+            #if c['speed'] !=  24.7:
+            if not almost_equal(c['speed'], 24.7):
+                r.append('\t\tspeed={speed} knots dir={dir} depth={level} m'.format(**c))
+        return '\n'.join(r)
+
+class SensorReportCurrent3d(SensorReport):
+    report_type = 5
+    def __init__(self,
+                 day=None, hour=None, minute=None, site_id=None,
+                 n_1=24.7, e_1=24.7, z_1=24.7, level_1=361,
+                 n_2=24.7, e_2=24.7, z_2=24.7, level_2=361,
+                 data_descr=0,
+                 # or
+                 bits=None):
+        if bits is not None:
+            self.decode_bits(bits)
+            return
+        # FIX: a better data structure might help
+        self.cur = [
+            {'n': n_1, 'e': e_1, 'z': z_1, 'level': level_1},
+            {'n': n_2, 'e': e_2, 'z': z_2, 'level': level_2},
+            ]
+        self.data_descr = data_descr
+        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
+        # FIX: check all the parameters
+
+    def decode_bits(self, bits):
+        if len(bits) != SENSOR_REPORT_SIZE:
+            print ('ERROR: c3d',len(bits), SENSOR_REPORT_SIZE)
+            raise AisUnpackingException('bit length'+str(len(bits)))
+        assert(self.report_type == int(bits[:4]))
+        SensorReport.decode_bits(self, bits)
+        self.cur = []
+        for i in range(2):
+            base = 27 + i*33
+            self.cur.append({
+                'n': int( bits[base   :base+ 8] ) / 10.,
+                'e': int( bits[base+ 8:base+16] ) / 10.,
+                'z': int( bits[base+16:base+24] ) / 10.,
+                'level': int( bits[base+24:base+33] ),
+                })
+        self.data_descr = int ( bits[93:96] )
+        # 16 spare bits
+
+    def get_bits(self):
+        'help ... what is wrong?'
+        print ('get_bits')
+        bv_list = [SensorReport.get_bits(self),]
+        for c in self.cur:
+            print ('c:',c)
+            bv_list.append(BitVector(intVal=(int(c['n']*10)), size=8))
+            bv_list.append(BitVector(intVal=(int(c['e']*10)), size=8))
+            bv_list.append(BitVector(intVal=(int(c['z']*10)), size=8))
+            bv_list.append(BitVector(intVal=c['level'],       size=9))
+        bv_list.append(BitVector(intVal=self.data_descr, size=3))
+        bv_list.append(BitVector(size=16)) # spare
+        bits = binary.joinBV(bv_list)
+        if len(bits) != SENSOR_REPORT_SIZE:
+            print ('ERROR: c3d',len(bits), SENSOR_REPORT_SIZE)
+            raise AisPackingException('bit length %d not equal to %d' % (len(bits),SENSOR_REPORT_SIZE))
+        return bits
+
+    def __unicode__(self):
+        r = ['\tSensorReport Current3d: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+            ]
+        r.append('\t\tsensor data description: {data_descr} - {data_descr_str}'.format(data_descr = self.data_descr,
+            data_descr_str = sensor_type_lut[self.data_descr],
+            ))
+        for c in self.cur:
+            if not almost_equal(c['n'], 24.7) or not almost_equal(c['level'], 361):
+                r.append('\t\tn={n} e={e} z={z} knots depth={level} m'.format(**c))
         return '\n'.join(r)
 
 

@@ -6,12 +6,23 @@ import imo_001_26_environment as env
 import sys
 
 def main():
+    sr_c3d = env.SensorReportCurrent3d(site_id=87)
+    print ('sr_c3d:', sr_c3d)
+    bits = sr_c3d.get_bits()
+    print ('sr_c3d:', bits)
+    print ('sr_c3d:', env.SensorReportCurrent3d(bits=bits))
+    sys.exit('EARLY')
+
+    sr_c2d = env.SensorReportCurrent2d(site_id=99)
+    print ('sr_c2d:', sr_c2d)
+    print ('sr_c2d:', sr_c2d.get_bits())
+    print ('sr_c2d:', env.SensorReportCurrent2d(bits=sr_c2d.get_bits()))
+
+    
     sr_wl = env.SensorReportWaterLevel(site_id=71)
     print ('sr_wl:',sr_wl)
     print ('sr_wl:',sr_wl.get_bits())
     print ('sr_wl:',env.SensorReportWaterLevel(bits=sr_wl.get_bits()))
-
-    sys.exit('EARLY')
 
     sr_wind = env.SensorReportWind(site_id=10)
     print ('sr_wind:',sr_wind)

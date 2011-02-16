@@ -3,6 +3,8 @@ LGPL v3 by Kurt Schwehr
 This is a reference implementation of the AIS Binary Messages
 described in the IMO Circular 289 specification:
 
+  http://vislab-ccom.unh.edu/~schwehr/papers/2010-IMO-SN.1-Circ.289.pdf
+
   IMO, Guidance on the Use of AIS Application-Specific Messages, IMO,
   SN.1/Circ.289, Ref. T2-OSS/2.7.1, 2 June 2010.
 

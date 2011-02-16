@@ -21,6 +21,7 @@ sdist: samples.txt
 	./setup.py sdist --formats=bztar
 
 
+# To verbose or not to verbose
 test:
 	@./binary.py --test
 	@./aisstring.py --test
