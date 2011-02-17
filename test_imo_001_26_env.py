@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import imo_001_26_environment as env
 
+import math, random
 import sys
 import unittest
 import datetime
@@ -106,11 +107,14 @@ class TestSensorReports(unittest.TestCase):
     'SensorReports'
     def setUp(self):
         now = datetime.datetime.utcnow()
+        self.year = now.year
+        self.month = now.month
         self.day = now.day
         self.hour = now.hour
         self.minute = now.minute
     def test_SensorReport(self):
         'SensorReport'
+        # Create and work with just the parent class
         report_type = 0
         site_id = 0
         sr = env.SensorReport(report_type, site_id=site_id)
@@ -119,7 +123,7 @@ class TestSensorReports(unittest.TestCase):
         
         report_type = 2
         site_id=9
-        sr = env.SensorReport(report_type, self.day, self.hour, self.minute, site_id)
+        sr = env.SensorReport(report_type, self.year, self.month, self.day, self.hour, self.minute, site_id)
         self.assertEqual(report_type, sr.report_type)
         self.assertEqual(self.day, sr.day)
         self.assertEqual(self.hour, sr.hour)
@@ -129,12 +133,79 @@ class TestSensorReports(unittest.TestCase):
         bits = sr.get_bits()
         self.assertEqual(len(bits), env.SENSOR_REPORT_HDR_SIZE)
         sr2 = env.SensorReport(bits=bits)
+
+        # Test the date range
+        
+        sr = env.SensorReport(report_type, year=2011, month=1, day=1, hour=0, minute=0, site_id=0)
+        self.assertEqual(sr.get_date(), datetime.datetime(2011, 1, 1, 0, 0))
+
+        sr = env.SensorReport(report_type, year=2011, month=12, day=31, hour=23, minute=59, site_id=0)
+        self.assertEqual(sr.get_date(), datetime.datetime(2011, 12, 31, 23, 59))
+
+    def test_Sr_eq(self):
+        'SensorReport equality operator'
+        sr_0 = env.SensorReport(0, 2010,1,1,1,1, site_id=0)
+        sr_0b = env.SensorReport(bits=sr_0.get_bits())
+        self.assertEqual(sr_0,sr_0)
+        self.assertEqual(sr_0, sr_0b)
+
+        sr_0c = env.SensorReport(0, 2010,1,1,1,2, site_id=0)
+        sr_0d = env.SensorReport(0, 2010,1,1,3,1, site_id=0)
+        sr_0e = env.SensorReport(0, 2010,1,4,1,1, site_id=0)
+        self.assertNotEqual(sr_0,sr_0c)
+        self.assertNotEqual(sr_0,sr_0d)
+        self.assertNotEqual(sr_0,sr_0e)
+
+        sr_1 = env.SensorReport(1, site_id=11)
+        self.assertEqual(sr_1, sr_1)
+        self.assertNotEqual(sr_0, sr_1)
+
     def test_SrLocation(self):
         'SensorReportLocation'
         
+        # Start with just the default Location sensor report, which has no information.
+        site_id = int(math.floor(random.random() * 128))
+        sr_l = env.SensorReportLocation(day=1, hour=2, minute=3, site_id=site_id)
+        bits = sr_l.get_bits()
+        self.assertEqual(env.SENSOR_REPORT_SIZE, len(bits))
+        sr_l2 = env.SensorReportLocation(bits=bits)
+        self.assertEqual(sr_l, sr_l2)
+        self.assertNotEqual(sr_l, env.SensorReport(0, site_id=0))
 
+    def test_SrLocation_min(self):
+        'SrLocation minimum values'
+        sr_l = env.SensorReportLocation(year=2010, month=1, day=1,hour=0,minute=0,
+                                         lon=-180, lat=-90, alt=0,
+                                         owner=0, timeout=0, site_id=0)
+        sr_lb = env.SensorReportLocation(bits=sr_l.get_bits())
+        self.assertEqual(sr_l,sr_lb)
 
+    def test_SrLocation_max(self):
+        'SrLocation maximum values'
+        sr_l = env.SensorReportLocation(year=2049, month=12, day=31, hour=23, minute=59,
+                                         lon=180, lat=90, alt=200.2,
+                                         owner=6, timeout=5, site_id=127)
+        sr_lb = env.SensorReportLocation(bits=sr_l.get_bits())
+        self.assertEqual(sr_lb.day, 31)
+        self.assertEqual(sr_lb.hour, 23)
+        self.assertEqual(sr_lb.minute, 59)
+        self.assertAlmostEqual(sr_lb.lon, 180)
+        self.assertAlmostEqual(sr_lb.lat, 90)
+        self.assertAlmostEqual(sr_lb.alt, 200.2)
+        self.assertEqual(sr_lb.owner, 6)
+        self.assertEqual(sr_lb.timeout, 5)
+        self.assertEqual(sr_lb.site_id, 127)
 
+        self.assertEqual(sr_l,sr_lb)
+
+    def test_SrId(self):
+        'SensorReportId with range of strings'
+        for id_str in ("A", "FOO", "()[]!<=>", "01234567890123"):
+            sr_i = env.SensorReportId(2011, 7, 23, 13, 42, 99, id_str)
+            sr_ib = env.SensorReportId(bits=sr_i.get_bits(), year=2011, month=7)
+            self.assertEqual(id_str, sr_ib.id_str)
+            self.assertEqual(sr_i, sr_ib)
+                                  
 #def main():
     # import argparse
 

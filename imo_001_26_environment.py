@@ -14,7 +14,7 @@ Implement IMO Circ 289 Msg 8:1:26 Environmental
 
 Issues:
 - What does the sensor data description apply to?  e.g. with wind, does it apply to the last 10 minutes or the forecast?
-
+- Find and handle year roll over issues
 '''
 
 from imo_001_22_area_notice import BBM, AisPackingException, AisUnpackingException
@@ -22,8 +22,10 @@ from imo_001_22_area_notice import BBM, AisPackingException, AisUnpackingExcepti
 import binary
 import aisstring
 
-import datetime
 from BitVector import BitVector
+
+import sys
+import datetime
 
 SENSOR_REPORT_HDR_SIZE = 27
 SENSOR_REPORT_SIZE = 112
@@ -108,17 +110,35 @@ def almost_equal(a,b,epsilon=0.0001):
     if (a<b+epsilon) and (a>b-epsilon): return True
 
 class SensorReport(object):
-    def __init__(self, report_type=None, day=None, hour=None, minute=None, site_id=None, bits=None):
+    def __init__(self, report_type=None,
+                 year=None, month=None, # Not a part of the message
+                 day=None, hour=None, minute=None,
+                 site_id=None,
+                 # or
+                 bits=None):
+        'Year and month are not a part of the message, but it is nice to have for get_date'
+        # if the caller provides bits, ignore any other input and decode the message
+        # pass along a year and month if they are know
         if bits is not None:
-            self.decode_bits(bits)
+            self.decode_bits(bits, year=year, month=month)
             return
+
+        if year is None:
+            now = datetime.datetime.utcnow()
+            year = now.year
+            month = now.month
         if day is None:
             now = datetime.datetime.utcnow()
             day = now.day
             hour = now.hour
             minute = now.minute
-        #print('ts:', day, hour , minute, '  site_id:', site_id)
+
+        #print ('ym:',year,month, type(year))
         assert(report_type in sensor_report_lut)
+        if not (year >= 2010 and year <= 2050):
+            print ('wtf:', year)
+        assert(year >= 2010 and year <= 2050) # 2050 is a WAG to prevent errors
+        assert(month >= 1 and month <= 12)
         assert(day>=1 and day <= 31)
         assert(hour>=0 and hour <= 23)
         assert(minute>=0 and minute<=59)
@@ -126,10 +146,30 @@ class SensorReport(object):
         assert(bits is None)
         
         self.report_type = report_type
+        self.year = year
+        self.month = month
         self.day = day
         self.hour = hour
         self.minute = minute
         self.site_id = site_id
+
+    def __eq__(self,other):
+        #print ('calling __eq__')
+        if len(self.__dict__) != len(other.__dict__):
+            sys.stderr.write(str(self.__dict__)+'\n')
+            sys.stderr.write(str(other.__dict__)+'\n')
+            sys.stderr.write('eq: len diff\n')
+            return False
+        for key in self.__dict__:
+            # FIX: should we skip checking the year and month as they are not really part of the message?
+            if key in ('year','month'): continue
+            if self.__dict__[key] != other.__dict__[key]:
+                return False
+        return True
+
+    def get_date(self):
+        # FIX: would be good to add the UTC timezone
+        return datetime.datetime(self.year, self.month, self.day, self.hour, self.minute)
 
     def __unicode__(self):
         return 'SensorReport: site_id={site_id} type={report_type} day={day} hour={hour} min={minute}'.format(
@@ -140,15 +180,27 @@ class SensorReport(object):
     def __str__(self):
         return self.__unicode__()
 
-    def decode_bits(self,bits):
+    def decode_bits(self, bits, year=None, month=None):
         assert(len(bits) >= SENSOR_REPORT_HDR_SIZE)
         assert(len(bits) <= SENSOR_REPORT_SIZE)
+
         self.report_type = int( bits[:4] )
         self.day = int( bits[4:9] )
         self.hour = int( bits[9:14] )
         self.minute = int( bits[14:20] )
         self.site_id = int( bits[20:27] )
 
+        if year is None:
+            now = datetime.datetime.utcnow()
+            year = now.year
+            month = now.month
+            
+        #sys.stderr.write('year:'+str(year)+'\n')
+        assert(year>=2010 and year <= 2050) # 2050 is a WAG to prevent errors
+        assert(month>=1 and month <= 12)
+        self.year = year
+        self.month = month
+        
     def get_bits(self):
         bv_list = []
         bv_list.append( BitVector(intVal=self.report_type, size=4) )
@@ -184,22 +236,24 @@ class SensorReportLocation(SensorReport):
     report_type = 0
     def __init__(self,
                  day=None, hour=None, minute=None, site_id=None,
-                 lon=None, lat=None, alt=None, owner=None, timeout=None,
+                 year=None, month=None, # Not a part of the message
+                 lon=181, lat=91, alt=200.2, owner=0, timeout=0,
                  # or
                  bits=None):
 
         if bits is not None:
             self.decode_bits(bits)
             return
-
-        #print ('sl:',lon, lat)
         assert (lon >= -180. and lon <= 180.) or lon == 181
         assert (lat >= -90. and lat <= 90.) or lat == 91
         assert (alt >= 0 and alt < 200.3) # 2002 is non-available
         assert (owner >= 0 and owner <= 6) or owner == 14
         assert (timeout >= 0 and timeout <= 5)
+        assert (site_id is not None)
 
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month, day=day, hour=hour, minute=minute,
+                              site_id=site_id)
 
         self.lon = lon
         self.lat = lat
@@ -228,7 +282,7 @@ class SensorReportLocation(SensorReport):
                    BitVector(size=12)
                    ]
         bits = binary.joinBV(bv_list)
-        print ('siteloc_len:',len(bits))
+        #print ('siteloc_len:',len(bits))
         assert len(bits) == SENSOR_REPORT_SIZE
         return bits
 
@@ -243,13 +297,17 @@ class SensorReportLocation(SensorReport):
 
 class SensorReportId(SensorReport):
     report_type = 1
-    def __init__(self, day=None, hour=None, minute=None, site_id=None, id_str=None, bits=None):
+    def __init__(self,
+                 year=None, month=None, day=None, hour=None, minute=None,
+                 site_id=None, id_str=None, bits=None):
         if bits is not None:
             self.decode_bits(bits)
             return
         assert(len(id_str) <= 14)
         #print('ts_id:', day, hour, minute,'  site_id:', site_id, '  id_str="%s"' %(id_str,))
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month, day=day, hour=hour, minute=minute,
+                              site_id=site_id)
         self.id_str = id_str
 
     def decode_bits(self, bits):
