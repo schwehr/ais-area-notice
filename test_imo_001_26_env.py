@@ -200,12 +200,301 @@ class TestSensorReports(unittest.TestCase):
 
     def test_SrId(self):
         'SensorReportId with range of strings'
+        site_id = int(math.floor(random.random() * 128))
+        sr = env.SensorReportId(site_id=site_id)
+        sr = env.SensorReportId(year=2010, month=8, site_id=site_id)
+        self.assertEqual(sr.year, 2010)
+        self.assertEqual(sr.month, 8)
         for id_str in ("A", "FOO", "()[]!<=>", "01234567890123"):
             sr_i = env.SensorReportId(2011, 7, 23, 13, 42, 99, id_str)
             sr_ib = env.SensorReportId(bits=sr_i.get_bits(), year=2011, month=7)
             self.assertEqual(id_str, sr_ib.id_str)
             self.assertEqual(sr_i, sr_ib)
-                                  
+
+        # FIX: what's the best way to test printing?
+        s1 = str(sr_i)
+        s2 = str(sr_ib)
+        self.assertTrue(' id' in s1)
+        self.assertTrue(' id' in s2)
+        self.assertEqual(s1,s2)
+
+    def test_SrWind(self):
+        'SensorReport Wind'
+        site_id = int(math.floor(random.random() * 128))
+        sr = env.SensorReportWind(site_id=site_id)
+        sr = env.SensorReportWind(year=2020, month=1, site_id=site_id)
+        self.assertEqual(sr.year, 2020)
+        self.assertEqual(sr.month, 1)
+        sr_b = env.SensorReportWind(bits=sr.get_bits())
+        self.assertEqual(sr,sr_b)
+
+        # Try out "sensor not available"
+        sr = env.SensorReportWind(data_descr=7, site_id=site_id)
+        self.assertEqual(7, sr.data_descr)
+        self.assertEqual(7,  env.SensorReportWind(bits=sr.get_bits()).data_descr)
+        
+
+    def test_SrWind_min(self):
+        'SensorReport Wind minimum valid values'
+        sr = env.SensorReportWind(year=2020, month=1, day=1, hour=0, minute=0, site_id=0,
+                                  speed = 0, gust = 0, dir = 0,
+                                  data_descr = 1,
+                                  forecast_speed=0, forecast_gust=0, forecast_dir=0,
+                                  forecast_day=1, forecast_hour=0, forecast_minute=0,
+                                  duration_min=1,
+                                  )
+        self.assertEqual(sr.duration_min,1)
+        sr_b = env.SensorReportWind(bits=sr.get_bits())
+        self.assertEqual(sr_b.day, 1)
+        self.assertEqual(sr_b.hour, 0)
+        self.assertEqual(sr_b.minute, 0)
+        self.assertEqual(sr_b.site_id, 0)
+        self.assertEqual(sr_b.data_descr, 1)
+        self.assertEqual(sr_b.forecast_speed, 0)
+        self.assertEqual(sr_b.forecast_gust, 0)
+        self.assertEqual(sr_b.forecast_dir, 0)
+        self.assertEqual(sr_b.forecast_day, 1)
+        self.assertEqual(sr_b.forecast_hour, 0)
+        self.assertEqual(sr_b.forecast_minute, 0)
+        self.assertEqual(sr_b.duration_min, 1)
+        
+    def test_SrWind_max(self):
+        'SensorReport Wind minimum valid values'
+        sr = env.SensorReportWind(year=2018, month=12, day=31, hour=23, minute=59, site_id=127,
+                                  speed = 121, gust = 121, dir = 359,
+                                  data_descr = 5,
+                                  forecast_speed=121, forecast_gust=121, forecast_dir=359,
+                                  forecast_day=31, forecast_hour=23, forecast_minute=59,
+                                  duration_min=255,
+                                  )
+        sr_b = env.SensorReportWind(bits=sr.get_bits())
+        self.assertEqual(sr_b.day, 31)
+        self.assertEqual(sr_b.hour, 23)
+        self.assertEqual(sr_b.minute, 59)
+        self.assertEqual(sr_b.site_id, 127)
+        self.assertEqual(sr_b.data_descr, 5)
+        self.assertEqual(sr_b.forecast_speed, 121)
+        self.assertEqual(sr_b.forecast_gust, 121)
+        self.assertEqual(sr_b.forecast_dir, 359)
+        self.assertEqual(sr_b.forecast_day, 31)
+        self.assertEqual(sr_b.forecast_hour, 23)
+        self.assertEqual(sr_b.forecast_minute, 59)
+        self.assertEqual(sr_b.duration_min, 255)
+
+    def test_SrWaterLevel(self):
+        'SensorReport WaterLevel'
+        site_id = int(math.floor(random.random() * 128))
+        sr = env.SensorReportWaterLevel(site_id=site_id)
+        sr = env.SensorReportWaterLevel(year=2020, month=1, site_id=site_id)
+        self.assertEqual(sr.year, 2020)
+        self.assertEqual(sr.month, 1)
+        sr_b = env.SensorReportWaterLevel(bits=sr.get_bits())
+        self.assertEqual(sr,sr_b)
+
+        # Try out "sensor not available"
+        sr = env.SensorReportWaterLevel(data_descr=7, site_id=site_id)
+        self.assertEqual(7, sr.data_descr)
+        self.assertEqual(7,  env.SensorReportWaterLevel(bits=sr.get_bits()).data_descr)
+        
+    def test_SrWaterLevel_min(self):
+        'SensorReport WaterLevel minimum'
+        sr = env.SensorReportWaterLevel(year=2010, month=1,
+                                        day=1, hour=0, minute=0, site_id=0,
+                                        wl_type=0, wl=-327.67, trend=0, vdatum=0,
+                                        data_descr=0,
+                                        forecast_type=0, forecast_wl=-327.67,
+                                        forecast_day=1, forecast_hour=0, forecast_minute=0,
+                                        duration_min=0)
+        sr_b = env.SensorReportWaterLevel(bits=sr.get_bits())
+        self.assertEqual(sr_b.day, 1)
+        self.assertEqual(sr_b.hour, 0)
+        self.assertEqual(sr_b.minute, 0)
+        self.assertEqual(sr_b.site_id, 0)
+        self.assertEqual(sr_b.wl_type, 0)
+        self.assertAlmostEqual(sr_b.wl, -327.67)
+        self.assertEqual(sr_b.trend, 0)
+        self.assertEqual(sr_b.vdatum, 0)
+        self.assertEqual(sr_b.data_descr, 0)
+        self.assertEqual(sr_b.forecast_type, 0)
+        self.assertAlmostEqual(sr_b.forecast_wl, -327.67)
+        self.assertEqual(sr_b.forecast_day, 1)
+        self.assertEqual(sr_b.forecast_hour, 0)
+        self.assertEqual(sr_b.forecast_minute, 0)
+        self.assertEqual(sr_b.duration_min, 0)
+
+    def test_SrWaterLevel_max(self):
+        'SensorReport WaterLevel maximum'
+        sr = env.SensorReportWaterLevel(year=2049, month=12,
+                                        day=31, hour=23, minute=59, site_id=127,
+                                        wl_type=1, wl=327.67, trend=2, vdatum=13,
+                                        data_descr=5,
+                                        forecast_type=1, forecast_wl=327.67,
+                                        forecast_day=31, forecast_hour=23, forecast_minute=59,
+                                        duration_min=255)
+        sr_b = env.SensorReportWaterLevel(bits=sr.get_bits())
+        self.assertEqual(sr_b.day, 31)
+        self.assertEqual(sr_b.hour, 23)
+        self.assertEqual(sr_b.minute, 59)
+        self.assertEqual(sr_b.site_id, 127)
+        self.assertEqual(sr_b.wl_type, 1)
+        self.assertAlmostEqual(sr_b.wl, 327.67)
+        self.assertEqual(sr_b.trend, 2)
+        self.assertEqual(sr_b.vdatum, 13)
+        self.assertEqual(sr_b.data_descr, 5)
+        self.assertEqual(sr_b.forecast_type, 1)
+        self.assertAlmostEqual(sr_b.forecast_wl, 327.67)
+        self.assertEqual(sr_b.forecast_day, 31)
+        self.assertEqual(sr_b.forecast_hour, 23)
+        self.assertEqual(sr_b.forecast_minute, 59)
+        self.assertEqual(sr_b.duration_min, 255)
+
+    def test_SensorReportCurrent2d(self):
+        'SensorReport Current2d'
+        site_id = int(math.floor(random.random() * 128))
+        sr = env.SensorReportCurrent2d(site_id=site_id)
+        sr = env.SensorReportCurrent2d(year=2020, month=1, site_id=site_id)
+        self.assertEqual(sr.year, 2020)
+        self.assertEqual(sr.month, 1)
+        sr_b = env.SensorReportCurrent2d(bits=sr.get_bits())
+        self.assertEqual(sr,sr_b)
+
+        # Try out "sensor not available"
+        sr = env.SensorReportCurrent2d(data_descr=7, site_id=site_id)
+        self.assertEqual(7, sr.data_descr)
+        self.assertEqual(7,  env.SensorReportCurrent2d(bits=sr.get_bits()).data_descr)
+
+    def test_SensorReportCurrent2d_min(self):
+        'SensorReport Current2d minimum'
+        sr = env.SensorReportCurrent2d(year=2010, month=1,
+                                       day=1, hour=0, minute=0, site_id=0,
+                                       speed_1=0, dir_1=0, level_1=0,
+                                       speed_2=0., dir_2=0, level_2=0,
+                                       speed_3=0, dir_3=0, level_3=0,
+                                       data_descr=0)
+        sr_b = env.SensorReportCurrent2d(bits=sr.get_bits())
+
+        for i in range(len(sr_b.cur)):
+            self.assertAlmostEqual(sr_b.cur[i]['speed'],0)
+            self.assertAlmostEqual(sr_b.cur[i]['dir'],  0)
+            self.assertAlmostEqual(sr_b.cur[i]['level'],0)
+        self.assertEqual(sr_b.data_descr, 0)
+        
+    def test_SensorReportCurrent2d_max(self):
+        'SensorReport Current2d maximum'
+        sr = env.SensorReportCurrent2d(year=2049, month=12,
+                                       day=31, hour=23, minute=59, site_id=127,
+                                       speed_1=24.6, dir_1=359, level_1=361,
+                                       speed_2=24.6, dir_2=359, level_2=361,
+                                       speed_3=24.6, dir_3=359, level_3=361,
+                                       data_descr=5)
+        sr_b = env.SensorReportCurrent2d(bits=sr.get_bits())
+
+        #for i in range(len(sr_b.cur)):
+        for cur in sr_b.cur:
+            self.assertAlmostEqual(cur['speed'],24.6)
+            self.assertAlmostEqual(cur['dir'],  359)
+            self.assertAlmostEqual(cur['level'],361)
+        self.assertEqual(sr_b.data_descr, 5)
+
+
+    def test_SensorReportCurrent3d(self):
+        'SensorReport Current3d'
+        site_id = int(math.floor(random.random() * 128))
+        sr = env.SensorReportCurrent3d(site_id=site_id)
+        sr = env.SensorReportCurrent3d(year=2020, month=1, site_id=site_id)
+        self.assertEqual(sr.year, 2020)
+        self.assertEqual(sr.month, 1)
+        sr_b = env.SensorReportCurrent3d(bits=sr.get_bits())
+        self.assertEqual(sr,sr_b)
+
+    def test_SensorReportCurrent3d_min(self):
+        'SensorReport Current3d minimum'
+        sr = env.SensorReportCurrent3d(year=2010, month=1,
+                                       day=1, hour=0, minute=0, site_id=0,
+                                       n_1=0., e_1=0., z_1=0., level_1=0,
+                                       n_2=0., e_2=0., z_2=0., level_2=0,
+                                       data_descr=0)
+        sr_b = env.SensorReportCurrent3d(bits=sr.get_bits())
+
+        for cur in sr_b.cur:
+            self.assertAlmostEqual(cur['level'],0.)
+            for x in ('n','e','z'):
+                self.assertAlmostEqual(cur[x],0.)
+        self.assertEqual(sr_b.data_descr, 0)
+
+    def test_SensorReportCurrent3d_max(self):
+        'SensorReport Current3d maximum'
+        sr = env.SensorReportCurrent3d(year=2010, month=1,
+                                       day=1, hour=0, minute=0, site_id=0,
+                                       n_1=24.6, e_1=24.6, z_1=24.6, level_1=360,
+                                       n_2=24.6, e_2=24.6, z_2=24.6, level_2=360,
+
+                                       data_descr=0)
+        sr_b = env.SensorReportCurrent3d(bits=sr.get_bits())
+
+        for cur in sr_b.cur:
+            self.assertAlmostEqual(cur['level'],360.)
+            for x in ('n','e','z'):
+                self.assertAlmostEqual(cur[x],24.6)
+        self.assertEqual(sr_b.data_descr, 0)
+
+    def test_SensorReportCurrentHorz(self):
+        'SensorReport CurrentHorz'
+        site_id = int(math.floor(random.random() * 128))
+        sr = env.SensorReportCurrentHorz(site_id=site_id)
+        sr = env.SensorReportCurrentHorz(year=2020, month=1, site_id=site_id)
+        self.assertEqual(sr.year, 2020)
+        self.assertEqual(sr.month, 1)
+        sr_b = env.SensorReportCurrentHorz(bits=sr.get_bits())
+        # for key in sr.__dict__:
+        #     sys.stderr.write(key+': '+str(sr.__dict__[key])+' ... '+str(sr_b.__dict__[key])+'\n')
+        # for i in range(2):
+        #     for key in sr.cur[i]:
+        #         #sys.stderr.write(key+'\n')
+        #         v1 = sr.cur[i][key]
+        #         v2 = sr_b.cur[i][key]
+        #         sys.stderr.write('\t'+str(i)+': ' +key+': '+str(v1)+' ... '+str(v2))
+        #         if v1 != v2: sys.stderr.write('  BAD')
+        #         sys.stderr.write('\n')
+            
+        self.assertEqual(sr,sr_b)
+
+    def test_SensorReportCurrentHorz_min(self):
+        'SensorReport CurrentHorz minimum'
+        sr = env.SensorReportCurrentHorz(year=2010, month=1, day=1, hour=0, minute=0, site_id=0,
+                                         bearing_1 = 0, dist_1 = 0, speed_1 = 0, dir_1 = 0, level_1 = 0,
+                                         bearing_2 = 0, dist_2 = 0, speed_2 = 0, dir_2 = 0, level_2 = 0,
+                                       )
+        sr_b = env.SensorReportCurrentHorz(bits=sr.get_bits())
+
+        for cur in sr_b.cur:
+            for field in cur:
+                self.assertAlmostEqual(cur[field],0.)
+
+    def test_SensorReportCurrentHorz_max(self):
+        'SensorReport CurrentHorz maximum'
+        sr = env.SensorReportCurrentHorz(year=2010, month=1, day=1, hour=0, minute=0, site_id=0,
+                                         bearing_1 = 359, dist_1 = 121, speed_1 = 24.6, dir_1 = 359, level_1 = 361,
+                                         bearing_2 = 359, dist_2 = 121, speed_2 = 24.6, dir_2 = 359, level_2 = 361,
+                                       )
+        sr_b = env.SensorReportCurrentHorz(bits=sr.get_bits())
+
+        for cur in sr_b.cur:
+            for field in ('bearing','dir'):
+                self.assertAlmostEqual(cur[field],359.)
+            self.assertEqual(cur['dist'],121)
+            self.assertEqual(cur['level'],361)
+
+    def test_SensorReportSeaState(self):
+        'SensorReport SeaState'
+        site_id = int(math.floor(random.random() * 128))
+        sr = env.SensorReportSeaState(site_id=site_id)
+        sr = env.SensorReportSeaState(year=2020, month=1, site_id=site_id)
+        self.assertEqual(sr.year, 2020)
+        self.assertEqual(sr.month, 1)
+        sr_b = env.SensorReportSeaState(bits=sr.get_bits())
+
+
 #def main():
     # import argparse
 

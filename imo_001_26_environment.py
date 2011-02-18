@@ -15,6 +15,10 @@ Implement IMO Circ 289 Msg 8:1:26 Environmental
 Issues:
 - What does the sensor data description apply to?  e.g. with wind, does it apply to the last 10 minutes or the forecast?
 - Find and handle year roll over issues
+- Definition of level between 2d and 3d current is very slightly different
+
+Be aware of:
+- year and month are not a part of the timestamps send through the binary AIS messages
 '''
 
 from imo_001_22_area_notice import BBM, AisPackingException, AisUnpackingException
@@ -45,6 +49,7 @@ sensor_report_lut = {
     10: 'Air gap/Air draft',
     }
 
+# SensorReportWaterLevel, SensorReport Wx
 trend_lut = {
     0: 'steady',
     1: 'rising',
@@ -52,6 +57,7 @@ trend_lut = {
     3: 'no data',
     }
 
+# Used in many of the messages - data_descr
 sensor_type_lut = {
     0: 'no data = default',
     1: 'raw real time',
@@ -63,6 +69,7 @@ sensor_type_lut = {
     7: 'sensor not available',
 }
 
+# SensorReportWaterLevel
 vdatum_lut = {
     0: 'MLLW', #'Mean Lower Low Water (MLLW)',
     1: 'IGLD-85', #'International Great Lakes Datum (IGLD-85)',
@@ -82,6 +89,7 @@ vdatum_lut = {
     #15 - 30 (reserved for future use)
     }
 
+# SensorReportSeaState
 beaufort_scale = {
     0: 'Flat',
     1: 'Ripples without crests',
@@ -99,12 +107,34 @@ beaufort_scale = {
     13: 'not available'
     }
 
+# SensorReportSalinity
 salinity_type_lut = {
     0: 'measured',
     1: 'calculated using PSS-78',
     2: 'calculated using other method',
     }
 
+# Used in the Location report
+
+sensor_owner_lut = {
+    0: 'unknown',
+    1: 'hydrographic office',
+    2: 'inland waterway authority',
+    3: 'coastal directorate',
+    4: 'meteorological service',
+    5: 'port authority',
+    6: 'coast guard',
+    }
+
+# Used in the Location report
+data_timeout_hrs_lut = {
+    0: None, #no time-out period = default
+    1: 1/6., #10 min
+    2: 1,
+    3: 6,
+    4: 12,
+    5: 24 #hrs
+}
 
 def almost_equal(a,b,epsilon=0.0001):
     if (a<b+epsilon) and (a>b-epsilon): return True
@@ -213,25 +243,6 @@ class SensorReport(object):
         assert (SENSOR_REPORT_HDR_SIZE == len(bv))
         return bv
 
-sensor_owner_lut = {
-    0: 'unknown',
-    1: 'hydrographic office',
-    2: 'inland waterway authority',
-    3: 'coastal directorate',
-    4: 'meteorological service',
-    5: 'port authority',
-    6: 'coast guard',
-    }
-
-data_timeout_hrs_lut = {
-    0: None, #no time-out period = default
-    1: 1/6., #10 min
-    2: 1,
-    3: 6,
-    4: 12,
-    5: 24 #hrs
-}
-
 class SensorReportLocation(SensorReport):
     report_type = 0
     def __init__(self,
@@ -299,7 +310,9 @@ class SensorReportId(SensorReport):
     report_type = 1
     def __init__(self,
                  year=None, month=None, day=None, hour=None, minute=None,
-                 site_id=None, id_str=None, bits=None):
+                 site_id=None, id_str="",
+                 # or
+                 bits=None):
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -334,7 +347,7 @@ class SensorReportId(SensorReport):
 class SensorReportWind(SensorReport):
     report_type = 2
     def __init__(self,
-                 day=None, hour=None, minute=None, site_id=None,
+                 year=None, month=None, day=None, hour=None, minute=None, site_id=None,
                  speed=122, gust=122, dir=360, gust_dir=360,
                  data_descr=0,
                  forecast_speed=122, forecast_gust=122, forecast_dir=360,
@@ -373,7 +386,9 @@ class SensorReportWind(SensorReport):
         assert(self.duration_min >= 0 and self.duration_min<= 255)
 
         #print('ts_wind:', day, hour, minute,'  site_id:', site_id)
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month, 
+                              day=day, hour=hour, minute=minute, site_id=site_id)
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
@@ -392,7 +407,8 @@ class SensorReportWind(SensorReport):
         self.forecast_day = int ( bits[85:90] )
         self.forecast_hour = int ( bits[90:95] )
         self.forecast_minute = int ( bits[95:101] )
-        self.duration_min = int ( bits[101:106] )
+        self.duration_min = int ( bits[101:109] )
+        #sys.stderr.write('dur:'+str(self.duration_min)+'\n')
         # 3 spare bits
 
     def get_bits(self):
@@ -412,6 +428,7 @@ class SensorReportWind(SensorReport):
                    BitVector(size=3) # spare
                    ]
         bits = binary.joinBV(bv_list)
+        #sys.stderr.write('\n\ndur_before:'+str(self.duration_min)+' '+str(bv_list[-2])+' '+str(int(bv_list[-2]))+'\n')
         if len(bits) != SENSOR_REPORT_SIZE: raise AisPackingException('bit length'+str(len(bits))+'not equal to'+str(SENSOR_REPORT_SIZE))
         return bits
 
@@ -433,7 +450,7 @@ class SensorReportWind(SensorReport):
 class SensorReportWaterLevel(SensorReport):
     report_type = 3
     def __init__(self,
-                 day=None, hour=None, minute=None, site_id=None,
+                 year=None, month=None, day=None, hour=None, minute=None, site_id=None,
                  wl_type=0, wl=-327.68, trend=3, vdatum=14,
                  data_descr=0,
                  forecast_type=0, forecast_wl=-327.68,
@@ -444,6 +461,19 @@ class SensorReportWaterLevel(SensorReport):
         if bits is not None:
             self.decode_bits(bits)
             return
+        assert(wl_type in (0,1))
+        assert(wl >= -327.68 and wl <= 327.68) #FIX: need? + 0.001)
+        assert(wl >= -327.68 and wl <= 327.68) #FIX: need? + 0.001)
+        assert(trend in (0,1,2,3))
+        assert(vdatum >= 0 and vdatum <= 14)
+        assert(data_descr in sensor_type_lut)
+        assert(forecast_type in (0,1))
+        assert(forecast_wl >= -327.68 and forecast_wl <= 327.68) #FIX: need? + 0.001)
+        assert(forecast_day >= 0 and forecast_day <= 31)
+        assert(forecast_hour >= 0 and forecast_hour <= 24)
+        assert(forecast_minute >= 0 and forecast_minute <= 60)
+        assert(duration_min >= 0 and duration_min<= 255)
+        
         self.wl_type=wl_type
         self.wl = wl
         self.trend = trend
@@ -456,8 +486,9 @@ class SensorReportWaterLevel(SensorReport):
         self.forecast_minute = forecast_minute
         self.duration_min = duration_min
 
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
-        # FIX: check all the parameters
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month,
+                              day=day, hour=hour, minute=minute, site_id=site_id)
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
@@ -512,9 +543,10 @@ class SensorReportWaterLevel(SensorReport):
         return '\n'.join(r)
 
 class SensorReportCurrent2d(SensorReport):
+    # FIX: need helpers than tell the number of valid velocity entries
     report_type = 4
     def __init__(self,
-                 day=None, hour=None, minute=None, site_id=None,
+                 year=None, month=None, day=None, hour=None, minute=None, site_id=None,
                  speed_1=24.7, dir_1=360, level_1=362,
                  speed_2=24.7, dir_2=360, level_2=362,
                  speed_3=24.7, dir_3=360, level_3=362,
@@ -531,8 +563,16 @@ class SensorReportCurrent2d(SensorReport):
             ]
         self.data_descr = data_descr
 
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
-        print('FIX: check all the parameters')
+        #for i in range(len(self.cur)):
+        for cur in self.cur:
+            assert(cur['speed'] >= 0 and cur['speed'] <= 24.7)
+            assert(cur['dir']   >= 0 and cur['dir']   <= 360)
+            assert(cur['level'] >= 0 and cur['level'] <= 362)
+        assert(data_descr in sensor_type_lut)
+
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month,
+                              day=day, hour=hour, minute=minute, site_id=site_id)
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
@@ -581,7 +621,7 @@ class SensorReportCurrent2d(SensorReport):
 class SensorReportCurrent3d(SensorReport):
     report_type = 5
     def __init__(self,
-                 day=None, hour=None, minute=None, site_id=None,
+                 year=None, month=None, day=None, hour=None, minute=None, site_id=None,
                  n_1=24.7, e_1=24.7, z_1=24.7, level_1=361,
                  n_2=24.7, e_2=24.7, z_2=24.7, level_2=361,
                  data_descr=0,
@@ -590,14 +630,22 @@ class SensorReportCurrent3d(SensorReport):
         if bits is not None:
             self.decode_bits(bits)
             return
-        # FIX: a better data structure might help
+
         self.cur = [
             {'n': n_1, 'e': e_1, 'z': z_1, 'level': level_1},
             {'n': n_2, 'e': e_2, 'z': z_2, 'level': level_2},
             ]
         self.data_descr = data_descr
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
-        print('FIX: check all the parameters')
+
+        for cur in self.cur:
+            assert (cur['level']>= 0 and cur['level'] <= 362)
+            for x in ('n','e','z'):
+                assert(cur[x] >= 0 and cur[x]<= 24.7)
+        assert(data_descr in sensor_type_lut)
+
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month,
+                              day=day, hour=hour, minute=minute, site_id=site_id)
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
@@ -647,9 +695,9 @@ class SensorReportCurrent3d(SensorReport):
 class SensorReportCurrentHorz(SensorReport):
     report_type = 6
     def __init__(self,
-                 day=None, hour=None, minute=None, site_id=None,
-                 bearing_1 = 361, dist_1 = 122, speed_1 = 24.7, dir_1 = 361, level_1 = 361,
-                 bearing_2 = 362, dist_2 = 122, speed_2 = 24.7, dir_2 = 361, level_2 = 361,
+                 year=None, month=None, day=None, hour=None, minute=None, site_id=None,
+                 bearing_1 = 360, dist_1 = 122, speed_1 = 24.7, dir_1 = 360, level_1 = 361,
+                 bearing_2 = 360, dist_2 = 122, speed_2 = 24.7, dir_2 = 360, level_2 = 361,
                  #data_descr=0,  # doesn't exist for this one?
                  # or
                  bits=None):
@@ -661,9 +709,16 @@ class SensorReportCurrentHorz(SensorReport):
             {'bearing':bearing_1, 'dist':dist_1, 'speed':speed_1, 'dir':dir_1, 'level':level_1},
             {'bearing':bearing_2, 'dist':dist_2, 'speed':speed_2, 'dir':dir_2, 'level':level_2},
             ]
-        #self.data_descr = data_descr
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
-        print('FIX: check all the parameters')
+
+        for cur in self.cur:
+            assert (cur['dist']>= 0 and cur['dist'] <= 122)
+            assert (cur['level']>= 0 and cur['level'] <= 361)
+            for field in ('bearing','dir'):
+                assert(cur[field] >= 0 and cur[field]<= 360)
+
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month,
+                              day=day, hour=hour, minute=minute, site_id=site_id)
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
@@ -678,11 +733,11 @@ class SensorReportCurrentHorz(SensorReport):
                 'bearing': int( bits[base   :base+ 9] ),
                 'dist':    int( bits[base+ 9:base+16] ),
                 'speed':   int( bits[base+16:base+24] ) / 10.,
-                'dir':     int( bits[base+25:base+33] ),
+                'dir':     int( bits[base+24:base+33] ),
                 'level':   int( bits[base+33:base+42] ),
                 })
-        self.data_descr = int ( bits[93:96] )
-        # 16 spare bits
+        #self.data_descr = int ( bits[93:96] )
+        # 1 spare bits
 
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self),]
@@ -713,7 +768,7 @@ class SensorReportCurrentHorz(SensorReport):
 class SensorReportSeaState(SensorReport):
     report_type = 7
     def __init__(self,
-                 day=None, hour=None, minute=None, site_id=None,
+                 year=None, month=None, day=None, hour=None, minute=None, site_id=None,
                  swell_height=24.7, swell_period=61, swell_dir=361,
                  sea_state=13, 
                  swell_data_descr=0,
@@ -726,6 +781,21 @@ class SensorReportSeaState(SensorReport):
         if bits is not None:
             self.decode_bits(bits)
             return
+
+        assert(swell_height>=0 and swell_height <=24.7)
+        assert( swell_period>=0 and swell_height<=61)
+        assert(swell_dir>= 0 and swell_dir<=361)
+        assert(sea_state in beaufort_scale)
+        assert(swell_data_descr in sensor_type_lut)
+                 
+        assert(temp>=-10.0 and temp<=50.1)
+        assert(temp_depth>=0 and temp_depth<=12.2)
+        assert(temp_data_descr in sensor_type_lut)
+        assert(wave_height>=0 and wave_height<=24.7)
+        assert(wave_period>=0 and wave_period<=61)
+        assert(wave_dir>=0 and wave_dir<=361)
+        assert(wave_data_descr in sensor_type_lut)
+        assert(salinity>=0 and salinity<= 50.2)
 
         self.swell_height = swell_height
         self.swell_period = swell_period
@@ -741,8 +811,9 @@ class SensorReportSeaState(SensorReport):
         self.wave_data_descr = wave_data_descr
         self.salinity = salinity
        
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
-        print('FIX: check all the parameters')
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month,
+                              day=day, hour=hour, minute=minute, site_id=site_id)
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
@@ -812,7 +883,7 @@ class SensorReportSeaState(SensorReport):
 class SensorReportSalinity(SensorReport):
     report_type = 8
     def __init__(self,
-                 day=None, hour=None, minute=None, site_id=None,
+                 year=None, month=None, day=None, hour=None, minute=None, site_id=None,
                  temp=60.2, cond=7.03, pres=6000.3,
                  salinity=50.3, salinity_type=0, data_descr=0,
                  # or
@@ -826,7 +897,9 @@ class SensorReportSalinity(SensorReport):
         self.salinity = salinity
         self.salinity_type = salinity_type
         self.data_descr = data_descr
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month,
+                              day=day, hour=hour, minute=minute, site_id=site_id)
         print('FIX: check all the parameters')
 
     def decode_bits(self, bits):
@@ -877,7 +950,7 @@ class SensorReportSalinity(SensorReport):
 class SensorReportWeather(SensorReport):
     report_type = 9
     def __init__(self,
-                 day=None, hour=None, minute=None, site_id=None,
+                 year=None, month=None, day=None, hour=None, minute=None, site_id=None,
                  air_temp=-102.4, air_temp_data_descr=0,
                  precip=3, vis=24.3,
                  dew=50.1, dew_data_descr=0,
@@ -899,7 +972,9 @@ class SensorReportWeather(SensorReport):
         self.air_pres_trend = air_pres_trend
         self.air_pres_data_descr = air_pres_data_descr
         self.salinity = salinity
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month,
+                              day=day, hour=hour, minute=minute, site_id=site_id)
         print('FIX: check all the parameters')
 
     def decode_bits(self, bits):
@@ -953,6 +1028,7 @@ class SensorReportWeather(SensorReport):
 
         r.append('\t\tair_temp={air_temp} air_temp_data_descr={air_temp_data_descr} - {air_temp_data_descr_str}'.format(air_temp_data_descr_str=air_temp_data_descr_str, **self.__dict__))
         r.append('\t\tprecip={precip} vis={vis} dew={dew} dew_data_descr={dew_data_descr} - {dew_data_descr_str}'.format(dew_data_descr_str=dew_data_descr_str, **self.__dict__))
+        # FIX: add trend_lut lookup
         r.append('\t\tair_pres={air_pres} air_pres_trend={air_pres_trend} air_pres_data_descr={air_pres_data_descr} - {air_pres_data_descr_str}'.format(
             air_pres_data_descr_str=air_pres_data_descr_str, **self.__dict__))
         r.append('\t\tsalinity={salinity}'.format(**self.__dict__))
@@ -962,7 +1038,7 @@ class SensorReportAirGap(SensorReport):
     'Mr. President, we must not allow... a mine shaft gap'
     report_type = 10
     def __init__(self,
-                 day=None, hour=None, minute=None, site_id=None,
+                 year=None, month=None, day=None, hour=None, minute=None, site_id=None,
                  draft=0, gap=0, gap_trend=3, forecast_gap=0,
                  forecast_day=0, forecast_hour=24, forecast_minute=60,
                  # or
@@ -978,7 +1054,9 @@ class SensorReportAirGap(SensorReport):
         self.forecast_day = forecast_day
         self.forecast_hour = forecast_hour
         self.forecast_minute = forecast_minute
-        SensorReport.__init__(self, report_type=self.report_type, day=day, hour=hour, minute=minute, site_id=site_id)
+        SensorReport.__init__(self, report_type=self.report_type,
+                              year=year, month=month,
+                              day=day, hour=hour, minute=minute, site_id=site_id)
         # FIX: spec has no sensor data description like other reports
         print('FIX: check all the parameters')
 
