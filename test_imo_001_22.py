@@ -671,21 +671,23 @@ print ('TODO: write the two segment test and make it work')
 #        deg_1_meters = 111120
 #        assert(False) # Currently failing on the 2nd segment
 
-def main():
-    from optparse import OptionParser
-    parser = OptionParser(usage='%prog [options]',
-                          version='%prog '+__version__+' ('+__date__+')')
-    parser.add_option('v', 'verbose', dest='verbose', default=False, action='store_true',
-                      help='run the tests run in verbose mode')
+# def main():
+#     import argparse
+#     argparse.ArgumentParser(description=
+#     parser = OptionParser(usage='%prog [options]',
+#                           version='%prog '+__version__+' ('+__date__+')')
+#     parser.add_option('v', 'verbose', dest='verbose', default=False, action='store_true',
+#                       help='run the tests run in verbose mode')
 
-    (options, args) = parser.parse_args()
+#     (options, args) = parser.parse_args()
 
-    sys.argv = [sys.argv[0],]
-    if options.verbose:
-        sys.argv.append('-v')
+#     sys.argv = [sys.argv[0],]
+#     if options.verbose:
+#         sys.argv.append('-v')
 
-    unittest.main()
+#     unittest.main()
     #print
 
 if __name__ == '__main__':
-    main()
+    #main()
+    unittest.main()

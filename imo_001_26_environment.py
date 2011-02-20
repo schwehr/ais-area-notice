@@ -16,6 +16,8 @@ Issues:
 - What does the sensor data description apply to?  e.g. with wind, does it apply to the last 10 minutes or the forecast?
 - Find and handle year roll over issues
 - Definition of level between 2d and 3d current is very slightly different
+- Need lookup tables of units, both decoded and over the wire/wireless
+- Possible problems: grep BitVector imo_001_26_environment.py | egrep "\*" | grep -v round
 
 Be aware of:
 - year and month are not a part of the timestamps send through the binary AIS messages
@@ -33,7 +35,6 @@ import datetime
 
 SENSOR_REPORT_HDR_SIZE = 27
 SENSOR_REPORT_SIZE = 112
-
 
 sensor_report_lut = {
     0: 'Site Location',
@@ -136,7 +137,7 @@ data_timeout_hrs_lut = {
     5: 24 #hrs
 }
 
-def almost_equal(a,b,epsilon=0.0001):
+def almost_equal(a,b,epsilon=0.001):
     if (a<b+epsilon) and (a>b-epsilon): return True
 
 class SensorReport(object):
@@ -183,18 +184,28 @@ class SensorReport(object):
         self.minute = minute
         self.site_id = site_id
 
+    def __ne__(self,other):
+        return not self.__eq__(other)
     def __eq__(self,other):
-        #print ('calling __eq__')
+        if self is other: return True
+        #sys.stderr.write('SensorReport__eq__:\n')
         if len(self.__dict__) != len(other.__dict__):
-            sys.stderr.write(str(self.__dict__)+'\n')
-            sys.stderr.write(str(other.__dict__)+'\n')
-            sys.stderr.write('eq: len diff\n')
+            #sys.stderr.write(str(self.__dict__)+'\n')
+            #sys.stderr.write(str(other.__dict__)+'\n')
+            #sys.stderr.write('eq: len diff\n')
             return False
         for key in self.__dict__:
             # FIX: should we skip checking the year and month as they are not really part of the message?
             if key in ('year','month'): continue
-            if self.__dict__[key] != other.__dict__[key]:
-                return False
+            if key not in other.__dict__: return False
+            if isinstance(self.__dict__[key], float):
+                if not almost_equal(self.__dict__[key], other.__dict__[key]):
+                    #sys.stderr.write('float_key_not_same: %s - %s %s\n' % (key,self.__dict__[key],other.__dict__[key]))
+                    return False
+            else:
+                if self.__dict__[key] != other.__dict__[key]:
+                    #sys.stderr.write('key_not_same: %s - %s %s\n' % (key,self.__dict__[key],other.__dict__[key]))
+                    return False
         return True
 
     def get_date(self):
@@ -298,8 +309,8 @@ class SensorReportLocation(SensorReport):
         return bits
 
     def __unicode__(self):
-        return ('\tSensorReport Location: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'+
-                ' x={lon} y={lat} z={alt} owner={owner_str} timeout={timeout_str} (hrs)').format(
+        return ('SensorReport Location: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'+
+                ' x={lon} y={lat} z={alt} owner={owner} - "{owner_str}" timeout={timeout} - {timeout_str} (hrs)').format(
             type_str = sensor_report_lut[self.report_type],
             owner_str = sensor_owner_lut[self.owner],
             timeout_str = data_timeout_hrs_lut[self.timeout],
@@ -307,6 +318,7 @@ class SensorReportLocation(SensorReport):
             )
 
 class SensorReportId(SensorReport):
+    # FIX: what is the proper thing to store with @ padding?
     report_type = 1
     def __init__(self,
                  year=None, month=None, day=None, hour=None, minute=None,
@@ -321,13 +333,13 @@ class SensorReportId(SensorReport):
         SensorReport.__init__(self, report_type=self.report_type,
                               year=year, month=month, day=day, hour=hour, minute=minute,
                               site_id=site_id)
-        self.id_str = id_str
+        self.id_str = id_str.ljust(14,'@')
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE: raise AisUnpackingException('bit length',len(bits))
         assert(self.report_type == int(bits[:4]))
         SensorReport.decode_bits(self, bits)
-        self.id_str = aisstring.decode(bits[27:-1]).rstrip('@')
+        self.id_str = aisstring.decode(bits[27:-1])#.rstrip('@')
         # 1 spare bit
 
     def get_bits(self):
@@ -340,8 +352,8 @@ class SensorReportId(SensorReport):
         return bits
 
     def __unicode__(self):
-        return ('\tSensorReport Id: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'+
-                ' id={id_str}').format(**self.__dict__)
+        return ('SensorReport Id: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'+
+                ' id="{id_str}"').format(**self.__dict__)
 
 
 class SensorReportWind(SensorReport):
@@ -433,18 +445,18 @@ class SensorReportWind(SensorReport):
         return bits
 
     def __unicode__(self):
-        r = ['\tSensorReport Wind: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+        r = ['SensorReport Wind: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
             ]
-        r.append('\t\tsensor data description: {data_descr} - {data_descr_str}'.format(data_descr = self.data_descr,
+        r.append('\tsensor data description: {data_descr} - "{data_descr_str}"'.format(data_descr = self.data_descr,
             data_descr_str = sensor_type_lut[self.data_descr],
             ))
                  
         #if self.data_descr in (1,2,3,4,5):
         if not (self.speed == 122 and self.dir == 360):
-            r.append('\t\tspeed={speed} gust={gust} dir={dir} gust_dir={gust_dir}'.format(**self.__dict__))
+            r.append('\tspeed={speed} gust={gust} dir={dir} gust_dir={gust_dir}'.format(**self.__dict__))
         if self.forecast_speed != 122 or self.forecast_dir != 360:
-            r.append('\t\tforecast: speed={forecast_speed} gust={forecast_gust} dir={forecast_dir}'.format(**self.__dict__))
-            r.append('\t\tforecast_time: {forecast_day:02}T{forecast_hour:02}:{forecast_minute:02}Z  duration: {duration_min:3} (min)'.format(**self.__dict__))
+            r.append('\tforecast: speed={forecast_speed} gust={forecast_gust} dir={forecast_dir}'.format(**self.__dict__))
+            r.append('\tforecast_time: {forecast_day:02}T{forecast_hour:02}:{forecast_minute:02}Z  duration: {duration_min:3} (min)'.format(**self.__dict__))
         return '\n'.join(r)
 
 class SensorReportWaterLevel(SensorReport):
@@ -510,12 +522,12 @@ class SensorReportWaterLevel(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self),
                    BitVector(intVal=self.wl_type, size=1),
-                   binary.bvFromSignedInt(int(self.wl*100), 16),
+                   binary.bvFromSignedInt(int(round(self.wl*100)), 16),
                    BitVector(intVal=self.trend, size=2),
                    BitVector(intVal=self.vdatum, size=5),
                    BitVector(intVal=self.data_descr, size=3),
                    BitVector(intVal=self.forecast_type, size=1),
-                   binary.bvFromSignedInt(int(self.forecast_wl*100), 16),
+                   binary.bvFromSignedInt(int(round(self.forecast_wl*100)), 16),
                    BitVector(intVal=self.forecast_day, size=5),
                    BitVector(intVal=self.forecast_hour, size=5),
                    BitVector(intVal=self.forecast_minute, size=6),
@@ -528,18 +540,18 @@ class SensorReportWaterLevel(SensorReport):
         return bits
 
     def __unicode__(self):
-        r = ['\tSensorReport WaterLevel: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+        r = ['SensorReport WaterLevel: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
             ]
-        r.append('\t\tsensor data description: {data_descr} - {data_descr_str}'.format(data_descr = self.data_descr,
+        r.append('\tsensor data description: {data_descr} - "{data_descr_str}"'.format(data_descr = self.data_descr,
             data_descr_str = sensor_type_lut[self.data_descr],
             ))
                  
         #if self.data_descr in (1,2,3,4,5):
         if not almost_equal(self.wl, -327.68):  # FIX: almost equal
-            r.append('\t\twl_type={wl_type} wl={wl} m trend={trend} vdatum={vdatum} - vdatum_str'.format(vdatum_str = vdatum_lut[self.vdatum], **self.__dict__))
+            r.append('\twl_type={wl_type} wl={wl} m trend={trend} vdatum={vdatum} - "{vdatum_str}"'.format(vdatum_str = vdatum_lut[self.vdatum], **self.__dict__))
         if self.forecast_wl != -327.68: # FIX: almost_equal
-            r.append('\t\tforecast: wl={forecast_wl} type={forecast_type}'.format(**self.__dict__))
-            r.append('\t\tforecast_time: {forecast_day:02}T{forecast_hour:02}:{forecast_minute:02}Z  duration: {duration_min:3} (min)'.format(**self.__dict__))
+            r.append('\tforecast: wl={forecast_wl} type={forecast_type}'.format(**self.__dict__))
+            r.append('\tforecast_time: {forecast_day:02}T{forecast_hour:02}:{forecast_minute:02}Z  duration: {duration_min:3} (min)'.format(**self.__dict__))
         return '\n'.join(r)
 
 class SensorReportCurrent2d(SensorReport):
@@ -606,16 +618,16 @@ class SensorReportCurrent2d(SensorReport):
         return bits
     
     def __unicode__(self):
-        r = ['\tSensorReport Current2d: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+        r = ['SensorReport Current2d: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
             ]
-        r.append('\t\tsensor data description: {data_descr} - {data_descr_str}'.format(data_descr = self.data_descr,
+        r.append('\tsensor data description: {data_descr} - "{data_descr_str}"'.format(data_descr = self.data_descr,
             data_descr_str = sensor_type_lut[self.data_descr],
             ))
         for c in self.cur:
             # FIX: use almost_equal
             #if c['speed'] !=  24.7:
             if not almost_equal(c['speed'], 24.7):
-                r.append('\t\tspeed={speed} knots dir={dir} depth={level} m'.format(**c))
+                r.append('\tspeed={speed} knots dir={dir} depth={level} m'.format(**c))
         return '\n'.join(r)
 
 class SensorReportCurrent3d(SensorReport):
@@ -682,14 +694,14 @@ class SensorReportCurrent3d(SensorReport):
         return bits
 
     def __unicode__(self):
-        r = ['\tSensorReport Current3d: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+        r = ['SensorReport Current3d: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
             ]
-        r.append('\t\tsensor data description: {data_descr} - {data_descr_str}'.format(data_descr = self.data_descr,
+        r.append('\tsensor data description: {data_descr} - "{data_descr_str}"'.format(data_descr = self.data_descr,
             data_descr_str = sensor_type_lut[self.data_descr],
             ))
         for c in self.cur:
             if not almost_equal(c['n'], 24.7) or not almost_equal(c['level'], 361):
-                r.append('\t\tn={n} e={e} z={z} knots depth={level} m'.format(**c))
+                r.append('\tn={n} e={e} z={z} kts depth={level} m'.format(**c))
         return '\n'.join(r)
 
 class SensorReportCurrentHorz(SensorReport):
@@ -758,11 +770,11 @@ class SensorReportCurrentHorz(SensorReport):
         return bits
 
     def __unicode__(self):
-        r = ['\tSensorReport CurrentHorz: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+        r = ['SensorReport CurrentHorz: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
             ]
         for c in self.cur:
             if c['bearing'] != 361:
-                r.append('\t\tbearing={bearing} dist={dist} z={speed} dir={dir} depth={level} m'.format(**c))
+                r.append('\tbearing={bearing} dist={dist} z={speed} dir={dir} depth={level} m'.format(**c))
         return '\n'.join(r)
 
 class SensorReportSeaState(SensorReport):
@@ -772,7 +784,6 @@ class SensorReportSeaState(SensorReport):
                  swell_height=24.7, swell_period=61, swell_dir=361,
                  sea_state=13, 
                  swell_data_descr=0,
-                 
                  temp=50.1, temp_depth=12.2, temp_data_descr=0,
                  wave_height=24.7, wave_period=61, wave_dir=361, wave_data_descr=0,
                  salinity = 50.2,
@@ -841,19 +852,19 @@ class SensorReportSeaState(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self),]
 
-        bv_list.append(BitVector(intVal=int(self.swell_height*10), size=8))
+        bv_list.append(BitVector(intVal=int(round(self.swell_height*10)), size=8))
         bv_list.append(BitVector(intVal=self.swell_period, size=6))
         bv_list.append(BitVector(intVal=self.swell_dir, size=9))
         bv_list.append(BitVector(intVal=self.sea_state, size=4))
         bv_list.append(BitVector(intVal=self.swell_data_descr, size=3))
-        bv_list.append(BitVector(intVal=int( (self.temp+10) * 10 ), size=10) )
-        bv_list.append(BitVector(intVal=int( self.temp_depth*10 ), size=7))
+        bv_list.append(BitVector(intVal=int( round((self.temp+10) * 10) ), size=10) )
+        bv_list.append(BitVector(intVal=int( round(self.temp_depth*10) ), size=7))
         bv_list.append(BitVector(intVal=self.temp_data_descr, size=3))
-        bv_list.append(BitVector(intVal=int(self.wave_height*10), size=8))
+        bv_list.append(BitVector(intVal=int(round(self.wave_height*10)), size=8))
         bv_list.append(BitVector(intVal=self.wave_period, size=6))
         bv_list.append(BitVector(intVal=self.wave_dir, size=9))
         bv_list.append(BitVector(intVal=self.wave_data_descr, size=3))
-        bv_list.append(BitVector(intVal=int(self.salinity*10), size=9))
+        bv_list.append(BitVector(intVal=int(round(self.salinity*10)), size=9))
 
         #bv_list.append(BitVector(size=0)) # no spare
         bits = binary.joinBV(bv_list)
@@ -863,20 +874,20 @@ class SensorReportSeaState(SensorReport):
         return bits
 
     def __unicode__(self):
-        r = ['\tSensorReport SeaState: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+        r = ['SensorReport SeaState: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
             ]
         sea_state_str = beaufort_scale[self.sea_state]
         swell_data_descr_str = sensor_type_lut[self.swell_data_descr]
-        r.append('\t\tswell_height={swell_height} swell_period={swell_period} swell_dir={swell_dir}'.format(**self.__dict__))
-        r.append('\t\tsea_state={sea_state} - {sea_state_str} swell_data_descr={swell_data_descr} - {swell_data_descr_str}'.format(
+        r.append('\tswell_height={swell_height} swell_period={swell_period} swell_dir={swell_dir}'.format(**self.__dict__))
+        r.append('\tsea_state={sea_state} - "{sea_state_str}" swell_data_descr={swell_data_descr} - "{swell_data_descr_str}"'.format(
             sea_state_str=sea_state_str,
             swell_data_descr_str=swell_data_descr_str,
             **self.__dict__))
-        r.append('\t\ttemp={temp} temp_depth={temp_depth}'.format(**self.__dict__))
+        r.append('\ttemp={temp} temp_depth={temp_depth}'.format(**self.__dict__))
         temp_data_descr_str = sensor_type_lut[self.temp_data_descr]
-        r.append('\t\twave_height={wave_height} temp_data_descr={temp_data_descr} - {temp_data_descr_str}'.format(temp_data_descr_str=temp_data_descr_str, **self.__dict__))
-        r.append('\t\twave_period={wave_period} wave_dir={wave_dir} wave_data_descr={wave_data_descr}'.format(**self.__dict__))
-        r.append('\t\tsalinity={salinity}'.format(**self.__dict__))
+        r.append('\twave_height={wave_height} temp_data_descr={temp_data_descr} - "{temp_data_descr_str}"'.format(temp_data_descr_str=temp_data_descr_str, **self.__dict__))
+        r.append('\twave_period={wave_period} wave_dir={wave_dir} wave_data_descr={wave_data_descr}'.format(**self.__dict__))
+        r.append('\tsalinity={salinity}'.format(**self.__dict__))
         return '\n'.join(r)
 
 
@@ -891,6 +902,16 @@ class SensorReportSalinity(SensorReport):
         if bits is not None:
             self.decode_bits(bits)
             return
+#        if not ((temp>=-10. and temp <= 50.0) or almost_equal(temp,60.1) or almost_equal(temp,60.2)):
+#            print ('sal_temp_fail:',temp)
+        assert( (temp>=-10. and temp <= 50.0) or almost_equal(temp,60.1) or almost_equal(temp,60.2) )
+        assert(cond>=0. and cond <= 7.03)
+        assert(pres>=0. and pres<=6000.3)
+        assert(salinity>=0. and salinity <= 50.3)
+        assert(salinity_type in (0,1,2))
+        assert(data_descr in sensor_type_lut)
+        
+
         self.temp = temp
         self.cond = cond
         self.pres = pres
@@ -900,7 +921,6 @@ class SensorReportSalinity(SensorReport):
         SensorReport.__init__(self, report_type=self.report_type,
                               year=year, month=month,
                               day=day, hour=hour, minute=minute, site_id=site_id)
-        print('FIX: check all the parameters')
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
@@ -921,10 +941,11 @@ class SensorReportSalinity(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self),]
 
-        bv_list.append(BitVector(intVal=int( (self.temp+10) * 10 ), size=10))
-        bv_list.append(BitVector(intVal=int( self.cond * 100 ), size=10))
-        bv_list.append(BitVector(intVal=int( self.pres * 10 ), size=16))
-        bv_list.append(BitVector(intVal=int( self.salinity*10 ), size=9))
+        bv_list.append(BitVector(intVal=int( round((self.temp+10) * 10) ), size=10))
+        # int(206.999999) == 206, but int(round(2.07 * 100)) == 207
+        bv_list.append(BitVector(intVal=int( round(self.cond * 100) ), size=10))
+        bv_list.append(BitVector(intVal=int( round(self.pres * 10) ), size=16))
+        bv_list.append(BitVector(intVal=int( round(self.salinity*10) ), size=9))
         bv_list.append(BitVector(intVal=self.salinity_type, size=2))
         bv_list.append(BitVector(intVal=self.data_descr, size=3))
         bv_list.append(BitVector(size=35)) # spare bits
@@ -935,16 +956,15 @@ class SensorReportSalinity(SensorReport):
         return bits
 
     def __unicode__(self):
-        r = ['\tSensorReport Salinity: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
+        r = ['SensorReport Salinity: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
             ]
         data_descr_str = sensor_type_lut[self.data_descr]
         salinity_type_str= salinity_type_lut[self.salinity_type]
-        r.append('\t\ttemp={temp} cond={cond} pres={pres} salinity={salinity}'.format(**self.__dict__))
-        r.append('\t\tsalinity_type={salinity_type} - {salinity_type_str} - data_descr={data_descr} - {data_descr_str}'.format(
+        r.append('\ttemp={temp} cond={cond} pres={pres} salinity={salinity}'.format(**self.__dict__))
+        r.append('\tsalinity_type={salinity_type} - "{salinity_type_str}" data_descr={data_descr} - "{data_descr_str}"'.format(
             data_descr_str=data_descr_str,
             salinity_type_str=salinity_type_str,
             **self.__dict__))
-        r.append('\t\t'.format(**self.__dict__))
         return '\n'.join(r)
 
 class SensorReportWeather(SensorReport):
@@ -962,6 +982,18 @@ class SensorReportWeather(SensorReport):
         if bits is not None:
             self.decode_bits(bits)
             return
+
+        assert( (air_temp>=-60. and air_temp<=60.) or almost_equal(air_temp,-102.4))
+        assert(air_temp_data_descr in sensor_type_lut)
+        assert(precip in (0,1,2,3))
+        assert(vis>=0.0 and vis <= 24.3)
+        assert(dew>=-20. and dew<=50.1)
+        assert(dew_data_descr in sensor_type_lut)
+        assert(air_pres>=800 and air_pres<=1202)
+        assert(air_pres_trend in (0,1,2,3))
+        assert(air_pres_data_descr in sensor_type_lut)
+        assert(salinity>=0. and salinity<=50.2)
+
         self.air_temp = air_temp
         self.air_temp_data_descr = air_temp_data_descr
         self.precip = precip
@@ -975,7 +1007,6 @@ class SensorReportWeather(SensorReport):
         SensorReport.__init__(self, report_type=self.report_type,
                               year=year, month=month,
                               day=day, hour=hour, minute=minute, site_id=site_id)
-        print('FIX: check all the parameters')
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
@@ -999,16 +1030,16 @@ class SensorReportWeather(SensorReport):
         # 25 spare bits
 
     def get_bits(self):
-        print('FIX: danger.  there will be no fighting in the war room')
         bv_list = [SensorReport.get_bits(self),
-                   # FIX: danger
+                   # FIX: danger - is this really signed
                    binary.bvFromSignedInt(int(self.air_temp*10), 11),
                    BitVector(intVal=self.air_temp_data_descr, size=3),
                    BitVector(intVal=self.precip, size=2),
                    BitVector(intVal=int(self.vis*10), size=8),
-                   # FIX: danger
+                   # FIX: danger - is this really signed
                    binary.bvFromSignedInt(int(self.dew*10), 10),
                    BitVector(intVal=self.dew_data_descr, size=3),
+                   # FIX: danger - two possible values of 800 hPa
                    BitVector(intVal=self.air_pres - 799, size=9),
                    BitVector(intVal=self.air_pres_trend, size=2),
                    BitVector(intVal=self.air_pres_data_descr, size=3),
@@ -1021,17 +1052,17 @@ class SensorReportWeather(SensorReport):
         return bits
 
     def __unicode__(self):
-        r = ['\tSensorReport Wx: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),]
+        r = ['SensorReport Wx: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),]
         air_temp_data_descr_str = sensor_type_lut[self.air_temp_data_descr]
         dew_data_descr_str = sensor_type_lut[self.dew_data_descr]
         air_pres_data_descr_str = sensor_type_lut[self.air_pres_data_descr]
 
-        r.append('\t\tair_temp={air_temp} air_temp_data_descr={air_temp_data_descr} - {air_temp_data_descr_str}'.format(air_temp_data_descr_str=air_temp_data_descr_str, **self.__dict__))
-        r.append('\t\tprecip={precip} vis={vis} dew={dew} dew_data_descr={dew_data_descr} - {dew_data_descr_str}'.format(dew_data_descr_str=dew_data_descr_str, **self.__dict__))
+        r.append('\tair_temp={air_temp} air_temp_data_descr={air_temp_data_descr} - {air_temp_data_descr_str}'.format(air_temp_data_descr_str=air_temp_data_descr_str, **self.__dict__))
+        r.append('\tprecip={precip} vis={vis} dew={dew} dew_data_descr={dew_data_descr} - {dew_data_descr_str}'.format(dew_data_descr_str=dew_data_descr_str, **self.__dict__))
         # FIX: add trend_lut lookup
-        r.append('\t\tair_pres={air_pres} air_pres_trend={air_pres_trend} air_pres_data_descr={air_pres_data_descr} - {air_pres_data_descr_str}'.format(
+        r.append('\tair_pres={air_pres} air_pres_trend={air_pres_trend} air_pres_data_descr={air_pres_data_descr} - {air_pres_data_descr_str}'.format(
             air_pres_data_descr_str=air_pres_data_descr_str, **self.__dict__))
-        r.append('\t\tsalinity={salinity}'.format(**self.__dict__))
+        r.append('\tsalinity={salinity}'.format(**self.__dict__))
         return '\n'.join(r)
 
 class SensorReportAirGap(SensorReport):
@@ -1047,6 +1078,15 @@ class SensorReportAirGap(SensorReport):
             self.decode_bits(bits)
             return
 
+        # FIX: doc is wrong... draft and gap are in 0.01 meter incrememts??
+        assert( (draft>=1. and draft<=81.91) or almost_equal(draft,0) )
+        assert( (gap>=1. and gap<=81.91) or almost_equal(gap,0) )
+        assert(gap_trend in (0,1,2,3))
+        assert( (forecast_gap>=1. and forecast_gap<=81.91) or almost_equal(forecast_gap,0) )
+        assert(forecast_day >= 0 and forecast_day <= 31)
+        assert(forecast_hour >= 0 and forecast_hour <= 24)
+        assert(forecast_minute >= 0 and forecast_minute <= 60)
+
         self.draft = draft
         self.gap = gap
         self.gap_trend = gap_trend
@@ -1058,7 +1098,6 @@ class SensorReportAirGap(SensorReport):
                               year=year, month=month,
                               day=day, hour=hour, minute=minute, site_id=site_id)
         # FIX: spec has no sensor data description like other reports
-        print('FIX: check all the parameters')
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
@@ -1080,10 +1119,10 @@ class SensorReportAirGap(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self),]
 
-        bv_list.append(BitVector(intVal=int(self.draft*100), size=13))
-        bv_list.append(BitVector(intVal=int(self.gap*100), size=13))
+        bv_list.append(BitVector(intVal=int(round(self.draft*100)), size=13))
+        bv_list.append(BitVector(intVal=int(round(self.gap*100)), size=13))
         bv_list.append(BitVector(intVal=self.gap_trend, size=2))
-        bv_list.append(BitVector(intVal=int(self.forecast_gap*100), size=13))
+        bv_list.append(BitVector(intVal=int(round(self.forecast_gap*100)), size=13))
         bv_list.append(BitVector(intVal=self.forecast_day, size=5))
         bv_list.append(BitVector(intVal=self.forecast_hour, size=5))
         bv_list.append(BitVector(intVal=self.forecast_minute, size=6))
@@ -1096,10 +1135,10 @@ class SensorReportAirGap(SensorReport):
         return bits
 
     def __unicode__(self):
-        r = ['\tSensorReport Gap: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),]
+        r = ['SensorReport Gap: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),]
 
-        r.append('\t\tdraft={draft} gap={gap} trend={gap_trend} - {trend_str}'.format(trend_str = trend_lut[self.gap_trend],**self.__dict__))
-        r.append('\t\tforecast_gap={forecast_gap} forecast_datetime = {forecast_day:02}T{forecast_hour:02}:{forecast_minute:02}'.format(**self.__dict__))
+        r.append('\tdraft={draft} gap={gap} trend={gap_trend} - {trend_str}'.format(trend_str = trend_lut[self.gap_trend],**self.__dict__))
+        r.append('\tforecast_gap={forecast_gap} forecast_datetime = {forecast_day:02}T{forecast_hour:02}:{forecast_minute:02}'.format(**self.__dict__))
         return '\n'.join(r)
 
 
@@ -1109,9 +1148,13 @@ class Environment(BBM):
     fi = 26
     def __init__(self,
                  #timestamp = None,
-                 site_id=0, source_mmsi=None, name = None,
+                 # site_id=0, # Site id is a part of the indivitual reports... weird
+                 source_mmsi=None, name = None,
                  # OR
-                 nmea_strings=None):
+                 nmea_strings=None,
+                 # OR
+                 bits=None,
+                 ):
         'Initialize a Environmental AIS binary broadcast message (1:8:22)'
         # FIX: should I get rid of this timestamp since it really belongs in the sensor reports?
 
@@ -1119,8 +1162,12 @@ class Environment(BBM):
 
         self.sensor_reports = []
         
-        if nmea_strings != None:
+        if nmea_strings is not None:
             self.decode_nmea(nmea_strings)
+            return
+
+        if bits is not None:
+            self.decode_bits(bits)
             return
 
         # if timestamp is None:
@@ -1134,14 +1181,19 @@ class Environment(BBM):
         #                                    minute = timestamp.minute,
         #                                    # No seccond or smaller
         #                                    )
+        #assert(site_id >= 0 and site_id <= 127)
+        # FIX: what is a better MMSI range?  Minimum: 0 or ###### -> 100000?
+        assert(source_mmsi>=100000 and source_mmsi<=999999999)
         
-        self.site_id = site_id;
+        #self.site_id = site_id;
         self.source_mmsi = source_mmsi
+        self.sensor_reports = []
 
     def __unicode__(self, verbose=False):
         r = []
         #timestamp={ts}
-        r.append('Environment: site_id={site_id} sensor_reports: [{num_reports}]'.format(
+        #r.append('Environment: site_id={site_id} sensor_reports: [{num_reports}]'.format(
+        r.append('Environment: sensor_reports: [{num_reports}]'.format(
             num_reports = len(self.sensor_reports),
             #ts = self.timestamp.strftime('%m%dT%H:%MZ'),
             **self.__dict__)
@@ -1154,6 +1206,30 @@ class Environment(BBM):
     def __str__(self, verbose=False):
         return self.__unicode__(verbose=verbose)
 
+    def __eq__(self,other):
+        # First the easy case there it's the same instance
+        #sys.stderr.write('Env__eq__\n')
+        if self is other: return True
+        if self.source_mmsi != other.source_mmsi: return False
+        #sys.stderr.write('CHECKPOINT 3\n')
+        #if self.site_id != other.site_id: return False
+        if len(self.sensor_reports) != len(other.sensor_reports): return False
+        #sys.stderr.write('CHECKPOINT 3\n')
+        for i in range(len(self.sensor_reports)):
+            a = self.sensor_reports[i]
+            b = other.sensor_reports[i]
+            #sys.stderr.write( 'CHECKPOINT 4:%d  types: %s %s\n' % (i,str(type(a)),str(type(b))) )
+            #if a != b: return False
+            if a==b: continue
+            #sys.stderr.write('CHECKPOINT 4b\n')
+            return False
+        #sys.stderr.write('CHECKPOINT 5\n')
+        return True
+
+    def __ne__(self, other):
+        #sys.stderr.write('Env__ne__ ****\n')
+        return not self.__eq__(other)
+
     def html(self, efactory=False):
         'return an embeddable html representation'
         raise NotImplmented
@@ -1161,7 +1237,10 @@ class Environment(BBM):
 #    def get_merged_text(self):
 #        'return the complete text for any free text sub areas'
 #        raise NotImplmented
-  	
+
+    def append(self,report):
+        self.add_sensor_report(report)
+        
     def add_sensor_report(self, report): 	
   	'Add another sensor report onto the message'
         if not hasattr(self,'sensor_reports'):
@@ -1170,8 +1249,13 @@ class Environment(BBM):
         if len(self.sensor_reports) > 9:
             raise AisPackingException('too many sensor reports in one message.  8 max')
         self.sensor_reports.append(report)
+    def get_report_types(self):
+        s = []
+        for sr in self.sensor_reports:
+            s.append(sr.report_type)
+        return s
 
-    def get_bits(self, include_bin_hdr=False, mmsi=None, include_dac_fi=True):
+    def get_bits(self, include_bin_hdr=True, mmsi=None, include_dac_fi=True):
         'Child classes must implement this'
         bv_list = []
         if include_bin_hdr:
@@ -1188,7 +1272,7 @@ class Environment(BBM):
             bv_list.append( BitVector(intVal=self.dac, size=10 ) )
             bv_list.append( BitVector(intVal=self.fi, size=6 ) )
         
-  	for rpt in self.sensor_reports:
+  	for report in self.sensor_reports:
             bv_list.append( report.get_bits() )
 
         # Byte alignment if requested is handled by AIVDM byte_align
@@ -1248,17 +1332,24 @@ class Environment(BBM):
         self.dac = r['dac']
         self.fi = r['fi']
 
+        if len(bits) == 56:
+            # FIX: should this raise an exception?
+            #print ('WARNING: no Sensor Reports')
+            self.sensor_reports = []
+            return
+
         sensor_reports_bits = bits[56:]
         del bits  # be safe
 
         # FIX: change this to raise an exception
         assert 8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE
 
-        for i in range(len(sensor_report_bits) / SENSOR_REPORT_SIZE):
-            bits = sensor_report_bits[ i*SENSOR_REPORT_SIZE : (i+1)*SENSOR_REPORT_SIZE ]
+        for i in range(len(sensor_reports_bits) / SENSOR_REPORT_SIZE):
+            rpt_bits = sensor_reports_bits[ i*SENSOR_REPORT_SIZE : (i+1)*SENSOR_REPORT_SIZE ]
             #print bits
             #print bits[:3]
-            sa_obj = self.sensor_report_factory(bits=bits)
+            #sys.stderr.write('decoding_report: len: %d\n' % len(rpt_bits))
+            sa_obj = self.sensor_report_factory(bits=rpt_bits)
             #print 'obj:', str(sa_obj)
             self.add_sensor_report(sa_obj)
   	
@@ -1266,14 +1357,17 @@ class Environment(BBM):
         'based on sensor bit reports, return a proper SensorReport instance'
         #raise NotImplmented
         assert(len(bits) == SENSOR_REPORT_SIZE)
-        report_type = int( bits[:3] )
+        report_type = int( bits[:4] )
+        #sys.stderr.write('sensor_report_factory: %d %d %s\n' % (report_type,
+        #                                                        len(bits),
+        #                                                        sensor_report_lut[report_type]))
         if 0 == report_type: return SensorReportLocation(bits=bits)
-	elif 1 == report_type: return SensorReportStationId(bits=bits)
+	elif 1 == report_type: return SensorReportId(bits=bits)
 	elif 2 == report_type: return SensorReportWind(bits=bits)
 	elif 3 == report_type: return SensorReportWaterLevel(bits=bits)
-	elif 4 == report_type: return SensorReportCurrentFlow2D(bits=bits)
-	elif 5 == report_type: return SensorReportCurrentFlow3D(bits=bits)
-	elif 6 == report_type: return SensorReportHorizCurrentFlow(bits=bits)
+	elif 4 == report_type: return SensorReportCurrent2d(bits=bits)
+	elif 5 == report_type: return SensorReportCurrent3d(bits=bits)
+	elif 6 == report_type: return SensorReportCurrentHorz(bits=bits)
 	elif 7 == report_type: return SensorReportSeaState(bits=bits)
 	elif 8 == report_type: return SensorReportSalinity(bits=bits)
 	elif 9 == report_type: return SensorReportWeather(bits=bits)
@@ -1286,3 +1380,16 @@ class Environment(BBM):
         'Provide a Geo Interface for GeoJSON serialization'
         raise NotImplmented
         
+sensor_report_classes = [SensorReportLocation,
+                         SensorReportId,
+                         SensorReportWind,
+                         SensorReportWaterLevel,
+                         SensorReportCurrent2d,
+                         SensorReportCurrent3d,
+                         SensorReportCurrentHorz,
+                         SensorReportSeaState,
+                         SensorReportSalinity,
+                         SensorReportWeather,
+                         SensorReportAirGap,
+                         ]
+
