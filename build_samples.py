@@ -26,6 +26,165 @@ import unittest
 import geojson
 
 import imo_001_22_area_notice as an
+import imo_001_26_environment as env
+
+def env_dump(e, description):
+    print ('\n#',description)
+    print (e.__str__(verbose=True))
+    print ('bit_str:',e.get_bits())
+    for line in e.get_aivdm(byte_align=True):
+        print (line)
+
+def env_samples():
+    # env each with 1 sensor report
+    year = 2011
+    month = 6
+    day = 20
+    hour = 15
+    minute = 38
+    site_id = 11
+    mmsi = 123456789
+
+    forecast_day = 20
+    forecast_hour = 17
+    forecast_minute = 0
+    
+    x = -70.864399
+    y = 43.092136
+
+    sr_list = []
+    
+    # Jackson Lab, Adams Point, NH
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportLocation(year=year, month=month, day=day, hour=day, minute=minute,
+                                  site_id=site_id,
+                                  lon=x, lat=y, alt=2.1,
+                                  owner=5, timeout=5)
+    e.append(sr)
+    env_dump(e, 'Location - Adams Point, NH')
+    sr_list.append(sr)
+
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportId(year=year, month=month, day=day, hour=day, minute=minute,
+                            site_id=site_id,
+                            id_str='UNH JEL PIER')
+    e.append(sr)
+    env_dump(e,'Id for UNH Jackson Estuarine Lab at Adams Point, NH')
+    sr_list.append(sr)
+    
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportWind(year=year, month=month, day=day, hour=day, minute=minute,
+                              site_id=site_id,
+                              speed = 4, gust = 8, dir = 160, gust_dir = 170,
+                              data_descr = 1,
+                              forecast_speed=6, forecast_gust=9, forecast_dir=140,
+                              forecast_day=forecast_day,
+                              forecast_hour=forecast_hour, forecast_minute=forecast_minute,
+                              duration_min=10,
+                            )
+    e.append(sr)
+    env_dump(e,'Single Wind report and forecast')
+    sr_list.append(sr)
+    
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportWaterLevel(year=year, month=month, day=day, hour=day, minute=minute,
+                                    site_id=site_id,
+                                    wl_type=0, wl=0.14, trend=0, vdatum=0,
+                                    data_descr=1,
+                                    forecast_type=0, forecast_wl=0.31,
+                                    forecast_day=forecast_day,
+                                    forecast_hour=forecast_hour, forecast_minute=forecast_minute,
+                                    duration_min=6)
+
+    e.append(sr)
+    env_dump(e,'WaterLevel MLLW low tide and rising')
+    
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportCurrent2d(year=year, month=month, day=day, hour=day, minute=minute,
+                                   site_id=site_id,
+                                   speed_1=4.7, dir_1=175, level_1=0,
+                                   speed_2=4.1, dir_2=183, level_2=2,
+                                   speed_3=3.2, dir_3=189, level_3=4,
+                                   data_descr = 1
+                            )
+    e.append(sr)
+    env_dump(e,'2d currents heading south ish')
+    sr_list.append(sr)
+
+    # FIX: This sensor report can't specify south, west, or down
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportCurrent3d(year=year, month=month, day=day, hour=day, minute=minute,
+                                   site_id=site_id,
+                                   n_1=0.5, e_1=1.2, z_1=0.1, level_1=1,
+                                   n_2=1.1, e_2=2.1, z_2=0.2, level_2=3,
+                                   data_descr = 1
+                            )
+    e.append(sr)
+    env_dump(e,'The 3d currents sensor report can not handle west, south, or down?!?')
+    
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportCurrentHorz(year=year, month=month, day=day, hour=day, minute=minute,
+                                     bearing_1 = 96, dist_1 = 30, speed_1 = 1.4, dir_1 = 183, level_1 = 1,
+                                     bearing_2 = 96, dist_2 = 50, speed_2 = 2.3, dir_2 = 185, level_2 = 1,
+                                     site_id=site_id,
+                                     )
+    e.append(sr)
+    env_dump(e,'Horizontal current in two different locations')
+    
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportSeaState(year=year, month=month, day=day, hour=day, minute=minute,
+                            site_id=site_id,
+                                  swell_height=0.2, swell_period=2, swell_dir=180,
+                                  sea_state=2, 
+                                  swell_data_descr=1,
+                                  temp=10.3, temp_depth=0.5, temp_data_descr=1,
+                                  wave_height=0.3, wave_period=4, wave_dir=190, wave_data_descr=1,
+                                  salinity = 22.1,
+                            )
+    e.append(sr)
+    env_dump(e,'Mild sea state')
+    
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportSalinity(year=year, month=month, day=day, hour=day, minute=minute,
+                                  site_id=site_id,
+                                  temp=10.3, cond=3.2, pres=30.1,
+                                  salinity=22.1, salinity_type=0, data_descr=1,
+                            )
+    e.append(sr)
+    env_dump(e,'Conductivity and salitity are probably not possible in this combo')
+    
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportWeather(year=year, month=month, day=day, hour=day, minute=minute,
+                                 site_id=site_id,
+                                 air_temp=23.3, air_temp_data_descr=1,
+                                 precip=3, vis=14.2,
+                                 dew=18.2, dew_data_descr=1,
+                                 air_pres= 1003, air_pres_trend = 1, air_pres_data_descr=1,
+                                 salinity=22.1,
+                                 )
+    e.append(sr)
+    env_dump(e,'A weather report')
+    sr_list.append(sr)
+    
+    e = env.Environment(source_mmsi = mmsi)
+    sr = env.SensorReportAirGap(year=year, month=month, day=day, hour=day, minute=minute,
+                                site_id=site_id,
+                                draft=4.5, gap=30.2, gap_trend=2, forecast_gap=22.2,
+                                forecast_day=20, forecast_hour=19, forecast_minute=30,
+                            )
+    e.append(sr)
+    env_dump(e,'There really is no overhead issue at JEL, but why not')
+
+
+    e = env.Environment(source_mmsi = mmsi)
+    for sr in sr_list:
+        e.append(sr)
+    env_dump(e,'Combining a bunch of types of reports together')
+    
+    sys.stderr.write('FIX: need to create many more combinations of Env messages')
+
+    return
+
 
 def dump_all(area_notice, kmlfile, byte_align=False):
     print ('#',area_notice.name)
@@ -356,3 +515,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    env_samples()

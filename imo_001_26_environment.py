@@ -631,6 +631,7 @@ class SensorReportCurrent2d(SensorReport):
         return '\n'.join(r)
 
 class SensorReportCurrent3d(SensorReport):
+    # FIX: how the heck to you specify south, west, and up?
     report_type = 5
     def __init__(self,
                  year=None, month=None, day=None, hour=None, minute=None, site_id=None,
@@ -1193,7 +1194,7 @@ class Environment(BBM):
         r = []
         #timestamp={ts}
         #r.append('Environment: site_id={site_id} sensor_reports: [{num_reports}]'.format(
-        r.append('Environment: sensor_reports: [{num_reports}]'.format(
+        r.append('Environment: mmsi={source_mmsi} sensor_reports: [{num_reports}]'.format(
             num_reports = len(self.sensor_reports),
             #ts = self.timestamp.strftime('%m%dT%H:%MZ'),
             **self.__dict__)
