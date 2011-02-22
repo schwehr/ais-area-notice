@@ -154,15 +154,13 @@ class SensorReport(object):
             self.decode_bits(bits, year=year, month=month)
             return
 
-        if year is None:
+        if year is None or month is None or day is None or hour is None or minute is None:
             now = datetime.datetime.utcnow()
-            year = now.year
-            month = now.month
-        if day is None:
-            now = datetime.datetime.utcnow()
-            day = now.day
-            hour = now.hour
-            minute = now.minute
+            if year is None: year = now.year
+            if month is None: month = now.month
+            if day is None: day = now.day
+            if hour is None: hour = now.hour
+            if minute is None: minute = now.minute
 
         #print ('ym:',year,month, type(year))
         assert(report_type in sensor_report_lut)
@@ -522,6 +520,7 @@ class SensorReportWaterLevel(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self),
                    BitVector(intVal=self.wl_type, size=1),
+                   # FIX: check this is the right encoding
                    binary.bvFromSignedInt(int(round(self.wl*100)), 16),
                    BitVector(intVal=self.trend, size=2),
                    BitVector(intVal=self.vdatum, size=5),

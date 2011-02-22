@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-
 __doc__ = '''
 Test the Environmental message and all of the constituent
 SensorReports.
