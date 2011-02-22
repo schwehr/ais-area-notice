@@ -61,7 +61,7 @@ class MetHydro31(BBM):
                  lon=181, lat=91, pos_acc=0,
                  day=0, hour=24, minute=60,
                  wind=127, gust=127, wind_dir=360, gust_dir=360,
-                # FIX: check the air_pres not avail comes out as 511 in the bits
+                 # FIX: check the air_pres not avail comes out as 511 in the bits
                  air_temp=-102.4, humid=101, dew=50.1, air_pres=399+510, air_pres_trend=3, vis=12.7,
                  wl=30.01, wl_trend=3,
                  cur_1=25.5, cur_dir_1=360, # Surface current
@@ -72,7 +72,6 @@ class MetHydro31(BBM):
                  sea_state=13,
                  water_temp=50.1,
                  precip=7, salinity=50.1, ice=3,
-                 # Possible OHMEX extension in spare for water level
                  # OR
                  nmea_strings=None,
                  # OR
@@ -183,7 +182,6 @@ class MetHydro31(BBM):
         return self.__unicode__(verbose=verbose)
 
     def __eq__(self,other):
-        #sys.stderr.write('__eq__\n')
         if self is other: return True
         if self.source_mmsi != other.source_mmsi: return False
         if len(self.__dict__) != len(other.__dict__):
@@ -243,8 +241,6 @@ class MetHydro31(BBM):
         bv_list.append( BitVector(intVal=self.hour, size=5) )
         bv_list.append( BitVector(intVal=self.minute, size=6) )
 
-        #sys.stderr.write('len: %d end1\n'% len(binary.joinBV(bv_list)))
-
         bv_list.append( BitVector(intVal=self.wind, size=7) )
         bv_list.append( BitVector(intVal=self.gust, size=7) )
         bv_list.append( BitVector(intVal=self.wind_dir, size=9) )
@@ -255,14 +251,11 @@ class MetHydro31(BBM):
         bv_list.append( binary.bvFromSignedInt(int(round(self.dew*10)), 10)),
         bv_list.append( BitVector(intVal=self.air_pres - 799, size=9) )
         bv_list.append( BitVector(intVal=self.air_pres_trend, size=2) )
-        #sys.stderr.write('len: %d end2\n'% len(binary.joinBV(bv_list)))
 
         bv_list.append( BitVector(intVal=int(round(self.vis*10)), size=8) )
 
         # FIX: double check wl
-
         bv_list.append( BitVector(intVal=int(round((self.wl+10)*100)), size=12) )
-        #sys.stderr.write('encode_wl: %.2f %.2f %.2f %d %d\n' % (self.wl,self.wl+10,(self.wl+10)*100, round((self.wl+10)*100), int(BitVector(intVal=int(round((self.wl+10)*100))) ) ))
         bv_list.append( BitVector(intVal=self.wl_trend, size=2) )
 
         bv_list.append( BitVector(intVal=int(round(self.cur[0]['speed']*10)), size=8) )
@@ -274,8 +267,6 @@ class MetHydro31(BBM):
             bv_list.append( BitVector(intVal=self.cur[i]['level'], size=5) )
 
         bv_list.append( BitVector(intVal=int(round(self.wave_height*10)), size=8) )
-        #sys.stderr.write('len: %d end 3\n'% len(binary.joinBV(bv_list)))
-
         bv_list.append( BitVector(intVal=self.wave_period, size=6) )
         bv_list.append( BitVector(intVal=self.wave_dir, size=9) )
 
@@ -292,7 +283,7 @@ class MetHydro31(BBM):
 
         bv_list.append( BitVector(intVal=self.ice, size=2) )
 
-        bv_list.append( BitVector(size=10) ) # FIX: watch for OHMEX met hydro propietary extension
+        bv_list.append( BitVector(size=10) ) 
     
         bv = binary.joinBV(bv_list)
         if len(bv) != MSG_SIZE:
@@ -338,7 +329,6 @@ class MetHydro31(BBM):
 
     def decode_bits(self, bits, year=None):
         'decode the bits for a message'
-        #r = {}
 
         message_id       = int( bits[:6] )
 	repeat_indicator = int(bits[6:8])
@@ -348,16 +338,6 @@ class MetHydro31(BBM):
         fi        = int( bits[50:56] )
         assert(dac==1)
         assert(fi==31)
-
-        #self.message_id = r['message_id']
-        #self.repeat_indicator = r['repeat_indicator']
-        #self.source_mmsi = r['mmsi'] # This will probably get ignored
-        #self.dac = r['dac']
-        #self.fi = r['fi']
-
-        #self.dac = r['dac']
-        #self.fi = r['fi']
-        #dac = 
 
         self.lon = binary.signedIntFromBV(bits[56:81])/60000.
         self.lat = binary.signedIntFromBV(bits[81:105])/60000.
@@ -380,8 +360,6 @@ class MetHydro31(BBM):
 
         self.vis = int( bits[193:201] )/ 10.
 
-        #wl_raw = int(bits[201:213])
-        #sys.stderr.write('decode_wl: %d %.2f %.2f\n' % (wl_raw, wl_raw/100., wl_raw/100. - 10) )
         self.wl = int(bits[201:213])/100. - 10
         self.wl_trend = int( bits[213:215] )
         self.cur = [
@@ -405,7 +383,6 @@ class MetHydro31(BBM):
         self.precip = int( bits[336:339] )
         self.salinity = int( bits[339:348] ) / 10.
         self.ice = int( bits[348:350] )
-        # FIX: watch out for ohmex extension
         # + 10 spare bits
 
     @property
