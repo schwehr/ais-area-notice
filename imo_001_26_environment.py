@@ -266,12 +266,12 @@ class SensorReportLocation(SensorReport):
         if bits is not None:
             self.decode_bits(bits)
             return
-        assert (lon >= -180. and lon <= 180.) or lon == 181
-        assert (lat >= -90. and lat <= 90.) or lat == 91
-        assert (alt >= 0 and alt < 200.3) # 2002 is non-available
-        assert (owner >= 0 and owner <= 6) or owner == 14
-        assert (timeout >= 0 and timeout <= 5)
-        assert (site_id is not None)
+        assert(lon >= -180. and lon <= 180.) or lon == 181
+        assert(lat >= -90. and lat <= 90.) or lat == 91
+        assert(alt >= 0 and alt < 200.3) # 2002 is non-available
+        assert(owner >= 0 and owner <= 6) or owner == 14
+        assert(timeout >= 0 and timeout <= 5)
+        assert(site_id is not None)
 
         SensorReport.__init__(self, report_type=self.report_type,
                               year=year, month=month, day=day, hour=hour, minute=minute,
@@ -794,8 +794,8 @@ class SensorReportSeaState(SensorReport):
             self.decode_bits(bits)
             return
 
-        assert(swell_height>=0 and swell_height <=24.7)
-        assert( swell_period>=0 and swell_height<=61)
+        assert(swell_height>=0 and swell_height<=24.7)
+        assert(swell_period>=0 and swell_period<=61)
         assert(swell_dir>= 0 and swell_dir<=361)
         assert(sea_state in beaufort_scale)
         assert(swell_data_descr in sensor_type_lut)
@@ -1156,7 +1156,7 @@ class Environment(BBM):
                  # OR
                  bits=None,
                  ):
-        'Initialize a Environmental AIS binary broadcast message (1:8:22)'
+        'Initialize an Environmental AIS binary broadcast message (1:8:22)'
         # FIX: should I get rid of this timestamp since it really belongs in the sensor reports?
 
         BBM.__init__(self, message_id = 8)
@@ -1315,10 +1315,13 @@ class Environment(BBM):
         if None in msgs:
             raise AisUnpackingException('one or more NMEA lines did were malformed')
 
+        sys.stderr.write('FIX: decode the NMEA\n')
 
   	
     def decode_bits(self, bits, year=None):
         'decode the bits for a message'
+
+        # FIX: handle the option of without AIS hdr and MSG 8 hdr
         r = {}
         r['message_id']       = int( bits[:6] )
 	r['repeat_indicator'] = int(bits[6:8])

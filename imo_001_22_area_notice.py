@@ -599,7 +599,7 @@ def geom2kml(geom_dict):
     raise ValueError('Not a recognized __geo_interface__ type: %s' % (geom_type))
 
 
-
+# FIX: should this subclass BaseException?
 class AisException(Exception):
     pass
 
