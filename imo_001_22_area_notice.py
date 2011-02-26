@@ -147,6 +147,8 @@ iso8601_timeformat = '%Y-%m-%dT%H:%M:%SZ'
 
 
 nmea_talkers = {
+    'PS':'FIX: something to do with Class B AIS',
+    # http://yachtelectronics.blogspot.com/2011/02/srt-proprietary-ais-commands.html
     'AG':'Autopilot - General',
     'AI':'Automatic Identification System',
     'AP':'Autopilot - Magnetic',
