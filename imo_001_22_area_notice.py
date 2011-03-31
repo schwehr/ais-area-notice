@@ -2041,7 +2041,7 @@ def main():
     
     if 0==len(args):
         # Assume stdin
-        assert false
+        assert False
     if '!AIVDM' in args[0]:
         an = AreaNotice(nmea_strings=args)
         print ('Area Notice:',str(an))
