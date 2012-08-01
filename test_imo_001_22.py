@@ -12,27 +12,24 @@ __contact__   = 'kurt at ccom.unh.edu'
 __doc__ ='''
 Testing for Area Notice AIS binary mesage
 
+FIX: need to test the year and month roll overs in time
+
 @requires: U{Python<http://python.org/>} >= 2.6
 
 @license: GPL v3
 @undocumented: __doc__
 @since: 2009-Jun-24
 @status: under development
-@organization: U{CCOM<http://ccom.unh.edu/>} 
+@organization: U{CCOM<http://ccom.unh.edu/>}
 '''
 
-# FIX: need to test the year and month roll overs in time
-
-
 import sys
-#print (sys.version)
-
 import datetime
 import unittest
 import geojson
 import math
 import imo_001_22_area_notice as an
-from imo_001_22_area_notice import vec_rot, vec_add# , deg2rad
+from imo_001_22_area_notice import vec_rot, vec_add
 from imo_001_22_area_notice import AisPackingException, AisUnpackingException
 
 def almost_equal(v1,v2,epsilon=0.2):
@@ -59,17 +56,11 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
     'Compare two geojson dicts and make sure they are the same withing epsilon'
 
     v = verbose
-    #v = True
-    #print verbose
-
-    #sys.stderr.write('almost_equal_gj: %s (%s), %s (%s)\n' % (short_str(g1),str(type(g1)),short_str(g2),str(type(g2))))
 
     if g1 == g2:
-        #sys.stderr.write('equal_by: ==\n')
         return True
 
     if isinstance(g1,list):
-        #print 'list:',type(g1),g1
         for i in range(len(g1)):
             if not almost_equal_geojson(g1[i], g2[i], verbose=verbose):
                 sys.stderr.write( 'list_compare_failed: %s %s \n' % (str(g1[i]), str(g2[i])) )
@@ -79,22 +70,16 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
     if not isinstance(g1,dict) or not isinstance(g1,dict):
         if v: sys.stderr.write('cp1: %s\n' % type(g1))
         if isinstance(g1,float) or isinstance(g1,int):
-            #sys.stderr.write('cp2\n')
             if almost_equal(g1,g2):
-                #sys.stderr.write('cp3\n')
                 return True
             else:
-                #sys.stderr.write('cp3b\n')
                 if v: sys.stderr.write( 'failed_compare: %s %s \n' % (str(g1), str(g2)) )
                 return False
-            #sys.stderr.write('cp4\n')
-        #sys.stderr.write('cp5\n')
-
         if v:
             sys.stderr.write( 'what_are_these: %s %s \n' % (str(g1), str(g2)) )
             sys.stderr.write( '         types: %s %s \n' % (str(type(g1)), str(type(g2))) )
         return False
-    
+
     for key in g1.keys():
         #sys.stderr.write('in_key: %s\n' % (key,))
         if key not in g2:
@@ -114,7 +99,7 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
                 return False
             for i in range(len(g1[key])):
                 if v: sys.stderr.write( 'list: %d %s\n' % (i,short_str(g1[key][i])))
-                
+
                 if not almost_equal_geojson(g1[key][i], g2[key][i], verbose=v):
                     if v: sys.stderr.write( 'list_check_failed: key: %s item number %d\n' % (key,i) )
                     return False
@@ -129,7 +114,6 @@ def almost_equal_geojson(g1, g2, epsilon=1e-4, verbose=False):
                     sys.stderr.write( 'key_compare_failed: %s %s\n' % ( str(type(g1[key])),str(type(g2[key])) ))
                     sys.stderr.write( 'key_compare_failed: %s %s\n' % ( str(g1[key]),str(g2[key]) ) )
                 return False
-    #print 'looking good'
     return True
 
 class TestRegex(unittest.TestCase):
@@ -162,12 +146,11 @@ class TestRegex(unittest.TestCase):
         self.failUnlessEqual(r['checksum'],'4A')
         self.failUnlessEqual(r['station'],'b003669953')
         self.failUnlessEqual(r['time_stamp'],'1297555217')
-        
+
     def test_with_metadata(self):
         msg_str='!AIVDM,1,1,,A,15Muq2PP00J64Bf?ktmFpwvl0L0P,0*3F,d-091,S0977,t080226.00,T26.05630183,r07RCED1,1297584148'
-        
+
         r = an.ais_nmea_regex.search(msg_str).groupdict() # r for result
-        #print ('msg_dict:',r)
         self.failUnlessEqual(r['talker'],'AI')
         self.failUnlessEqual(r['string_type'],'VDM')
         self.failUnlessEqual(r['total'],'1')
@@ -216,7 +199,6 @@ class TestRegex(unittest.TestCase):
         self.failUnlessEqual(r['chan'],'B')
         self.failUnlessEqual(r['msg_id'],'5')
 
-
     def test_multi_line_2of2(self):
         msg_str = '!AIVDM,2,2,6,B,000000000000000,2*21,b003669705,1297584166'
         r = an.ais_nmea_regex.search(msg_str).groupdict() # r for result
@@ -237,9 +219,7 @@ class TestRegex(unittest.TestCase):
         self.failUnlessEqual(r['seq_id'],'')
         self.failUnlessEqual(r['chan'],'') # No channel on AIVDO???  Guess that makes sense
 
-        
-        
-#class Test0Math:
+
 class Test0Math(unittest.TestCase):
 
     def test_rot(self):
@@ -275,27 +255,27 @@ class Test0Math(unittest.TestCase):
         self.failUnless(almost_equal( (-1,0), vec_rot(vec_rot(p1,math.pi/4),math.pi/4)))
         self.failUnless(almost_equal((0,1),vec_rot((math.sqrt(.5),math.sqrt(.5)),math.pi/4)))
 
-#class Test1AIVDM:
+
 class Test1AIVDM(unittest.TestCase):
     def test_aivdm(self):
         'aivdm'
         a = an.AIVDM()
         # Can't get_aivdm of nothing... it's really a pure virtual type class
         # message_id
-        self.failUnlessRaises(an.AisPackingException, a.get_aivdm, 
+        self.failUnlessRaises(an.AisPackingException, a.get_aivdm,
                               sequence_num=0, channel='A', source_mmsi=123456789)
         a.message_id = 5
         self.failUnlessRaises(an.AisPackingException, a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789)
         self.failUnlessRaises(NotImplementedError,a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789, repeat_indicator=0)
 
-#class Test3AreaNoticeCirclePt:
+
 class Test3AreaNoticeCirclePt(unittest.TestCase):
     def test_geom(self):
         'circle geom'
         pt1 = an.AreaNoticeCirclePt(-73,43,0)
         self.failUnlessEqual(0,pt1.radius)
         self.failUnless(almost_equal((-73,43),pt1.geom().coords))
-        
+
         # Circle
         pt2 = an.AreaNoticeCirclePt(-73,43,123.4)
         self.failUnless(len(pt2.geom().boundary.coords)>10)
@@ -315,7 +295,7 @@ class Test3AreaNoticeCirclePt(unittest.TestCase):
         self.failUnlessAlmostEqual(43,pt1.lat)
         self.failUnlessEqual(pt2.radius,12300)
 
-#class Test5AreaNoticeSimple:
+
 class Test5AreaNoticeSimple(unittest.TestCase):
     def test_simple(self):
         'area notice simple'
@@ -341,7 +321,7 @@ class Test5AreaNoticeSimple(unittest.TestCase):
         area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260)
         self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) > 5)
 
-        area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=0) 
+        area = an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=0)
         self.failUnless(len(area.__geo_interface__['geometry']['coordinates']) == 2)
 
     def _test_html(self):
@@ -362,8 +342,7 @@ class Test5AreaNoticeSimple(unittest.TestCase):
         kml = whales.kml()
         # FIX: check the kml somehome
 
-    
-#class TestBitDecoding:
+
 class TestBitDecoding(unittest.TestCase):
     'Using the build_samples to make sure they all decode'
     def test_01point(self):
@@ -374,22 +353,11 @@ class TestBitDecoding(unittest.TestCase):
         orig = geojson.loads( geojson.dumps(pt1) )
 
         decoded_pt = an.AreaNotice(nmea_strings=[ line for line in pt1.get_aivdm() ] )
-        
-        #sys.stderr.write('\npt1_start:       '+str(pt1.when)+'\n')
-        #sys.stderr.write('decoded_pt_start:'+str(decoded_pt.when)+'\n')
+
         decoded = geojson.loads( geojson.dumps(decoded_pt) )
-
-        #sys.stderr.write('pt1:'+str(pt1)+'\n')
-        #sys.stderr.write('orig_start:'+str(   orig['bbm']['start'])+'\n')
-        #sys.stderr.write('deco_start:'+str(decoded['bbm']['start'])+'\n')
-
-        #sys.stderr.write('orig: ' + str(orig) + '\n')
-        #sys.stderr.write('deco: ' + str(decoded) + '\n')
 
         if not almost_equal_geojson(orig, decoded, verbose=True):
             sys.exit('1: That had better work!  But it did not!!!')
-        #else:
-        #    sys.stderr.write('try_1: ok!\n')
 
         self.failUnless( almost_equal_geojson(orig, decoded) )
 
@@ -404,15 +372,11 @@ class TestBitDecoding(unittest.TestCase):
 
         orig = geojson.loads( geojson.dumps(circle1) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in circle1.get_aivdm() ] )) )
-        #print ('originl:',orig)
-        #print ('decoded:',decoded)
 
         if not almost_equal_geojson(orig, decoded, verbose=True):
             sys.exit('That had better work!')
 
         self.failUnless( almost_equal_geojson(orig, decoded) )
-
-
 
     def test_rect(self):
         'rectangle'
@@ -425,13 +389,7 @@ class TestBitDecoding(unittest.TestCase):
 
         orig = geojson.loads( geojson.dumps(rect) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in rect.get_aivdm() ] )) )
-        #print
-        #print orig
-        #print decoded
-
-        #print 'testing with almost equal'
-        self.failUnless( almost_equal_geojson(orig, decoded) ) #, verbose=True) )
-        #print 'here'
+        self.failUnless( almost_equal_geojson(orig, decoded) )
 
     def test_sector(self):
         'sector'
@@ -440,7 +398,7 @@ class TestBitDecoding(unittest.TestCase):
         sec1.add_subarea(an.AreaNoticeSector(-69.8, 42.3, 4000, 10, 50))
         orig = geojson.loads( geojson.dumps(sec1) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in sec1.get_aivdm() ] )) )
-        self.failUnless( almost_equal_geojson(orig, decoded) ) #, verbose=True) )
+        self.failUnless( almost_equal_geojson(orig, decoded) )
 
     def test_line(self):
         'line'
@@ -449,24 +407,16 @@ class TestBitDecoding(unittest.TestCase):
         orig = geojson.loads( geojson.dumps(line1) )
         line2 = an.AreaNotice(nmea_strings=[ line for line in line1.get_aivdm() ] )
         decoded = geojson.loads( geojson.dumps(line2) )
-
-        self.failUnless( almost_equal_geojson(orig, decoded) ) #, verbose=True) )
+        self.failUnless( almost_equal_geojson(orig, decoded) )
 
     def test_polygon(self):
         'polygon'
         poly1 = an.AreaNotice(an.notice_type['cau_divers'], datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4), 60, 10, source_mmsi=987123456)
         poly1.add_subarea(an.AreaNoticePolygon([(10,1400),(90,1950)], -69.8, 42.5 ))
-        #print 'poly1:',poly1
-        #print 'poly1:',poly1.areas[0]
         orig = geojson.loads( geojson.dumps(poly1) )
         poly2 = an.AreaNotice(nmea_strings=[ line for line in poly1.get_aivdm() ] )
-        #print 'line2',line2
-        #print 'line2:',str(line2.areas[0])
         decoded = geojson.loads( geojson.dumps(poly2) )
-
-        #print orig
-        #print decoded
-        self.failUnless( almost_equal_geojson(orig, decoded) ) #, verbose=True) )
+        self.failUnless( almost_equal_geojson(orig, decoded) )
 
     def test_freetext(self):
         'freetext'
@@ -482,7 +432,7 @@ class TestBitDecoding(unittest.TestCase):
             sys.exit('FREE TEXT FAIL')
         self.failUnless( almost_equal_geojson(orig, decoded, verbose=True) )
 
-#class TestBitDecoding2:
+
 class TestBitDecoding2(unittest.TestCase):
     'Using the build_samples to make sure they all decode'
     def test_02_point(self):
@@ -498,8 +448,6 @@ class TestBitDecoding2(unittest.TestCase):
 
         orig = geojson.loads( geojson.dumps(notice) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in notice.get_aivdm() ] )) )
-        #print orig
-        #print decoded
         self.failUnless( almost_equal_geojson(orig, decoded) )
     def test_03_many_sectors(self):
         'many sectors'
@@ -513,8 +461,6 @@ class TestBitDecoding2(unittest.TestCase):
 
         orig = geojson.loads( geojson.dumps(notice) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in notice.get_aivdm() ] )) )
-        #print orig
-        #print decoded
         self.failUnless( almost_equal_geojson(orig, decoded) )
 
         notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) # 7
@@ -544,27 +490,16 @@ class TestBitDecoding2(unittest.TestCase):
             notice.add_subarea(an.AreaNoticeFreeText(text=text))
 
         expected = ''.join(text_sections).upper()
-        # if notice.get_merged_text() != expected:
-        #     sys.exit('OH CRAP....\n  %s\n  %s\n' % (notice.get_merged_text(), expected) )
         self.failUnless(notice.get_merged_text() == expected)
-        
+
         orig = geojson.loads( geojson.dumps(notice) )
         decoded = geojson.loads( geojson.dumps(an.AreaNotice(nmea_strings=[ line for line in notice.get_aivdm() ] )) )
-        #sys.stderr.write('\norig:'+str(orig)+'\n')
-        #sys.stderr.write('decoded:'+str(decoded)+'\n\n')
-        #sys.stderr.write('orig:'+str(orig['bbm']['freetext'])+'\n')
-        #sys.stderr.write('deco:'+str(decoded['bbm']['freetext'])+'\n')
-
-        #if not almost_equal_geojson(orig, decoded):
-        #    sys.exit('FULL FREETEXT FAIL')
         self.failUnless( almost_equal_geojson(orig, decoded) )
 
 
-#class TestLineTools:
 class TestLineTools(unittest.TestCase):
     'Make sure that going from lon,lat pairs to angle,distance pairs works'
     def test_one_seg_cardinal(self):
-        #print ('\n\nSTART:\n')
         p0 = (0,0);
 
         deg_1_meters = 111120
@@ -578,22 +513,18 @@ class TestLineTools(unittest.TestCase):
                               (-r2,-r2,225,deg_1_meters),
                               (-r2,r2,315,deg_1_meters),
             ):
-            #print ('\npt_angle_off: ====>',pt_angle_off)
             p1 = pt_angle_off[:2]
 
             angle,offset = an.ll_to_polyline( (p0,p1) )[0]
-            #print ('  angle_off:',angle,offset)
             if not almost_equal(angle,pt_angle_off[2],.5):
                 print ('ERROR:',angle,pt_angle_off[2])
             self.failUnless(almost_equal(angle,pt_angle_off[2],.5))
             self.failUnless(almost_equal(offset,111120,pt_angle_off[3])) # Half a km error for 1 degree.
             ll_coords = an.polyline_to_ll( p0, ((angle,offset),) )
-            #print ('resulting_coords:',ll_coords)
-            self.failUnless(almost_equal(p0[0],ll_coords[0][0])) 
-            self.failUnless(almost_equal(p0[1],ll_coords[0][1])) 
-
-            self.failUnless(almost_equal(p1[0],ll_coords[1][0])) 
-            self.failUnless(almost_equal(p1[1],ll_coords[1][1])) 
+            self.failUnless(almost_equal(p0[0],ll_coords[0][0]))
+            self.failUnless(almost_equal(p0[1],ll_coords[0][1]))
+            self.failUnless(almost_equal(p1[0],ll_coords[1][0]))
+            self.failUnless(almost_equal(p1[1],ll_coords[1][1]))
 
 
 class TestWhaleNotices(unittest.TestCase):
@@ -601,10 +532,9 @@ class TestWhaleNotices(unittest.TestCase):
     def test_nowhales(self):
         'no whales circle notice'
         zone_type = an.notice_type['cau_mammals_not_obs']
-        #zone_type = an.notice_type['cau_mammals_reduce_speed']
         circle = an.AreaNotice(zone_type,datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),60,10, source_mmsi = 123456789)
         circle.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.0, radius=4260))
-        
+
         self.failUnlessEqual(zone_type, 0)
         self.failUnlessEqual(zone_type, circle.area_type)
 
@@ -621,7 +551,7 @@ class TestWhaleNotices(unittest.TestCase):
         del circle
         del data
         del json
-            
+
         notice = an.AreaNotice(nmea_strings=aivdms)
         self.failUnlessEqual(zone_type,notice.area_type)
 
@@ -653,7 +583,7 @@ class TestWhaleNotices(unittest.TestCase):
         del circle
         del data
         del json
-            
+
         notice = an.AreaNotice(nmea_strings=aivdms)
         self.failUnlessEqual(zone_type,notice.area_type)
 
@@ -689,5 +619,4 @@ print ('TODO: write the two segment test and make it work')
     #print
 
 if __name__ == '__main__':
-    #main()
     unittest.main()
