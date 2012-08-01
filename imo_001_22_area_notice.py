@@ -519,7 +519,7 @@ def polyline_to_ll(start, angles_and_offsets):
     # start lon,lat plus a list of (angle,offset) from that point
     # 0 is true north and runs clockwise
     points = angles_and_offsets
-    
+
     lon,lat = start
     zone = lon_to_utm_zone(lon)
     params = {'proj':'utm','zone':zone}
@@ -566,17 +566,9 @@ def vec_rot(a, theta):
     y1 = x * math.sin(theta) + y * math.cos(theta)
     return x1,y1
 
-# math.radians
-#def deg2rad(degrees):
-#    return (degrees / 180.) * math.pi
-
-# math.degrees
-#def rad2deg(radians):
-#    return (radians / math.pi) * 180.
-
 def geom2kml(geom_dict):
     '''Convert a geointerface geometry to KML
-    
+
     @param geom_dict: Dictionary containing 'geometry' as defined by the geo interface / geojson / shapely
     '''
     geom_type = geom_dict['geometry']['type']
@@ -601,12 +593,12 @@ def geom2kml(geom_dict):
     raise ValueError('Not a recognized __geo_interface__ type: %s' % (geom_type))
 
 
-# FIX: should this subclass BaseException?
 class AisException(Exception):
     pass
 
+
 class AisPackingException(AisException):
-    def __init__(self, msg):#fieldname, value):
+    def __init__(self, msg):
         self.msg = msg
     def __repr__(self):
         return msg
@@ -614,10 +606,8 @@ class AisPackingException(AisException):
 class AisUnpackingException(AisException):
     def __init__(self, msg):
         self.msg = msg
-        #self.fieldname = fieldname
-        #self.value = value
     def __repr__(self):
-        return msg#"Validation on %s failed (value %s) while unpacking" % (self.fieldname, self.value)
+        return msg
 
 
 def nmea_checksum_hex(sentence):
@@ -702,7 +692,7 @@ class AIVDM (object):
         bits = header + self.get_bits()
         if byte_align:
             bits_over = len(bits) % 8
-            bits_needed = 0 if 0==bits_over else 8 - len(bits) % 8 
+            bits_needed = 0 if 0==bits_over else 8 - len(bits) % 8
             if bits_over != 0:
                 sys.stderr.write('WARNING: non-byte aligned message %d - over: %d  need: %d\n' % (len(bits), bits_over,bits_needed ))
                 bits = bits + BitVector(size=bits_needed)
@@ -712,11 +702,10 @@ class AIVDM (object):
 
         payload, pad = binary.bitvectoais6(bits)
 
-        
         if normal_form:
             # Build one big NMEA string no matter what
 
-            if sequence_num is None:
+            if not sequence_num:
                 sequence_num = ''
 
             sentence = '!AIVDM,{tot_sentences},{sentence_num},{sequence_num},{channel},{payload},{pad}'.format(
@@ -740,7 +729,7 @@ class AIVDM (object):
                 sequence_num = next_sequence
                 next_sequence += 1
                 if next_sequence > 9: next_sequence = 1
-                
+
         for i in range(tot_sentences-1):
             sentence_num = i+1
             payload_part = payload[i*max_payload_char:(i+1)*max_payload_char]
@@ -839,7 +828,7 @@ class BBM (AIVDM):
         1 - A
         2 - B
         3 - both
-        '''        
+        '''
         if not isinstance(talker,str) or len(talker) != 2:
             AisPackingException('talker',talker)
         if sequence_num is not None and (sequence_num <= 0 or sequence_num >= 9):
@@ -849,9 +838,9 @@ class BBM (AIVDM):
 
         if sequence_num is None:
             sequence_num = 3
-       
+
         payload, pad = binary.bitvectoais6(self.get_bits())
-        
+
         sentences = []
         tot_sentences = 1 + len(payload) / self.max_payload_char
         sentence_num = 0
@@ -933,15 +922,13 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         self.lon = binary.signedIntFromBV( bits[ 5:30] ) / 60000.
         self.lat = binary.signedIntFromBV( bits[30:54] ) / 60000.
         self.precision = int( bits[54:57] )
-        
+
         self.radius_scaled = int( bits[57:69] )
 
         self.radius = self.radius_scaled * self.scale_factor
 
         spare = int( bits[69:] )
         assert (18 == SUB_AREA_SIZE - 69)
-        #assert 0 == spare
-        
 
     def get_bits(self):
         'Build a BitVector for this area'
@@ -955,18 +942,13 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 18 ) ) # spare
         bv = binary.joinBV(bvList)
         if SUB_AREA_SIZE != len(bv):
-            #print ('len:',[len(b) for b in bvList])
             raise AisPackingException('area not '+str(SUB_AREA_SIZE)+' bits',len(bv))
-        #print 'subarea_bv:',bv
         return bv
 
     def __unicode__(self):
         if self.radius == 0.:
             return 'AreaNoticeCirclePt: Point at (%.4f,%.4f)' % (self.lon,self.lat)
         return 'AreaNoticeCirclePt: Circle centered at (%.4f,%.4f) - radius %dm' % (self.lon,self.lat,self.radius)
-
-#    def __str__(self):
-#        return self.__unicode__()
 
     def geom(self):
         #if 'geom_geographic' not in self.__dict__:
@@ -1065,7 +1047,6 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
     def decode_bits(self,bits):
         if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
-        #print 'decoded:',bits
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
         elif isinstance(bits, list) or isinstance(bits,tuple):
@@ -1100,19 +1081,12 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.n_dim_scaled), 8 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.orientation_deg), 9 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 5 ) ) # spare
-        #print '\nlen:',[len(b) for b in bvList]
         bv = binary.joinBV(bvList)
         assert SUB_AREA_SIZE==len(bv)
-        #print 'rect bits... initial'
-        #print 'encoded:',bv
         return bv
-    
+
     def __unicode__(self):
         return 'AreaNoticeRectangle: (%.4f,%.4f) [%d,%d]m rot: %d deg' % (self.lon,self.lat,self.e_dim,self.n_dim,self.orientation_deg)
-
-#    def __str__(self):
-#        return self.__unicode__()
-
 
     def geom(self):
         'return shapely geometry object'
@@ -1124,7 +1098,6 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
         pts = [(0,0), (self.e_dim,0), (self.e_dim,self.n_dim), (0,self.n_dim)]
 
-        #print 'before:',pts
         rot = math.radians(-self.orientation_deg)
         pts = [vec_rot(pt,rot) for pt in pts]
 
@@ -1146,7 +1119,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
         return r
 
-  
+
 class AreaNoticeSector(AreaNoticeSubArea):
     area_shape = 2
     def __init__(self, lon=None, lat=None, radius=0, left_bound_deg=0, right_bound_deg=0, precision=4, bits=None):
@@ -1163,7 +1136,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
         @todo: great get/set for dimensions and allow for setting scale factor.
         @todo: or just over rule the attribute get and sets
         @todo: allow user to force the scale factor
-        @todo: Should this be raising a ValueError 
+        @todo: Should this be raising a ValueError
         '''
         if lon is not None:
             assert lon >= -180. and lon <= 180.
@@ -1216,7 +1189,6 @@ class AreaNoticeSector(AreaNoticeSubArea):
         self.right_bound_deg = int ( bits[78:87] ) # was 81:90
 
     def get_bits(self):
-        
         'Build a BitVector for this area'
         bvList = []
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape ), 3) )
@@ -1229,7 +1201,6 @@ class AreaNoticeSector(AreaNoticeSubArea):
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.left_bound_deg), 9 ) )
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.right_bound_deg), 9 ) )
 
-        #print 'len:',[len(bv) for bv in bvList]
         bv = binary.joinBV(bvList)
         assert SUB_AREA_SIZE==len(bv)
         return bv
@@ -1237,9 +1208,6 @@ class AreaNoticeSector(AreaNoticeSubArea):
     def __unicode__(self):
         return 'AreaNoticeSector: (%.4f,%.4f) %d rot: %d to %d deg' % (self.lon, self.lat, self.radius, 
                                                                        self.left_bound_deg, self.right_bound_deg)
-#    def __str__(self):
-#        return self.__unicode__()
-
     def geom(self):
         'return shapely geometry object'
         zone = lon_to_utm_zone(self.lon)
@@ -1253,7 +1221,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
         pts = [vec_add(p1,pt) for pt in pts] # Move to the right place in the world
         pts = [proj(*pt,inverse=True) for pt in pts] # Project back to geographic
-        
+
         return shapely.geometry.Polygon(pts)
 
     @property
@@ -1283,7 +1251,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         The lon, lat point comes before the line.  This makes decoding tricky.
 
         Angles can be specified with a resolution with 0.5 degrees.
-        
+
         @param points: 1 to 4 relative offsets (angle in degrees [0..360] , distance in meters) 
         @param lon: WGS84 longitude of the starting point.  Must match the previous point
         @param lat: WGS84 longitude of the starting point.  Must match the previous point
@@ -1301,7 +1269,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         # FIX: check the number of points to make sure we have room
         # and generate multiple subareas if need be.
 
-        if points is not None:
+        if points:
             assert len(points)>0 and len(points)<5
             self.points = points
 
@@ -1319,7 +1287,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
     def decode_bits(self, bits, lon, lat):
         'lon and lat are the starting point for the point'
-        
+
         if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
         if isinstance(bits,str):
             bits = BitVector(bitstring = bits)
@@ -1349,7 +1317,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             self.points.append((angle,dist))
             if 720 == dist_scaled:
                 break
-        
+
 
     def get_bits(self):
         'Build a BitVector for this area'
@@ -1376,7 +1344,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
                 msg = 'Angle would not fit: %d -> %d bits != 10' % (pt[0],len(bvList[-1]))
                 #print ('ERROR:', msg)
                 AisPackingException( msg )
-                
+
             #print ('points:',pt[1], self.scale_factor, pt[1] / self.scale_factor)
             # FIX: Is ceil the right thing to do?  e.g. do we always want and area equal to or greater than that requested?
             bvList.append( binary.setBitVectorSize( BitVector(intVal=int(math.ceil(pt[1] / self.scale_factor))), 10 ) )
@@ -1504,7 +1472,6 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
         elif bits is not None:
             self.decode_bits(bits)
 
-           
     def decode_bits(self, bits):
         'Removes the "@" padding'
         if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
@@ -1538,9 +1505,6 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
     def __unicode__(self):
         return 'AreaNoticeFreeText: "%s"' % (self.text,)
 
-#    def __str__(self):
-#        return self.__unicode__()
-
     def geom(self):
         # FIX: should this somehow have a position?
         return None
@@ -1549,7 +1513,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
     def __geo_interface__(self):
         'Provide a Geo Interface for GeoJSON serialization'
         # FIX: should this return geometry?  Probably not as this text gets built into the message text for other geom
-        return {'area_shape': self.area_shape, 
+        return {'area_shape': self.area_shape,
                 'area_shape_name': self.area_name,
                 'text': self.text,
                 # No geometry... 'geometry': {'type': 'Point', 'coordinates': [self.lon, self.lat] }
@@ -1586,7 +1550,6 @@ class AreaNotice(BBM):
                                           minute = when.minute
                                           # No second or smaller
                                           )
-            
             assert duration < 2**18 - 1 # Last number reserved for undefined... what does undefined mean?
             self.duration = duration
             self.link_id = link_id
@@ -1644,13 +1607,13 @@ class AreaNotice(BBM):
             mmsi = self.source_mmsi
         except:
             mmsi = 0
-        
-        r = { 
+
+        r = {
             'msgtype':self.message_id,
             'repeat': repeat,
             'mmsi': mmsi,
             "bbm": {
-                'bbm_type':(self.dac,self.fi), 
+                'bbm_type':(self.dac,self.fi),
                 'bbm_name':'area_notice',
                 'area_type': self.area_type,
                 'area_type_desc': notice_type[self.area_type],
@@ -1679,15 +1642,9 @@ class AreaNotice(BBM):
             if isinstance(a,AreaNoticeFreeText):
                 strings.append(a.text)
 
-        # FIX: remove
-        # if len(strings)>0:
-        #     sys.stderr.write('string_parts:\n')
-        #     for s in strings:
-        #         sys.stderr.write('   "' + s + '"\n')
-            
         if len(strings) == 0: return None
         return ''.join(strings)
-        
+
     def add_subarea(self,area):
         #print 'len_subareas_before:',len(self.areas)
         if not hasattr(self,'areas'):
@@ -1695,7 +1652,7 @@ class AreaNotice(BBM):
         #print 'len(self.areas):',len(self.areas)
         if len(self.areas) >= 9:
             raise AisPackingException('Can only have 9 sub areas in an Area Notice')
-        
+
         self.areas.append(area)
 
     def get_bits(self, include_bin_hdr=False, mmsi=None, include_dac_fi=True):
@@ -1728,25 +1685,13 @@ class AreaNotice(BBM):
 
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.duration), 18 ) )
 
-        #stdlen = sum([len(b) for b in bvList])
-
-        #print ('pre_adding_areas:',len(bvList))
-        #for i in range(len(bvList)):
-        #    print (i,len(bvList[i]))
-        #print ('About to encode',len(self.areas),'areas')
-
         for i,area in enumerate(self.areas):
             bvList.append(area.get_bits())
-            #print ('\tsubarea:',i,len(bvList[-1]))
 
         bv = binary.joinBV(bvList)
         if len(bv) > 953:
             raise AisPackingException('message to large.  Need %d bits, but can only use 953' % len(bv) )
         return bv
-
-#    def get_fetcher_formatter(self):
-#        '''return string for USCG/Alion fetcher formatter'''
-#        pass
 
     def decode_nmea(self, strings):
         '''unpack nmea instrings into objects.
@@ -1760,7 +1705,7 @@ class AreaNotice(BBM):
             if  msg_dict['checksum'] != nmea_checksum_hex(msg):
                 raise AisUnpackingException('Checksum failed')
 
-        try: 
+        try:
             msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
         except AttributeError:
             raise AisUnpackingException('one or more NMEA lines did were malformed (1)' )
@@ -1781,7 +1726,6 @@ class AreaNotice(BBM):
     def decode_bits(self, bits):
         '''decode the bits for a message'''
 
-        #print 'decode_all_bits:',bits
         r = {}
         r['message_id']       = int( bits[:6] )
 	r['repeat_indicator'] = int(bits[6:8])
@@ -1797,7 +1741,6 @@ class AreaNotice(BBM):
         r['utc_min']   = int( bits[87:93] )
         r['duration_min'] = int( bits[93:111] )
         r['sub_areas'] = []
-        #print r
 
         self.area_type = r['area_type']
 
@@ -1944,7 +1887,7 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
 
     if link_id == None:
         link_id = msg.link_id
-   
+
     dac = BitVector(intVal=msg.dac, size=10)
     fi  = BitVector(intVal=msg.fi,  size=6)
 
@@ -2005,7 +1948,7 @@ class NormQueue(Queue.Queue):
         if sen_num != len(self.stations[station][seq]) + 1:
             self.stations[station][seq] = [ ] # DROP and flush... bad seq
             return
-        
+
         if sen_num == total:
             msgs = self.stations[station][seq]
             self.stations[station][seq] = [ ] # FLUSH
@@ -2017,28 +1960,26 @@ class NormQueue(Queue.Queue):
             msg['total'] = msg['seq_num'] = 1
             Queue.Queue.put(self,msg)
             return
-        
+
         self.stations[station][seq].append(msg['body']) # not first, not last
 
-    
+
 def main():
     from optparse import OptionParser
     parser = OptionParser(usage="%prog [options]",version="%prog "+__version__)
-    
+
     # outputChoices = ('std',) #,'html','csv','sql' , 'kml','kml-full')
     # parser.add_option('-T','--output-type',choices=outputChoices,type='choice',dest='outputType'
     #                   ,default=outputChoices[0]
     #                   ,help='What kind of string to output ('+', '.join(outputChoices)+') [default: %default]')
 
     (options,args) = parser.parse_args()
-    #for arg in args:
-    #    print 'Trying:',arg
     norm_queue = NormQueue()
 
     kmlfile = open('out.kml','w')
     kmlfile.write(kml_head)
     kmlfile.write(file('areanotice_styles.kml').read())
-    
+
     if 0==len(args):
         # Assume stdin
         assert False
@@ -2047,9 +1988,9 @@ def main():
         print ('Area Notice:',str(an))
     else:
         # Assume these are files
-        
+
         for filename in args:
-            
+
             for line in open(filename):
                 #print ('line:',line.strip())
                 try:
@@ -2057,7 +1998,6 @@ def main():
                 except AttributeError:
                     if 'AIVDM' in line: print ('BAD_MATCH:',line)
                     continue
-
 
                 norm_queue.put(match)
                 if norm_queue.qsize()>0:
@@ -2076,10 +2016,9 @@ def main():
                     area_notice = AreaNotice(nmea_strings=(nmea,))
                     print ('AreaNotice:',area_notice)
                     kmlfile.write(area_notice.kml(with_style=True, with_time=True, with_extended_data=True))
-                    
 
     kmlfile.write(kml_tail)
 
-    
+
 if __name__=='__main__':
     main()

@@ -523,7 +523,7 @@ class TestBitDecoding2(unittest.TestCase):
         self.failUnless( len(notice.get_aivdm())==4 ) # FIX: calculate this to make sure it's right
 
         # More than 9 should raise an exception... hijack the interface to add
-        self.assertRaises(AisPackingException, notice.areas.append(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) )
+        self.assertRaises(AisPackingException, notice.add_subarea, an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290))
 
     def test_01_full_text(self):
         'full text'
