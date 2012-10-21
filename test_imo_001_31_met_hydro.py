@@ -70,7 +70,6 @@ class TestMetHydro31(unittest.TestCase):
         self.assertEqual(mh,mh)
         mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
         self.assertEqual(mh,mh_b)
-        
 
     def test_random(self):
         'fuzz test'
@@ -82,6 +81,4 @@ class TestMetHydro31(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    #main()
     sys.write.stderr('FIX: test NMEA decoding')
-        

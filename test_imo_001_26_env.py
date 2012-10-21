@@ -6,6 +6,8 @@ Test the Environmental message and all of the constituent
 SensorReports.
 
 since: Mon Feb 14 15:55:02 2011 -0500
+
+TODO: test NMEA decoding
 '''
 
 import imo_001_26_environment as env
@@ -109,7 +111,7 @@ def random_current3d():
                  n_1=random.randrange(0,247)/10., e_1=random.randrange(0,247)/10., z_1=random.randrange(0,247)/10., level_1=random.randint(0,361),
                  n_2=random.randrange(0,247)/10., e_2=random.randrange(0,247)/10., z_2=random.randrange(0,247)/10., level_2=random.randint(0,361),
                  data_descr=random.choice(env.sensor_type_lut.keys()),
-)    
+        )
 
 def random_currenthorz():
     date = random_date()
@@ -128,7 +130,7 @@ def random_seastate():
         year=date.year, month=date.month, day=date.day, hour=date.hour, minute=date.minute,
         site_id = site_id,
         swell_height=random.randrange(0,247)/10., swell_period=random.randint(0,61), swell_dir=random.randint(0,361),
-        sea_state=random.choice(env.beaufort_scale.keys()), 
+        sea_state=random.choice(env.beaufort_scale.keys()),
         swell_data_descr=random.choice(env.sensor_type_lut.keys()),
         temp=50.1, temp_depth=12.2, temp_data_descr=random.choice(env.sensor_type_lut.keys()),
         wave_height=random.randrange(0,247)/10., wave_period=random.randint(0,61), wave_dir=random.randint(0,361), wave_data_descr=0,
@@ -156,7 +158,7 @@ def random_weather():
                  dew=random.randrange(-200,500)/10., dew_data_descr=random.choice(env.sensor_type_lut.keys()),
                  air_pres= random.randrange(800,1202), air_pres_trend = random.choice((0,1,2,3)), air_pres_data_descr=random.choice(env.sensor_type_lut.keys()),
                  salinity=random.randrange(0,503)/10.,
-)    
+)
 
 def random_airgap():
     date = random_date()
@@ -167,7 +169,7 @@ def random_airgap():
         draft=random.randrange(100, 8191)/100., gap=random.randrange(100, 8191)/100., gap_trend=random.choice((0,1,2,3)),
         forecast_gap=random.randrange(100, 8191)/100.,
         forecast_day=random.randint(0,31), forecast_hour=random.randint(0,24), forecast_minute=random.randint(0,59),
-)    
+)
 
 
 random_types = (
@@ -208,7 +210,7 @@ class TestSensorReports(unittest.TestCase):
         sr = env.SensorReport(report_type, site_id=site_id)
         self.assertEqual(report_type, sr.report_type)
         self.assertEqual(site_id, sr.site_id)
-        
+
         report_type = 2
         site_id=9
         sr = env.SensorReport(report_type, self.year, self.month, self.day, self.hour, self.minute, site_id)
@@ -217,13 +219,13 @@ class TestSensorReports(unittest.TestCase):
         self.assertEqual(self.hour, sr.hour)
         self.assertEqual(self.minute, sr.minute)
         self.assertEqual(site_id, sr.site_id)
-        
+
         bits = sr.get_bits()
         self.assertEqual(len(bits), env.SENSOR_REPORT_HDR_SIZE)
         sr2 = env.SensorReport(bits=bits)
 
         # Test the date range
-        
+
         sr = env.SensorReport(report_type, year=2011, month=1, day=1, hour=0, minute=0, site_id=0)
         self.assertEqual(sr.get_date(), datetime.datetime(2011, 1, 1, 0, 0))
 
@@ -256,7 +258,7 @@ class TestSensorReports(unittest.TestCase):
 
     def test_SrLocation(self):
         'SensorReportLocation'
-        
+
         # Start with just the default Location sensor report, which has no information.
         site_id = int(math.floor(random.random() * 128))
         sr_l = env.SensorReportLocation(day=1, hour=2, minute=3, site_id=site_id)
@@ -354,7 +356,6 @@ class TestSensorReports(unittest.TestCase):
         sr = env.SensorReportWind(data_descr=7, site_id=site_id)
         self.assertEqual(7, sr.data_descr)
         self.assertEqual(7,  env.SensorReportWind(bits=sr.get_bits()).data_descr)
-        
 
     def test_SrWind_min(self):
         'SensorReport Wind minimum valid values'
@@ -385,7 +386,7 @@ class TestSensorReports(unittest.TestCase):
         self.assertEqual(sr_b.forecast_hour, 0)
         self.assertEqual(sr_b.forecast_minute, 0)
         self.assertEqual(sr_b.duration_min, 1)
-        
+
     def test_SrWind_max(self):
         'SensorReport Wind minimum valid values'
         sr = env.SensorReportWind(year=2018, month=12, day=31, hour=23, minute=59, site_id=127,
@@ -437,7 +438,7 @@ class TestSensorReports(unittest.TestCase):
         sr = env.SensorReportWaterLevel(data_descr=7, site_id=site_id)
         self.assertEqual(7, sr.data_descr)
         self.assertEqual(7,  env.SensorReportWaterLevel(bits=sr.get_bits()).data_descr)
-        
+
     def test_SrWaterLevel_min(self):
         'SensorReport WaterLevel minimum'
         sr = env.SensorReportWaterLevel(year=2010, month=1,
@@ -530,7 +531,7 @@ class TestSensorReports(unittest.TestCase):
             self.assertAlmostEqual(sr_b.cur[i]['dir'],  0)
             self.assertAlmostEqual(sr_b.cur[i]['level'],0)
         self.assertEqual(sr_b.data_descr, 0)
-        
+
     def test_SensorReportCurrent2d_max(self):
         'SensorReport Current2d maximum'
         sr = env.SensorReportCurrent2d(year=2049, month=12,
@@ -627,7 +628,7 @@ class TestSensorReports(unittest.TestCase):
         #         sys.stderr.write('\t'+str(i)+': ' +key+': '+str(v1)+' ... '+str(v2))
         #         if v1 != v2: sys.stderr.write('  BAD')
         #         sys.stderr.write('\n')
-            
+
         self.assertEqual(sr,sr_b)
 
     def test_SensorReportCurrentHorz_min(self):
@@ -679,7 +680,7 @@ class TestSensorReports(unittest.TestCase):
         'SensorReport SeaState minimum'
         sr = env.SensorReportSeaState(year=2010, month=1, day=1, hour=0, minute=0, site_id=0,
                                       swell_height=0, swell_period=0, swell_dir=0,
-                                      sea_state=0, 
+                                      sea_state=0,
                                       swell_data_descr=1,
                                       temp=-10.0, temp_depth=0, temp_data_descr=1,
                                       wave_height=0, wave_period=0, wave_dir=0, wave_data_descr=1,
@@ -704,7 +705,7 @@ class TestSensorReports(unittest.TestCase):
         'SensorReport SeaState max'
         sr = env.SensorReportSeaState(year=2010, month=12, day=31, hour=23, minute=59, site_id=127,
                                       swell_height=24.6, swell_period=60, swell_dir=359,
-                                      sea_state=12, 
+                                      sea_state=12,
                                       swell_data_descr=5,
                                       temp=50.0, temp_depth=12.1, temp_data_descr=5,
                                       wave_height=24.6, wave_period=60, wave_dir=359, wave_data_descr=5,
@@ -949,7 +950,7 @@ class TestEnvironment(unittest.TestCase):
                 if i == other: continue
                 self.assertNotEqual(msg, e_instances[other])
 
-        e = env.Environment(source_mmsi = 656565)        
+        e = env.Environment(source_mmsi = 656565)
 
         sr = env.SensorReportWind(site_id=25, day=15, hour=13,minute=35,
                                     speed=5, gust=8, dir=10, gust_dir=181,
@@ -1055,8 +1056,6 @@ class TestEnvironment(unittest.TestCase):
                     sys.stderr.write('%s\n'%str(e_b.sensor_reports[sr_num]))
                 self.assertEqual(sr, e_b.sensor_reports[sr_num])
             self.assertEqual(e,e_b)
- 
+
 if __name__ == '__main__':
     unittest.main()
-    #main()
-    sys.write.stderr('FIX: test NMEA decoding')

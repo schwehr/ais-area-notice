@@ -15,7 +15,7 @@ def rand_hex_color():
     return ''.join( [ hex_len2(hex(int(random.random()*255)).split('x')[1]) for j in range(3) ])
 
 for i in range(1,127+1):
-    
+
     print '''
 	<!-- AreaNotice {number}: {name} -->
 	<StyleMap id="AreaNotice_{number}">
@@ -31,9 +31,8 @@ for i in range(1,127+1):
 	<Style id="AreaNotice_{number}_normal">
 	  <LineStyle><color>{c3}</color><width>8</width></LineStyle>
 	  <PolyStyle><color>{c4}</color></PolyStyle>
-	</Style>'''.format(number=i, name=notice_type[i], 
+	</Style>'''.format(number=i, name=notice_type[i],
                            c1=rand_hex_color(),
                            c2=rand_hex_color(),
                            c3=rand_hex_color(),
                            c4=rand_hex_color())
-

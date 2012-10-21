@@ -173,7 +173,7 @@ class SensorReport(object):
         assert(minute>=0 and minute<=59)
         assert(site_id>=0 and site_id<=127)
         assert(bits is None)
-        
+
         self.report_type = report_type
         self.year = year
         self.month = month
@@ -233,13 +233,13 @@ class SensorReport(object):
             now = datetime.datetime.utcnow()
             year = now.year
             month = now.month
-            
+
         #sys.stderr.write('year:'+str(year)+'\n')
         assert(year>=2010 and year <= 2050) # 2050 is a WAG to prevent errors
         assert(month>=1 and month <= 12)
         self.year = year
         self.month = month
-        
+
     def get_bits(self):
         bv_list = []
         bv_list.append( BitVector(intVal=self.report_type, size=4) )
@@ -397,7 +397,7 @@ class SensorReportWind(SensorReport):
 
         #print('ts_wind:', day, hour, minute,'  site_id:', site_id)
         SensorReport.__init__(self, report_type=self.report_type,
-                              year=year, month=month, 
+                              year=year, month=month,
                               day=day, hour=hour, minute=minute, site_id=site_id)
 
     def decode_bits(self, bits):
@@ -448,7 +448,7 @@ class SensorReportWind(SensorReport):
         r.append('\tsensor data description: {data_descr} - "{data_descr_str}"'.format(data_descr = self.data_descr,
             data_descr_str = sensor_type_lut[self.data_descr],
             ))
-                 
+
         #if self.data_descr in (1,2,3,4,5):
         if not (self.speed == 122 and self.dir == 360):
             r.append('\tspeed={speed} gust={gust} dir={dir} gust_dir={gust_dir}'.format(**self.__dict__))
@@ -483,7 +483,7 @@ class SensorReportWaterLevel(SensorReport):
         assert(forecast_hour >= 0 and forecast_hour <= 24)
         assert(forecast_minute >= 0 and forecast_minute <= 60)
         assert(duration_min >= 0 and duration_min<= 255)
-        
+
         self.wl_type=wl_type
         self.wl = wl
         self.trend = trend
@@ -544,7 +544,7 @@ class SensorReportWaterLevel(SensorReport):
         r.append('\tsensor data description: {data_descr} - "{data_descr_str}"'.format(data_descr = self.data_descr,
             data_descr_str = sensor_type_lut[self.data_descr],
             ))
-                 
+
         #if self.data_descr in (1,2,3,4,5):
         if not almost_equal(self.wl, -327.68):  # FIX: almost equal
             r.append('\twl_type={wl_type} wl={wl} m trend={trend} vdatum={vdatum} - "{vdatum_str}"'.format(vdatum_str = vdatum_lut[self.vdatum], **self.__dict__))
@@ -615,7 +615,7 @@ class SensorReportCurrent2d(SensorReport):
             #print ('ERROR: c2d',len(bits), SENSOR_REPORT_SIZE)
             raise AisPackingException('bit length %d not equal to %d' % (len(bits),SENSOR_REPORT_SIZE))
         return bits
-    
+
     def __unicode__(self):
         r = ['SensorReport Current2d: site_id={site_id} type={report_type} d={day} hr={hour} m={minute}'.format(**self.__dict__),
             ]
@@ -782,7 +782,7 @@ class SensorReportSeaState(SensorReport):
     def __init__(self,
                  year=None, month=None, day=None, hour=None, minute=None, site_id=None,
                  swell_height=24.7, swell_period=61, swell_dir=361,
-                 sea_state=13, 
+                 sea_state=13,
                  swell_data_descr=0,
                  temp=50.1, temp_depth=12.2, temp_data_descr=0,
                  wave_height=24.7, wave_period=61, wave_dir=361, wave_data_descr=0,
@@ -798,7 +798,7 @@ class SensorReportSeaState(SensorReport):
         assert(swell_dir>= 0 and swell_dir<=361)
         assert(sea_state in beaufort_scale)
         assert(swell_data_descr in sensor_type_lut)
-                 
+
         assert(temp>=-10.0 and temp<=50.1)
         assert(temp_depth>=0 and temp_depth<=12.2)
         assert(temp_data_descr in sensor_type_lut)
@@ -821,7 +821,7 @@ class SensorReportSeaState(SensorReport):
         self.wave_dir = wave_dir
         self.wave_data_descr = wave_data_descr
         self.salinity = salinity
-       
+
         SensorReport.__init__(self, report_type=self.report_type,
                               year=year, month=month,
                               day=day, hour=hour, minute=minute, site_id=site_id)
@@ -910,7 +910,6 @@ class SensorReportSalinity(SensorReport):
         assert(salinity>=0. and salinity <= 50.3)
         assert(salinity_type in (0,1,2))
         assert(data_descr in sensor_type_lut)
-        
 
         self.temp = temp
         self.cond = cond
@@ -1161,7 +1160,7 @@ class Environment(BBM):
         BBM.__init__(self, message_id = 8)
 
         self.sensor_reports = []
-        
+
         if nmea_strings is not None:
             self.decode_nmea(nmea_strings)
             return
@@ -1184,7 +1183,7 @@ class Environment(BBM):
         #assert(site_id >= 0 and site_id <= 127)
         # FIX: what is a better MMSI range?  Minimum: 0 or ###### -> 100000?
         assert(source_mmsi>=100000 and source_mmsi<=999999999)
-        
+
         #self.site_id = site_id;
         self.source_mmsi = source_mmsi
         self.sensor_reports = []
@@ -1202,7 +1201,7 @@ class Environment(BBM):
         for rpt in self.sensor_reports:
             r.append('\t'+str(rpt))
         return '\n'.join(r)
-    
+
     def __str__(self, verbose=False):
         return self.__unicode__(verbose=verbose)
 
@@ -1240,8 +1239,8 @@ class Environment(BBM):
 
     def append(self,report):
         self.add_sensor_report(report)
-        
-    def add_sensor_report(self, report): 	
+
+    def add_sensor_report(self, report):
   	'Add another sensor report onto the message'
         if not hasattr(self,'sensor_reports'):
             self.areas = [report,]
@@ -1271,7 +1270,7 @@ class Environment(BBM):
             bv_list.append( BitVector(size=2) ) # Should this be here or in the bin_hdr?
             bv_list.append( BitVector(intVal=self.dac, size=10 ) )
             bv_list.append( BitVector(intVal=self.fi, size=6 ) )
-        
+
   	for report in self.sensor_reports:
             bv_list.append( report.get_bits() )
 
@@ -1280,7 +1279,7 @@ class Environment(BBM):
         if len(bv) > 953:
             raise AisPackingException('message to large.  Need %d bits, but can only use 953' % len(bv) )
         return bv
-            
+
     def decode_nmea(self, strings):
         'unpack nmea instrings into objects'
 
@@ -1292,7 +1291,7 @@ class Environment(BBM):
             if  msg_dict['checksum'] != nmea_checksum_hex(msg):
                 raise AisUnpackingException('Checksum failed')
 
-        try: 
+        try:
             msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
         except AttributeError:
             raise AisUnpackingException('one or more NMEA lines did were malformed (1)' )
@@ -1307,7 +1306,7 @@ class Environment(BBM):
             if  msg_dict['checksum'] != nmea_checksum_hex(msg):
                 raise AisUnpackingException('Checksum failed')
 
-        try: 
+        try:
             msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
         except AttributeError:
             raise AisUnpackingException('one or more NMEA lines did were malformed (1)' )
@@ -1316,7 +1315,6 @@ class Environment(BBM):
 
         sys.stderr.write('FIX: decode the NMEA\n')
 
-  	
     def decode_bits(self, bits, year=None):
         'decode the bits for a message'
 
@@ -1355,7 +1353,7 @@ class Environment(BBM):
             sa_obj = self.sensor_report_factory(bits=rpt_bits)
             #print 'obj:', str(sa_obj)
             self.add_sensor_report(sa_obj)
-  	
+
     def sensor_report_factory(self, bits):
         'based on sensor bit reports, return a proper SensorReport instance'
         #raise NotImplmented
@@ -1382,7 +1380,7 @@ class Environment(BBM):
     def __geo_interface__(self):
         'Provide a Geo Interface for GeoJSON serialization'
         raise NotImplmented
-        
+
 sensor_report_classes = [SensorReportLocation,
                          SensorReportId,
                          SensorReportWind,
@@ -1395,4 +1393,3 @@ sensor_report_classes = [SensorReportLocation,
                          SensorReportWeather,
                          SensorReportAirGap,
                          ]
-

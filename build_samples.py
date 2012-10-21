@@ -1,4 +1,3 @@
-#!/sw/bin/python
 #!/usr/bin/env python
 from __future__ import print_function
 
@@ -17,7 +16,7 @@ Generate sample data for Area Notice / Zone msg
 @undocumented: __doc__
 @since: 2009-Jul-05
 @status: under development
-@organization: U{CCOM<http://ccom.unh.edu/>} 
+@organization: U{CCOM<http://ccom.unh.edu/>}
 '''
 
 import sys
@@ -48,12 +47,12 @@ def env_samples():
     forecast_day = 20
     forecast_hour = 17
     forecast_minute = 0
-    
+
     x = -70.864399
     y = 43.092136
 
     sr_list = []
-    
+
     # Jackson Lab, Adams Point, NH
     e = env.Environment(source_mmsi = mmsi)
     sr = env.SensorReportLocation(year=year, month=month, day=day, hour=day, minute=minute,
@@ -71,7 +70,7 @@ def env_samples():
     e.append(sr)
     env_dump(e,'Id for UNH Jackson Estuarine Lab at Adams Point, NH')
     sr_list.append(sr)
-    
+
     e = env.Environment(source_mmsi = mmsi)
     sr = env.SensorReportWind(year=year, month=month, day=day, hour=day, minute=minute,
                               site_id=site_id,
@@ -85,7 +84,7 @@ def env_samples():
     e.append(sr)
     env_dump(e,'Single Wind report and forecast')
     sr_list.append(sr)
-    
+
     e = env.Environment(source_mmsi = mmsi)
     sr = env.SensorReportWaterLevel(year=year, month=month, day=day, hour=day, minute=minute,
                                     site_id=site_id,
@@ -98,7 +97,7 @@ def env_samples():
 
     e.append(sr)
     env_dump(e,'WaterLevel MLLW low tide and rising')
-    
+
     e = env.Environment(source_mmsi = mmsi)
     sr = env.SensorReportCurrent2d(year=year, month=month, day=day, hour=day, minute=minute,
                                    site_id=site_id,
@@ -121,7 +120,7 @@ def env_samples():
                             )
     e.append(sr)
     env_dump(e,'The 3d currents sensor report can not handle west, south, or down?!?')
-    
+
     e = env.Environment(source_mmsi = mmsi)
     sr = env.SensorReportCurrentHorz(year=year, month=month, day=day, hour=day, minute=minute,
                                      bearing_1 = 96, dist_1 = 30, speed_1 = 1.4, dir_1 = 183, level_1 = 1,
@@ -130,7 +129,7 @@ def env_samples():
                                      )
     e.append(sr)
     env_dump(e,'Horizontal current in two different locations')
-    
+
     e = env.Environment(source_mmsi = mmsi)
     sr = env.SensorReportSeaState(year=year, month=month, day=day, hour=day, minute=minute,
                             site_id=site_id,
@@ -143,7 +142,7 @@ def env_samples():
                             )
     e.append(sr)
     env_dump(e,'Mild sea state')
-    
+
     e = env.Environment(source_mmsi = mmsi)
     sr = env.SensorReportSalinity(year=year, month=month, day=day, hour=day, minute=minute,
                                   site_id=site_id,
@@ -152,7 +151,7 @@ def env_samples():
                             )
     e.append(sr)
     env_dump(e,'Conductivity and salitity are probably not possible in this combo')
-    
+
     e = env.Environment(source_mmsi = mmsi)
     sr = env.SensorReportWeather(year=year, month=month, day=day, hour=day, minute=minute,
                                  site_id=site_id,
@@ -165,7 +164,7 @@ def env_samples():
     e.append(sr)
     env_dump(e,'A weather report')
     sr_list.append(sr)
-    
+
     e = env.Environment(source_mmsi = mmsi)
     sr = env.SensorReportAirGap(year=year, month=month, day=day, hour=day, minute=minute,
                                 site_id=site_id,
@@ -180,7 +179,7 @@ def env_samples():
     for sr in sr_list:
         e.append(sr)
     env_dump(e,'Combining a bunch of types of reports together')
-    
+
     sys.stderr.write('FIX: need to create many more combinations of Env messages')
 
     return
@@ -225,7 +224,7 @@ def point(lon, lat,zone_type, kmlfile):
     #print ('decoded_geojson: ',geojson.dumps(notice))
     print ('geojson: ',geojson.dumps(notice))
     print ()
-    
+
     pt1.name = 'point-1'
     kmlfile.write(pt1.kml(with_style=True))
 
@@ -246,7 +245,7 @@ def main():
     toggle = True  # turn on  the bulk of the messages
     #toggle = False # turn off the bulk of the messages
 
-    
+
     if toggle:
          point(-69.8, lat, zone_type=an.notice_type['cau_mammals_not_obs'], kmlfile=kmlfile)
          lat += delta
@@ -262,7 +261,7 @@ def main():
         circle1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2011, 7, 6, 1, 10, 0),60,10, source_mmsi = 123456789)
         circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
         circle1.name = 'circle-1-no-whales-obs'
-        
+
         lat += delta
         dump_all(circle1,kmlfile)
 
@@ -270,7 +269,7 @@ def main():
         #print ('\n# Circle - WITH whales')
         circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime(2011, 7, 6, 2, 15, 0),60,10, source_mmsi = 123456789)
         circle1.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=4260))
-        
+
         lat += delta
         circle1.name = 'circle-1-with-whales'
         dump_all(circle1,kmlfile)
@@ -310,7 +309,7 @@ def main():
     dump_all(circles,kmlfile)
     del circles
     lat += delta
-        
+
     if toggle:
         rect1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 5, 31, 0),60,10, source_mmsi = 123456789)
         zone_type += 1
@@ -415,7 +414,7 @@ def main():
         rr.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
         rr.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 10))
         lon_off += 0.1
-        
+
         rr.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
         rr.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 45))
         lon_off += 0.1
@@ -435,7 +434,7 @@ def main():
         rr2.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
         rr2.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 135))
         lon_off += 0.1
-        
+
         rr2.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
         rr2.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 180))
         lon_off += 0.1
@@ -455,7 +454,7 @@ def main():
         rr3.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
         rr3.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 270))
         lon_off += 0.1
-        
+
         rr3.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
         rr3.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 315))
         lon_off += 0.1
@@ -487,7 +486,7 @@ def main():
         del rect1
         lat += delta
 
-    
+
     if False: # toggle:
         sys.stderr.write('FIX: Pretty sure that polygons did not yet get fixed')
     else:
@@ -496,7 +495,7 @@ def main():
                           (-70.27963801765786,42.11493035173643),(-70.21841922873237,42.13078851361118),(-70.15414112337952,42.1322179530808),
                           (-70.03638677586507,42.09377754051238)
                           )
-        
+
         angles_and_offsets = an.ll_to_polyline(sbnms_boundary[:5])
         #angles_and_offsets = an.ll_to_polyline((-70,42),())
         start = sbnms_boundary[0]

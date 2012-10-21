@@ -6,7 +6,7 @@ __copyright__ = '2006-2008'
 __version__=file('VERSION').readline().strip()
 __license__   = 'LGPL v3'
 __contact__   = 'kurt at ccom.unh.edu'
-__doc__= ''' 
+__doc__= '''
 Distutils setup script for the Automatic Identification System binary message reference implmentation.
 
 @var __date__: Date of last svn commit
@@ -58,4 +58,3 @@ Still in development.  Definitely has bugs.
           scripts = glob.glob('*.py'),
           #data_files = [('.',['samples.txt', 'samples.kml', 'areanotice_styles.kml', 'icon-001-rightwhale-64x64.png',]),]
           )
-

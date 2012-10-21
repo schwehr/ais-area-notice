@@ -34,7 +34,7 @@ has the option to byte align the resulting bits in get_aivdm.
 @undocumented: __doc__
 @since: 2009-Jun-01
 @status: under development
-@organization: U{CCOM<http://ccom.unh.edu/>} 
+@organization: U{CCOM<http://ccom.unh.edu/>}
 
 @todo: handle polyline and polygons that span multiple subareas
 @todo: handle text that spans adjacent subareas
@@ -90,7 +90,7 @@ ais_nmea_regex_str = r'''^!(?P<talker>AI)(?P<string_type>VD[MO])
 ,(?P<chan>[AB]?)
 ,(?P<body>(?P<msg_id>[;:=@a-zA-Z0-9<>\?\'\`])[;:=@a-zA-Z0-9<>\?\'\`]*)
 ,(?P<fill_bits>\d)\*(?P<checksum>[0-9A-F][0-9A-F])
-(  
+(
   (,S(?P<slot>\d*))
   | (,s(?P<s_rssi>\d*))
   | (,d(?P<signal_strength>[-0-9]*))
@@ -212,7 +212,7 @@ notice_type = {
     'cau_habitat_reduce_speed': 4,
     'cau_habitat_stay_clear': 5,
     'cau_habitat_no_fishing_or_anchoring': 6,
-    'cau_derelicts': 7, 
+    'cau_derelicts': 7,
     'cau_congestion': 8,
     'cau_event': 9,
     'cau_divers': 10,
@@ -715,7 +715,7 @@ class AIVDM (object):
                 )
             return [sentence + '*' + nmea_checksum_hex(sentence),]
 
-        max_payload_char = 43
+        max_payload_char = 60
 
         sentences = []
         tot_sentences = 1 + len(payload) / max_payload_char
@@ -988,7 +988,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
         # self.radius > 0 ... circle
         r = {
-            'area_shape': self.area_shape, 
+            'area_shape': self.area_shape,
             #'area_shape_desc': area_shape_desc,
             'area_shape_name': 'circle',
             'center_ll': [self.lon, self.lat],
@@ -1013,7 +1013,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         @todo: great get/set for dimensions and allow for setting scale factor.
         @todo: or just over rule the attribute get and sets
         @todo: allow user to force the scale factor
-        @todo: Should this be raising a ValueError 
+        @todo: Should this be raising a ValueError
         '''
         if lon is not None:
             assert lon >= -180. and lon <= 180.
@@ -1206,7 +1206,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
         return bv
 
     def __unicode__(self):
-        return 'AreaNoticeSector: (%.4f,%.4f) %d rot: %d to %d deg' % (self.lon, self.lat, self.radius, 
+        return 'AreaNoticeSector: (%.4f,%.4f) %d rot: %d to %d deg' % (self.lon, self.lat, self.radius,
                                                                        self.left_bound_deg, self.right_bound_deg)
     def geom(self):
         'return shapely geometry object'
@@ -1252,7 +1252,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
         Angles can be specified with a resolution with 0.5 degrees.
 
-        @param points: 1 to 4 relative offsets (angle in degrees [0..360] , distance in meters) 
+        @param points: 1 to 4 relative offsets (angle in degrees [0..360] , distance in meters)
         @param lon: WGS84 longitude of the starting point.  Must match the previous point
         @param lat: WGS84 longitude of the starting point.  Must match the previous point
         @param bits: bits to decode from

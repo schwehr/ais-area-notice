@@ -177,7 +177,7 @@ class MetHydro31(BBM):
         if not verbose: return r[0]
         r.append('\t'.format(**self.__dict__))
         return '\n'.join(r)
-    
+
     def __str__(self, verbose=False):
         return self.__unicode__(verbose=verbose)
 
@@ -213,7 +213,7 @@ class MetHydro31(BBM):
     def html(self, efactory=False):
         'return an embeddable html representation'
         raise NotImplmented
-    
+
     def get_bits(self, include_bin_hdr=True, mmsi=None, include_dac_fi=True):
         'Child classes must implement this'
         bv_list = []
@@ -261,7 +261,7 @@ class MetHydro31(BBM):
         bv_list.append( BitVector(intVal=int(round(self.cur[0]['speed']*10)), size=8) )
         bv_list.append( BitVector(intVal=self.cur[0]['dir'], size=9) )
 
-        for i in (1,2):               
+        for i in (1,2):
             bv_list.append( BitVector(intVal=int(round(self.cur[i]['speed']*10)), size=8) )
             bv_list.append( BitVector(intVal=self.cur[i]['dir'], size=9) )
             bv_list.append( BitVector(intVal=self.cur[i]['level'], size=5) )
@@ -283,8 +283,8 @@ class MetHydro31(BBM):
 
         bv_list.append( BitVector(intVal=self.ice, size=2) )
 
-        bv_list.append( BitVector(size=10) ) 
-    
+        bv_list.append( BitVector(size=10) )
+
         bv = binary.joinBV(bv_list)
         if len(bv) != MSG_SIZE:
             sys.stderr.write('MetHydro31 wrong size: %d  WANT: %d\n' %(len(bv), MSG_SIZE))
@@ -302,7 +302,7 @@ class MetHydro31(BBM):
             if  msg_dict['checksum'] != nmea_checksum_hex(msg):
                 raise AisUnpackingException('Checksum failed')
 
-        try: 
+        try:
             msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
         except AttributeError:
             raise AisUnpackingException('one or more NMEA lines did were malformed (1)' )
@@ -317,7 +317,7 @@ class MetHydro31(BBM):
             if  msg_dict['checksum'] != nmea_checksum_hex(msg):
                 raise AisUnpackingException('Checksum failed')
 
-        try: 
+        try:
             msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
         except AttributeError:
             raise AisUnpackingException('one or more NMEA lines did were malformed (1)' )
