@@ -30,6 +30,7 @@ import imo_001_26_environment as env
 def env_dump(e, description):
     print ('\n#',description)
     print (e.__str__(verbose=True))
+    print ('bit_len:',len(e.get_bits()))
     print ('bit_str:',e.get_bits())
     for line in e.get_aivdm(byte_align=True):
         print (line)
@@ -53,6 +54,11 @@ def env_samples():
 
     sr_list = []
 
+    e = env.Environment(source_mmsi=366001)
+    e.append(env.SensorReportLocation(year=2012, month=10, day=22, hour=0, minute=8,
+                                      site_id=1, owner=5, timeout=5))
+    env_dump(e, 'NO Location')
+    
     # Jackson Lab, Adams Point, NH
     e = env.Environment(source_mmsi = mmsi)
     sr = env.SensorReportLocation(year=year, month=month, day=day, hour=day, minute=minute,

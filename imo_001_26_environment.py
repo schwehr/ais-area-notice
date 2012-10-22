@@ -1254,8 +1254,9 @@ class Environment(BBM):
             s.append(sr.report_type)
         return s
 
-    def get_bits(self, include_bin_hdr=True, mmsi=None, include_dac_fi=True):
+    def get_bits(self, include_bin_hdr=False, mmsi=None, include_dac_fi=True):
         'Child classes must implement this'
+        # TODO: include_bin_hdr appears to double the binary header
         bv_list = []
         if include_bin_hdr:
             bv_list.append( BitVector(intVal=8, size=6) ) # Messages ID
