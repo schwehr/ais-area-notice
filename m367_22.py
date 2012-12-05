@@ -1,0 +1,157 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+__author__    = 'Kurt Schwehr'
+__version__   = '0'
+__revision__  = __version__
+__date__ = '2012-12-03'
+__copyright__ = '2012'
+__license__   = 'LGPL v3'
+__contact__   = 'schwehr@google.com'
+
+__doc__ = '''USCG Area Notice Message similar to 8_1_22.
+
+Just different.
+
+http://en.wikipedia.org/wiki/Rhumb_line
+'''
+import binary
+from imo_001_22_area_notice import BBM
+from imo_001_22_area_notice import ais_nmea_regex
+from imo_001_22_area_notice import nmea_checksum_hex
+#from imo_001_22_area_notice import 
+#from imo_001_22_area_notice import 
+#from imo_001_22_area_notice import 
+#from imo_001_22_area_notice import 
+
+class AreaNotice(BBM):
+    version = 1
+    max_areas = 9
+    max_bits = 984
+    def __init__(self, area_type=None, when=None, duration=None, link_id=0, nmea_strings=None,
+           source_mmsi=None):
+        self.areas = []
+        if nmea_strings:
+            self.decode_nmea(nmea_strings)
+        elif area_type is not None and when is not None and duration is not None:
+            self.area_type = area_type
+            # Leave out seconds
+            self.when = datetime.datetime(when.year, when.month, when.day, when.hour,
+                                          when.minute)
+    def add_subarea(self,area):
+        if not hasattr(self, 'areas'):
+            self.areas = []
+        if len(self.areas) > self.max_areas:
+            raise AisPackingException('Can only have %d sub areas in an Area Notice',
+                                      self.max_areas)
+        self.areas.append(area)
+
+    def get_bits(self, include_bin_hdr=False, mmsi=None, include_dac_fi=True):
+        bvList = []
+        if include_bin_hdr:
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=8), 6 ) ) # Messages ID
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 2 ) ) # Repeat Indicator
+            if mmsi is not None:
+                bvList.append( binary.setBitVectorSize( BitVector(intVal=mmsi), 30 ) )
+            elif self.source_mmsi is not None:
+                bvList.append( binary.setBitVectorSize( BitVector(intVal=self.source_mmsi), 30 ) )
+            else:
+                print ('WARNING: using a default mmsi')
+                bvList.append( binary.setBitVectorSize( BitVector(intVal=999999999), 30 ) )
+
+        if include_bin_hdr or include_dac_fi:
+            bvList.append( BitVector( bitstring = '00' ) ) # Should this be here or in the bin_hdr?
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=self.dac), 10 ) )
+            bvList.append( binary.setBitVectorSize( BitVector(intVal=self.fi), 6 ) )
+
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=version), 6 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.link_id), 10 ) )
+        # Area type is called "notice description" in the USCG spec
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_type), 7 ) )
+
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.when.month), 4 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.when.day), 5 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.when.hour), 5 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.when.minute), 6 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=self.duration), 18 ) )
+        bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 3 ) ) # spare
+
+        for i, area in enumerated(self.areas):
+            bvList.append(area.get_bits())
+        bv = binary.joinBV(bvList)
+        if len(bv) > 984:
+            raise AisPackingException('Message to large:  %d > %d' % (len(bv), self.max_bits))
+        return bv
+
+    def decode_nmea(self, strings):
+        for msg in strings:
+            msg_dict = ais_nmea_regex.search(msg).groupdict()
+            if msg_dict['checksum'] != nmea_checksum_hex(msg):
+                raise AisUnpackingException('Checksum failed')
+        try:
+            msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
+        except AttributeError:
+            raise AisUnpackingException('One or more NMEA lines were malformed (1)' )
+        if None in msgs:
+            raise AisUnpackingException('Failed to parse message.')
+
+        bits = []
+        for msg in msgs:
+            msg['fill_bits'] = int(msg['fill_bits'])
+            bv = binary.ais6tobitvec(msg['body'])
+            if int(msg['fill_bits']) > 0:
+                bv = bv[:-msg['fill_bits']]
+            bits.append(bv)
+        bits = binary.joinBV(bits)
+        self.decode_bits(bits)
+        #r = {}
+        self.message_id = int(bits[:6])
+	self.repeat_indicator = int(bits[6:8])
+	self.source_mmsi = int(bits[8:38])
+        self.spare = int(bits[38:40])
+        self.dac = int(bits[40:50])
+        self.fi = int(bits[50:56])
+        self.version = int(bits[56:62])
+        self.link_id = int(bits[56+6:66+6])
+        self.area_type = int(bits[66+6:73+6])
+        # UTC
+        month = int(bits[73+6:77+6])
+        day = int(bits[77+6:82+6])
+        hour = int(bits[82+6:87+6])
+        minute = int(bits[87+6:93+6])
+        # TODO(schwehr): handle year boundary
+        now = datetime.datetime.utcnow()
+        self.when = datetime.datetime(now.year, month, day, hour, minute)
+        self.duration_min = int(bits[93+6:111+6])
+
+        sub_areas_bits = bits[111:]
+        num_sub_areas = len(sub_areas_bits) % SUB_AREA_SIZE
+        assert num_sub_areas <= self.max_areas
+
+        for area_num in range(num_sub_areas):
+            start = area_num * SUB_AREA_SIZE
+            end = start + SUB_AREA_SIZE
+            bits = sub_areas_bits[start:end]
+            subarea = self.subarea_factory(bits)
+
+        def subarea_factory(self, bits):
+            shape = int(bits[:3])
+            if shape == 0:
+                return AreaNoticeCirclePt(bits)
+            elif shape == 1:
+                return AreaNoticeRectable(bits)
+            elif shape == 2:
+                return AreaNoticeSector(bits)
+            elif shape in (3, 4):
+                if isinstance(self.areas[-1], AreaNoticeCirclePt):
+                    lon = self.areas[-1].lon
+                    lat = self.areas[-1].lat
+                    self.areas.pop()
+                elif isinstance(self.areas[-1], AreaNoticePoly):
+                    last_pt = self.areas[-1].get_points[-1]
+                    lon = last_pt[0]
+                    lat = last_pt[1]
+                    # FIX: need to pop and merge?
+                    return AreaNoticePoly(bits, lon, lat)
+                else:
+                    raise AisPackingException('Point or another polyline must preceed a polyline')
