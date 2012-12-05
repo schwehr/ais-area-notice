@@ -16,6 +16,7 @@ Just different.
 http://en.wikipedia.org/wiki/Rhumb_line
 '''
 import binary
+import datetime
 from imo_001_22_area_notice import BBM
 from imo_001_22_area_notice import ais_nmea_regex
 from imo_001_22_area_notice import nmea_checksum_hex
@@ -24,10 +25,40 @@ from imo_001_22_area_notice import nmea_checksum_hex
 #from imo_001_22_area_notice import 
 #from imo_001_22_area_notice import 
 
+# TODO: Should this import from 1:22?
+class AreaNoticeSubArea(object):
+    def __str__(self):
+        return self.__unicode__()
+
+    def GetScaleFactor(self, value):
+        if value / 100. >= 4095:
+            return 3, 1000
+        elif value / 10. > 4095:
+            return 2, 100
+        elif value > 4095:
+            return 1, 10
+        return 0, 1
+
+
+class AreaNoticeCircle(AreaNoticeSubArea):
+    def __init__(self, lon=None, lat=None, radius=0, precision=4, bits=None):
+        if lon is not None:
+            self.lon = lon
+            self.lat = lat
+            self.precision = precision
+            self.scale_factor_raw, self.scale_factor = self.GetScaleFactor(radius)
+            self.radius = radius
+            self.radius_scaled = radius / self.scale_factor
+        elif bits is not None:
+            self.decode_bits(bits)
+        # TODO: warn for else
+        return # Return an empty object
+
 class AreaNotice(BBM):
     version = 1
     max_areas = 9
     max_bits = 984
+    SUB_AREA_SIZE = 96
     def __init__(self, area_type=None, when=None, duration=None, link_id=0, nmea_strings=None,
            source_mmsi=None):
         self.areas = []
@@ -104,6 +135,8 @@ class AreaNotice(BBM):
             bits.append(bv)
         bits = binary.joinBV(bits)
         self.decode_bits(bits)
+
+    def decode_bits(self, bits):
         #r = {}
         self.message_id = int(bits[:6])
 	self.repeat_indicator = int(bits[6:8])
@@ -125,33 +158,33 @@ class AreaNotice(BBM):
         self.duration_min = int(bits[93+6:111+6])
 
         sub_areas_bits = bits[111:]
-        num_sub_areas = len(sub_areas_bits) % SUB_AREA_SIZE
+        num_sub_areas = len(sub_areas_bits) % self.SUB_AREA_SIZE
         assert num_sub_areas <= self.max_areas
 
         for area_num in range(num_sub_areas):
-            start = area_num * SUB_AREA_SIZE
-            end = start + SUB_AREA_SIZE
+            start = area_num * self.SUB_AREA_SIZE
+            end = start + self.SUB_AREA_SIZE
             bits = sub_areas_bits[start:end]
             subarea = self.subarea_factory(bits)
 
-        def subarea_factory(self, bits):
-            shape = int(bits[:3])
-            if shape == 0:
-                return AreaNoticeCirclePt(bits)
-            elif shape == 1:
-                return AreaNoticeRectable(bits)
-            elif shape == 2:
-                return AreaNoticeSector(bits)
-            elif shape in (3, 4):
-                if isinstance(self.areas[-1], AreaNoticeCirclePt):
-                    lon = self.areas[-1].lon
-                    lat = self.areas[-1].lat
-                    self.areas.pop()
-                elif isinstance(self.areas[-1], AreaNoticePoly):
-                    last_pt = self.areas[-1].get_points[-1]
-                    lon = last_pt[0]
-                    lat = last_pt[1]
-                    # FIX: need to pop and merge?
-                    return AreaNoticePoly(bits, lon, lat)
-                else:
-                    raise AisPackingException('Point or another polyline must preceed a polyline')
+    def subarea_factory(self, bits):
+        shape = int(bits[:3])
+        if shape == 0:
+            return AreaNoticeCircle(bits)
+        elif shape == 1:
+            return AreaNoticeRectable(bits)
+        elif shape == 2:
+            return AreaNoticeSector(bits)
+        elif shape in (3, 4):
+            if isinstance(self.areas[-1], AreaNoticeCircle):
+                lon = self.areas[-1].lon
+                lat = self.areas[-1].lat
+                self.areas.pop()
+            elif isinstance(self.areas[-1], AreaNoticePoly):
+                last_pt = self.areas[-1].get_points[-1]
+                lon = last_pt[0]
+                lat = last_pt[1]
+                # FIX: need to pop and merge?
+                return AreaNoticePoly(bits, lon, lat)
+            else:
+                raise AisPackingException('Point or another polyline must preceed a polyline')
