@@ -25,6 +25,22 @@ from imo_001_22_area_notice import nmea_checksum_hex
 #from imo_001_22_area_notice import 
 #from imo_001_22_area_notice import 
 
+
+class DecodeBits(object):
+    def __init__(self, bits):
+        self.bits = bits
+        self.pos = 0
+
+    def GetInt(self, length):
+        end = self.pos+length
+        value = int(self.bits[self.pos:end])
+        self.pos += length
+        return value
+
+    def Verify(self, offset):
+        assert self.pos == offset
+
+
 # TODO: Should this import from 1:22?
 class AreaNoticeSubArea(object):
     def __str__(self):
@@ -137,30 +153,33 @@ class AreaNotice(BBM):
         self.decode_bits(bits)
 
     def decode_bits(self, bits):
-        #r = {}
-        self.message_id = int(bits[:6])
-	self.repeat_indicator = int(bits[6:8])
-	self.source_mmsi = int(bits[8:38])
-        self.spare = int(bits[38:40])
-        self.dac = int(bits[40:50])
-        self.fi = int(bits[50:56])
-        self.version = int(bits[56:62])
-        self.link_id = int(bits[56+6:66+6])
-        self.area_type = int(bits[66+6:73+6])
+        db = DecodeBits(bits)
+        self.message_id = db.GetInt(6)
+        self.repeat_indicator = db.GetInt(2)
+	self.mmsi = db.GetInt(30)
+        self.spare = db.GetInt(2)
+        self.dac = db.GetInt(10)
+        self.fi = db.GetInt(6)
+        db.Verify(56)
+        self.version = db.GetInt(6)
+        self.link_id = db.GetInt(10)
+        self.area_type = db.GetInt(7)
         # UTC
-        month = int(bits[73+6:77+6])
-        day = int(bits[77+6:82+6])
-        hour = int(bits[82+6:87+6])
-        minute = int(bits[87+6:93+6])
+        month = db.GetInt(4)
+        day = db.GetInt(5)
+        hour = db.GetInt(5)
+        minute = db.GetInt(6)
         # TODO(schwehr): handle year boundary
         now = datetime.datetime.utcnow()
         self.when = datetime.datetime(now.year, month, day, hour, minute)
-        self.duration_min = int(bits[93+6:111+6])
+        self.duration_min = db.GetInt(18)
+        self.spare2 = db.GetInt(3)
+        db.Verify(120)
 
-        sub_areas_bits = bits[111:]
-        num_sub_areas = len(sub_areas_bits) % self.SUB_AREA_SIZE
+        sub_areas_bits = bits[120:]
+        num_sub_areas = len(sub_areas_bits) / self.SUB_AREA_SIZE
+        assert len(sub_areas_bits) % self.SUB_AREA_SIZE == 0 # TODO(schwehr): change this to raising an error
         assert num_sub_areas <= self.max_areas
-
         for area_num in range(num_sub_areas):
             start = area_num * self.SUB_AREA_SIZE
             end = start + self.SUB_AREA_SIZE
