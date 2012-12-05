@@ -31,9 +31,17 @@ class DecodeBits(object):
         self.bits = bits
         self.pos = 0
 
+    # TODO: This should be GetUInt
     def GetInt(self, length):
-        end = self.pos+length
+        end = self.pos + length
         value = int(self.bits[self.pos:end])
+        self.pos += length
+        return value
+
+    # TODO: This should be GetInt
+    def GetSignedInt(self, length):
+        end = self.pos + length
+        value = binary.signedIntFromBV(self.bits[self.pos:end])
         self.pos += length
         return value
 
@@ -55,6 +63,19 @@ class AreaNoticeSubArea(object):
             return 1, 10
         return 0, 1
 
+    def decode_bits(self, bits):
+        db = DecodeBits(bits)
+        self.area_shape = db.GetInt(3)
+        self.scale_factor_raw = db.GetInt(2)
+        # TODO: scale factor should be a method of parent class
+        self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
+        self.lon = db.GetSignedInt(28) / 60000.
+        self.lat = db.GetSignedInt(27) / 60000.
+        self.precision = db.GetInt(3)
+        self.radius_scaled = db.GetInt(12)
+        self.radius = self.radius_scaled * self.scale_factor
+        self.spare = db.GetInt(21)
+        
 
 class AreaNoticeCircle(AreaNoticeSubArea):
     def __init__(self, lon=None, lat=None, radius=0, precision=4, bits=None):
@@ -189,11 +210,11 @@ class AreaNotice(BBM):
     def subarea_factory(self, bits):
         shape = int(bits[:3])
         if shape == 0:
-            return AreaNoticeCircle(bits)
+            return AreaNoticeCircle(bits=bits)
         elif shape == 1:
-            return AreaNoticeRectable(bits)
+            return AreaNoticeRectable(bits=bits)
         elif shape == 2:
-            return AreaNoticeSector(bits)
+            return AreaNoticeSector(bits=bits)
         elif shape in (3, 4):
             if isinstance(self.areas[-1], AreaNoticeCircle):
                 lon = self.areas[-1].lon
