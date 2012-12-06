@@ -137,7 +137,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
 
 class AreaNoticeSector(AreaNoticeSubArea):
-    def __init__(self, lon=None, lat=None, radius=0, left_bound_deg=0, right_bound_deg=0, precision=4, bits=None):
+    def __init__(self, lon=None, lat=None, radius=0, left_bound_deg=0,
+                 right_bound_deg=0, precision=4, bits=None):
         if lon is not None:
             self.lon = lon
             self.lat = lat
@@ -152,6 +153,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
             self.decode_bits(bits)
 
     def decode_bits(self,bits):
+        db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
         self.scale_factor = db.GetInt(2)
         self.lon = db.GetSignedInt(28) / 600000.

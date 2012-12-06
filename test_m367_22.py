@@ -62,6 +62,25 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(subarea.n_dim, 200)
         self.assertEqual(subarea.orientation_deg, 42)
         self.assertEqual(subarea.spare, 0)
+
+    def testSector(self):
+        msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAW5BAs80e0EcN<11N6th@6BgL8,0*13'
+        area_notice = AreaNotice(nmea_strings=[msg])
+        self.checkHeader(area_notice)
+        self.checkDacFi(area_notice)
+        self.checkAreaNoticeHeader(area_notice, link_id=103, area_type=10,
+                                   timestamp=(9,4,15,25), duration=360)
+        self.assertEqual(len(area_notice.areas), 1)
+        # One sector
+        subarea = area_notice.areas[0]
+        self.assertEqual(subarea.area_shape, 2)
+        self.assertEqual(subarea.scale_factor, 2)
+        self.assertAlmostEqual(subarea.lon, -71.751666666)
+        self.assertAlmostEqual(subarea.lat, 41.116666666)
+        self.assertEqual(subarea.precision, 2)
+        self.assertEqual(subarea.left_bound_deg, 175)
+        self.assertEqual(subarea.right_bound_deg, 225)
+        self.assertEqual(subarea.spare, 0)
         
 
 if __name__ == '__main__':
