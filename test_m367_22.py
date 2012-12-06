@@ -58,6 +58,17 @@ class TestAreaNotice(unittest.TestCase):
         self.checkCircle(area_notice.areas[0], scale_factor=10, lon=-71.935,
                          lat=41.236666667, precision=4, radius=1800)
 
+        subarea = area_notice.areas[0]
+        self.assertEqual(subarea.area_shape, 0)  # Circle
+        self.assertEqual(subarea.scale_factor_raw, 1)
+        self.assertEqual(subarea.scale_factor, 10)
+        self.assertAlmostEqual(subarea.lon, -71.935)
+        self.assertAlmostEqual(subarea.lat, 41.236666667)
+        self.assertEqual(subarea.precision, 4)
+        self.assertEqual(subarea.radius_scaled, 180)
+        self.assertEqual(subarea.radius, 1800)
+        self.assertEqual(subarea.spare, 0)
+
     def testRectangle(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAVhjAs80e0;cKBN1N:W8Q@:2`0,0*0C'
         area_notice = AreaNotice(nmea_strings=[msg])
