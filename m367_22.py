@@ -15,6 +15,8 @@ Just different.
 
 http://en.wikipedia.org/wiki/Rhumb_line
 '''
+
+import aisstring
 import binary
 import datetime
 from imo_001_22_area_notice import BBM
@@ -47,22 +49,26 @@ class DecodeBits(object):
         return value
 
     def GetText(self, length, strip=True):
+        assert length % 6 == 0
         end = self.pos + length
         text = aisstring.decode(self.bits[self.pos:end])
         at = text.find('@')
         if strip and at != -1:
             # TODO: Crop from first @
            text = text[:at]
+        self.pos += length
         return text
 
     def Verify(self, offset):
+        if self.pos != offset:
+            print('DecodeBits FAILING!  expect:', offset, 'got:', self.pos)
         assert self.pos == offset
 
 
 # TODO: Should this import from 1:22?
 class AreaNoticeSubArea(object):
-    def __str__(self):
-        return self.__unicode__()
+    #def __str__(self):
+    #    return self.__unicode__()
 
     def GetScaleFactor(self, value):
         if value / 100. >= 4095:
@@ -194,6 +200,9 @@ class AreaNoticePoly(AreaNoticeSubArea):
             if angle == 720:
                 done = True
             dist_scaled = db.GetInt(11)
+            if not angle and not dist_scaled:
+                # Despite the specs, Greg W. Johnson uses 0, 0 to denote no point.
+                done = True
             if not done:
                 angle *= 0.5
                 dist = dist_scaled * (1,10,100,1000)[self.scale_factor]
@@ -210,11 +219,11 @@ class AreaNoticeText(AreaNoticeSubArea):
             self.decode_bits(bits)
 
     def decode_bits(self, bits):
-        db = DecodeBits()
-        area_shape = db.GetInt(3)
+        db = DecodeBits(bits)
+        self.area_shape = db.GetInt(3)
         self.text = db.GetText(90, strip=True)
         self.spare = db.GetInt(3)
-        db.Validate(SUB_AREA_SIZE)
+        db.Verify(SUB_AREA_SIZE)
 
 class AreaNotice(BBM):
     version = 1
@@ -357,3 +366,6 @@ class AreaNotice(BBM):
                 raise AisPackingException('Point or another polyline must preceed a polyline')
 
             return AreaNoticePoly(bits=bits, lon=lon, lat=lat)
+        elif shape == 5:
+            return AreaNoticeText(bits=bits)
+

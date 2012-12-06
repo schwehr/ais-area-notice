@@ -45,6 +45,7 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(subarea.spare, 0)
 
     def checkPoly(self, sub_area, area_shape, scale_factor, lon, lat, points):
+        self.assertIn(area_shape, (3,4))
         self.assertEqual(sub_area.area_shape, area_shape)
         self.assertEqual(sub_area.scale_factor, scale_factor)
         if lon is not None:
@@ -55,7 +56,12 @@ class TestAreaNotice(unittest.TestCase):
             self.assertAlmostEqual(sub_area.points[point_num][0], angle)
             self.assertEqual(sub_area.points[point_num][1], dist)
         self.assertEqual(sub_area.spare, 0)
-        
+
+    def checkText(self, sub_area, expected_text):
+        self.assertEqual(sub_area.area_shape, 5)
+        self.assertEqual(sub_area.text, expected_text)
+        self.assertEqual(sub_area.spare, 0)
+
     def testCircle(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19'
         area_notice = AreaNotice(nmea_strings=[msg])
@@ -139,6 +145,17 @@ class TestAreaNotice(unittest.TestCase):
         lon, lat = -71.6816666666, 41.1483333333
         self.checkPoly(line0, 3, 0, lon, lat, points0)
 
+        # The USCG / Greg Johnson is not following the specs with 0,0 marking no point.
+        # (15.5, 550), (0., 0), (0., 0), (0., 0)
+        points1 = [(15.5, 550)]
+        # TODO: Check the lat,lon are being pulled correct
+        lon, lat = None, None
+        self.checkPoly(line1, 3, 0, lon, lat, points1)
+
+        print('text block:', text_block)
+        self.assertTrue(text_block)
+        self.checkText(text_block, 'TEST LINE 1')
+        
     def testPolygon(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAa8jAs85`01cN:41NI@`P00000P7Td4dUP00000000,0*71'
         area_notice = AreaNotice(nmea_strings=[msg])
@@ -146,9 +163,10 @@ class TestAreaNotice(unittest.TestCase):
         self.checkDacFi(area_notice)
         self.checkAreaNoticeHeader(area_notice, link_id=105, area_type=17,
                                    timestamp=(9,4,15,25), duration=2880)
-        self.assertEqual(len(area_notice.areas), 2)
-        self.checkCircle(area_notice.areas[0], scale_factor=1, lon=-71.753333333,
-                         lat=41.241666667, precision=4, radius=0)
+        self.assertEqual(len(area_notice.areas), 1)
+        lon = -71.753333333
+        lat = 41.241666667
+
 
 if __name__ == '__main__':
     unittest.main()
