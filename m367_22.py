@@ -25,6 +25,7 @@ from imo_001_22_area_notice import nmea_checksum_hex
 #from imo_001_22_area_notice import 
 #from imo_001_22_area_notice import 
 
+SUB_AREA_SIZE = 96
 
 class DecodeBits(object):
     def __init__(self, bits):
@@ -45,6 +46,15 @@ class DecodeBits(object):
         self.pos += length
         return value
 
+    def GetText(self, length, strip=True):
+        end = self.pos + length
+        text = aisstring.decode(self.bits[self.pos:end])
+        at = text.find('@')
+        if strip and at != -1:
+            # TODO: Crop from first @
+           text = text[:at]
+        return text
+
     def Verify(self, offset):
         assert self.pos == offset
 
@@ -63,20 +73,7 @@ class AreaNoticeSubArea(object):
             return 1, 10
         return 0, 1
 
-    def decode_bits(self, bits):
-        db = DecodeBits(bits)
-        self.area_shape = db.GetInt(3)
-        self.scale_factor_raw = db.GetInt(2)
-        # TODO: scale factor should be a method of parent class
-        self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
-        self.lon = db.GetSignedInt(28) / 60000.
-        self.lat = db.GetSignedInt(27) / 60000.
-        self.precision = db.GetInt(3)
-        self.radius_scaled = db.GetInt(12)
-        self.radius = self.radius_scaled * self.scale_factor
-        self.spare = db.GetInt(21)
-        
-
+      
 class AreaNoticeCircle(AreaNoticeSubArea):
     def __init__(self, lon=None, lat=None, radius=0, precision=4, bits=None):
         if lon is not None:
@@ -91,13 +88,137 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         # TODO: warn for else
         return # Return an empty object
 
+    def decode_bits(self, bits):
+        db = DecodeBits(bits)
+        self.area_shape = db.GetInt(3)
+        self.scale_factor_raw = db.GetInt(2)
+        # TODO: scale factor should be a method of parent class
+        self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
+        self.lon = db.GetSignedInt(28) / 60000.
+        self.lat = db.GetSignedInt(27) / 60000.
+        self.precision = db.GetInt(3)
+        self.radius_scaled = db.GetInt(12)
+        self.radius = self.radius_scaled * self.scale_factor
+        self.spare = db.GetInt(21)
+        db.Verify(SUB_AREA_SIZE)
+
+class AreaNoticeRectangle(AreaNoticeSubArea):
+    def __init__(self, lon=None, lat=None, east_dim=0, north_dim=0, orientation_deg=0, precision=4, bits=None):
+        if lon is not None:
+            self.lon = lon
+            self.lat = lat
+            self.precision = precision
+            self.scale_factor_raw = max(self.GetScaleFactor(east_dim),
+                                        self.GetScaleFactor(north_im))
+            self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
+            self.e_dim = east_dim
+            self.n_dim = north_dim
+            self.e_dim_scaled = east_dim / self.scale_factor
+            self.n_dim_scaled = north_dim / self.scale_factor
+            self.orientation_deg = orientation_deg
+
+        elif bits is not None:
+            self.decode_bits(bits)
+
+    def decode_bits(self,bits):
+        db = DecodeBits(bits)
+        self.area_shape = db.GetInt(3)
+        self.scale_factor = db.GetInt(2)
+        self.lon = db.GetSignedInt(28) / 60000.
+        self.lat = db.GetSignedInt(27) / 60000.
+        self.precision = db.GetInt(3)
+        self.e_dim_scaled = db.GetInt(8)
+        self.n_dim_scaled = db.GetInt(8)
+        self.e_dim = self.e_dim_scaled * (1,10,100,1000)[self.scale_factor]
+        self.n_dim = self.n_dim_scaled * (1,10,100,1000)[self.scale_factor]
+        self.orientation_deg = db.GetInt(9)
+        self.spare = db.GetInt(8)
+        db.Verify(SUB_AREA_SIZE)
+
+
+class AreaNoticeSector(AreaNoticeSubArea):
+    def __init__(self, lon=None, lat=None, radius=0, left_bound_deg=0, right_bound_deg=0, precision=4, bits=None):
+        if lon is not None:
+            self.lon = lon
+            self.lat = lat
+            self.precision = precision
+            self.scale_factor_raw = self.GetScaleFactor(radius)
+            self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
+            self.radius = radius
+            self.radius_scaled = int(radius / self.scale_factor)
+            self.left_bound_deg  = left_bound_deg
+            self.right_bound_deg = right_bound_deg
+        elif bits is not None:
+            self.decode_bits(bits)
+
+    def decode_bits(self,bits):
+        self.area_shape = db.GetInt(3)
+        self.scale_factor = db.GetInt(2)
+        self.lon = db.GetSignedInt(28) / 60000.
+        self.lat = db.GetSignedInt(27) / 60000.
+        self.precision = db.GetInt(3)
+        self.radius_scaled = db.GetInt(12)
+        self.radius = self.radius_scaled * (1,10,100,1000)[self.scale_factor]
+        self.left_bound_deg = db.GetInt(9)
+        self.right_bound_deg = db.GetInt(9)
+        self.spare = db.GetInt(3)
+        db.Verify(SUB_AREA_SIZE)
+
+
+class AreaNoticePoly(AreaNoticeSubArea):
+    """Line or point."""
+    def __init__(self, points=None, lon=None, lat=None, bits=None):
+        if lon is not None:
+            self.lon = lon
+            self.lat = lat
+        if points:
+            self.points = points
+            max_dist = max([pt[1] for pt in points])
+            self.scale_factor_raw = self.GetScaleFactor(max_dist)
+            self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
+        elif bits is not None:
+            self.decode_bits(bits, lon, lat)
+
+    def decode_bits(self, bits, lon, lat):
+        db = DecodeBits(bits)
+        self.area_shape = db.DecodeBits(3)
+        self.scale_factor = db.DecodeBits(2)
+
+        self.points = []
+        done = False # used to flag when we should have no more points
+        for i in range(4):
+            angle = db.DecodeBits(10)
+            if angle == 720:
+                done = True
+            dist_scaled = db.DecodeBits(11)
+            if not done:
+                angle *= 0.5
+                dist = dist_scaled * (1,10,100,1000)[self.scale_factor]
+                self.points.append((angle,dist))
+        spare = db.DecodeBits(7)
+        db.Validate(SUB_AREA_SIZE)
+
+
+class AreaNoticeText(AreaNoticeSubArea):
+    def __init__(self, text=None, bits=None):
+        if text is not None:
+            self.text = text
+        elif bits is not None:
+            self.decode_bits(bits)
+
+    def decode_bits(self, bits):
+        db = DecodeBits()
+        area_shape = db.GetInt(3)
+        self.text = db.GetText(90, strip=True)
+        self.spare = db.GetInt(3)
+        db.Validate(SUB_AREA_SIZE)
+
 class AreaNotice(BBM):
     version = 1
     max_areas = 9
     max_bits = 984
-    SUB_AREA_SIZE = 96
     def __init__(self, area_type=None, when=None, duration=None, link_id=0, nmea_strings=None,
-           source_mmsi=None):
+           mmsi=None):
         self.areas = []
         if nmea_strings:
             self.decode_nmea(nmea_strings)
@@ -121,8 +242,8 @@ class AreaNotice(BBM):
             bvList.append( binary.setBitVectorSize( BitVector(intVal=0), 2 ) ) # Repeat Indicator
             if mmsi is not None:
                 bvList.append( binary.setBitVectorSize( BitVector(intVal=mmsi), 30 ) )
-            elif self.source_mmsi is not None:
-                bvList.append( binary.setBitVectorSize( BitVector(intVal=self.source_mmsi), 30 ) )
+            elif self.mmsi is not None:
+                bvList.append( binary.setBitVectorSize( BitVector(intVal=self.mmsi), 30 ) )
             else:
                 print ('WARNING: using a default mmsi')
                 bvList.append( binary.setBitVectorSize( BitVector(intVal=999999999), 30 ) )
@@ -198,12 +319,12 @@ class AreaNotice(BBM):
         db.Verify(120)
 
         sub_areas_bits = bits[120:]
-        num_sub_areas = len(sub_areas_bits) / self.SUB_AREA_SIZE
-        assert len(sub_areas_bits) % self.SUB_AREA_SIZE == 0 # TODO(schwehr): change this to raising an error
+        num_sub_areas = len(sub_areas_bits) / SUB_AREA_SIZE
+        assert len(sub_areas_bits) % SUB_AREA_SIZE == 0 # TODO(schwehr): change this to raising an error
         assert num_sub_areas <= self.max_areas
         for area_num in range(num_sub_areas):
-            start = area_num * self.SUB_AREA_SIZE
-            end = start + self.SUB_AREA_SIZE
+            start = area_num * SUB_AREA_SIZE
+            end = start + SUB_AREA_SIZE
             bits = sub_areas_bits[start:end]
             subarea = self.subarea_factory(bits)
 
@@ -212,7 +333,7 @@ class AreaNotice(BBM):
         if shape == 0:
             return AreaNoticeCircle(bits=bits)
         elif shape == 1:
-            return AreaNoticeRectable(bits=bits)
+            return AreaNoticeRectangle(bits=bits)
         elif shape == 2:
             return AreaNoticeSector(bits=bits)
         elif shape in (3, 4):
