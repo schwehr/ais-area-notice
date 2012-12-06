@@ -29,28 +29,39 @@ class TestAreaNotice(unittest.TestCase):
         timestamp = datetime.datetime(year, *timestamp)
         self.assertEqual(area_notice.when, timestamp)
         self.assertEqual(area_notice.duration_min, duration)
-        
+        self.assertEqual(area_notice.spare2, 0)
         
     def testCircle(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19'
         area_notice = AreaNotice(nmea_strings=[msg])
         self.checkHeader(area_notice)
         self.checkDacFi(area_notice)
-        self.checkAreaNoticeHeader(area_notice, link_id=101, area_type=13, timestamp=(9,4,15,25), duration=2880)
         # area type 13: Caution Area: Survey Operations        
         # duration 2880 -> 48hrs
-
-        
-
-
-        
+        self.checkAreaNoticeHeader(area_notice, link_id=101, area_type=13,
+                                   timestamp=(9,4,15,25), duration=2880)
 
     def testRectangle(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAVhjAs80e0;cKBN1N:W8Q@:2`0,0*0C'
         area_notice = AreaNotice(nmea_strings=[msg])
         self.checkHeader(area_notice)
-
-        
+        self.checkDacFi(area_notice)
+        self.checkAreaNoticeHeader(area_notice, link_id=102, area_type=97,
+                                   timestamp=(9,4,15,25), duration=360)
+        self.assertEqual(len(area_notice.areas), 1)
+        # One rectangle
+        subarea = area_notice.areas[0]
+        self.assertEqual(subarea.area_shape, 1)
+        self.assertEqual(subarea.scale_factor, 1)
+        self.assertAlmostEqual(subarea.lon, -71.91)
+        self.assertAlmostEqual(subarea.lat, 41.141666666)
+        self.assertEqual(subarea.precision, 4)
+        self.assertEqual(subarea.e_dim_scaled, 40)
+        self.assertEqual(subarea.n_dim_scaled, 20)
+        self.assertEqual(subarea.e_dim, 400)
+        self.assertEqual(subarea.n_dim, 200)
+        self.assertEqual(subarea.orientation_deg, 42)
+        self.assertEqual(subarea.spare, 0)
         
 
 if __name__ == '__main__':
