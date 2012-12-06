@@ -45,7 +45,6 @@ class TestAreaNotice(unittest.TestCase):
     def checkPoly(self, sub_area, area_shape, scale_factor, lon, lat, points):
         self.assertIn(area_shape, (3,4))
         self.assertEqual(sub_area.area_shape, area_shape)
-        print (sub_area.scale_factor, scale_factor)
         self.assertEqual(sub_area.scale_factor, scale_factor)
         if lon is not None:
             self.assertAlmostEqual(sub_area.lon, lon)
@@ -86,7 +85,7 @@ class TestAreaNotice(unittest.TestCase):
         # One rectangle
         subarea = area_notice.areas[0]
         self.assertEqual(subarea.area_shape, 1)
-        self.assertEqual(subarea.scale_factor, 1)
+        self.assertEqual(subarea.scale_factor, 10)
         self.assertAlmostEqual(subarea.lon, -71.91)
         self.assertAlmostEqual(subarea.lat, 41.141666666)
         self.assertEqual(subarea.precision, 4)
@@ -108,7 +107,7 @@ class TestAreaNotice(unittest.TestCase):
         # One sector
         subarea = area_notice.areas[0]
         self.assertEqual(subarea.area_shape, 2)
-        self.assertEqual(subarea.scale_factor, 2)
+        self.assertEqual(subarea.scale_factor, 100)
         self.assertAlmostEqual(subarea.lon, -71.751666666)
         self.assertAlmostEqual(subarea.lat, 41.116666666)
         self.assertEqual(subarea.precision, 2)
@@ -132,14 +131,14 @@ class TestAreaNotice(unittest.TestCase):
 
         points0 = [(45., 2000), (55.5, 1500), (20., 755), (75., 1825)]
         lon, lat = -71.6816666666, 41.1483333333
-        self.checkPoly(line0, 3, 0, lon, lat, points0)
+        self.checkPoly(line0, 3, 1, lon, lat, points0)
 
         # The USCG / Greg Johnson is not following the specs with 0,0 marking no point.
         # (15.5, 550), (0., 0), (0., 0), (0., 0)
         points1 = [(15.5, 550)]
         # TODO: Check the lat,lon are being pulled correct
         lon, lat = None, None
-        self.checkPoly(line1, 3, 0, lon, lat, points1)
+        self.checkPoly(line1, 3, 1, lon, lat, points1)
 
         print('text block:', text_block)
         self.assertTrue(text_block)
