@@ -94,8 +94,8 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         self.scale_factor_raw = db.GetInt(2)
         # TODO: scale factor should be a method of parent class
         self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
-        self.lon = db.GetSignedInt(28) / 60000.
-        self.lat = db.GetSignedInt(27) / 60000.
+        self.lon = db.GetSignedInt(28) / 600000.
+        self.lat = db.GetSignedInt(27) / 600000.
         self.precision = db.GetInt(3)
         self.radius_scaled = db.GetInt(12)
         self.radius = self.radius_scaled * self.scale_factor
@@ -124,8 +124,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
         self.scale_factor = db.GetInt(2)
-        self.lon = db.GetSignedInt(28) / 60000.
-        self.lat = db.GetSignedInt(27) / 60000.
+        self.lon = db.GetSignedInt(28) / 600000.
+        self.lat = db.GetSignedInt(27) / 600000.
         self.precision = db.GetInt(3)
         self.e_dim_scaled = db.GetInt(8)
         self.n_dim_scaled = db.GetInt(8)
@@ -154,8 +154,8 @@ class AreaNoticeSector(AreaNoticeSubArea):
     def decode_bits(self,bits):
         self.area_shape = db.GetInt(3)
         self.scale_factor = db.GetInt(2)
-        self.lon = db.GetSignedInt(28) / 60000.
-        self.lat = db.GetSignedInt(27) / 60000.
+        self.lon = db.GetSignedInt(28) / 600000.
+        self.lat = db.GetSignedInt(27) / 600000.
         self.precision = db.GetInt(3)
         self.radius_scaled = db.GetInt(12)
         self.radius = self.radius_scaled * (1,10,100,1000)[self.scale_factor]
@@ -327,6 +327,7 @@ class AreaNotice(BBM):
             end = start + SUB_AREA_SIZE
             bits = sub_areas_bits[start:end]
             subarea = self.subarea_factory(bits)
+            self.add_subarea(subarea)
 
     def subarea_factory(self, bits):
         shape = int(bits[:3])
