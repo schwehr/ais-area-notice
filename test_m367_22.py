@@ -33,8 +33,6 @@ class TestAreaNotice(unittest.TestCase):
 
     def checkCircle(self, subarea, scale_factor, lon, lat, precision, radius):
         self.assertEqual(subarea.area_shape, 0)  # Circle
-        scale_factor_raw = {1:0, 10:1, 100:2, 1000:3}[scale_factor] 
-        self.assertEqual(subarea.scale_factor_raw, scale_factor_raw)
         self.assertEqual(subarea.scale_factor, scale_factor)
         self.assertAlmostEqual(subarea.lon, lon)
         self.assertAlmostEqual(subarea.lat, lat)
@@ -47,6 +45,7 @@ class TestAreaNotice(unittest.TestCase):
     def checkPoly(self, sub_area, area_shape, scale_factor, lon, lat, points):
         self.assertIn(area_shape, (3,4))
         self.assertEqual(sub_area.area_shape, area_shape)
+        print (sub_area.scale_factor, scale_factor)
         self.assertEqual(sub_area.scale_factor, scale_factor)
         if lon is not None:
             self.assertAlmostEqual(sub_area.lon, lon)
@@ -75,16 +74,6 @@ class TestAreaNotice(unittest.TestCase):
         self.checkCircle(area_notice.areas[0], scale_factor=10, lon=-71.935,
                          lat=41.236666667, precision=4, radius=1800)
 
-        subarea = area_notice.areas[0]
-        self.assertEqual(subarea.area_shape, 0)  # Circle
-        self.assertEqual(subarea.scale_factor_raw, 1)
-        self.assertEqual(subarea.scale_factor, 10)
-        self.assertAlmostEqual(subarea.lon, -71.935)
-        self.assertAlmostEqual(subarea.lat, 41.236666667)
-        self.assertEqual(subarea.precision, 4)
-        self.assertEqual(subarea.radius_scaled, 180)
-        self.assertEqual(subarea.radius, 1800)
-        self.assertEqual(subarea.spare, 0)
 
     def testRectangle(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAVhjAs80e0;cKBN1N:W8Q@:2`0,0*0C'
@@ -164,9 +153,13 @@ class TestAreaNotice(unittest.TestCase):
         self.checkAreaNoticeHeader(area_notice, link_id=105, area_type=17,
                                    timestamp=(9,4,15,25), duration=2880)
         self.assertEqual(len(area_notice.areas), 1)
+
+        points = ((30, 1200), (150, 1200))
         lon = -71.753333333
         lat = 41.241666667
-
+        #self.checkCircle(area_notice.areas[0], scale_factor=1, lon=-71.753333333,
+        #                 lat=41.241666667, precision=4, radius=0)
+        self.checkPoly(area_notice.areas[0], 4, 1, lon, lat, points)
 
 if __name__ == '__main__':
     unittest.main()

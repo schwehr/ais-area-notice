@@ -70,15 +70,18 @@ class AreaNoticeSubArea(object):
     #def __str__(self):
     #    return self.__unicode__()
 
-    def GetScaleFactor(self, value):
+    def getScaleFactor(self, value):
         if value / 100. >= 4095:
-            return 3, 1000
+            return 1000
         elif value / 10. > 4095:
-            return 2, 100
+            return  100
         elif value > 4095:
-            return 1, 10
-        return 0, 1
+            return  10
+        return 1
 
+    def decodeScaleFactor(self, db):
+        scale_factor_raw = db.GetInt(2)
+        return (1,10,100,1000)[scale_factor_raw]
       
 class AreaNoticeCircle(AreaNoticeSubArea):
     def __init__(self, lon=None, lat=None, radius=0, precision=4, bits=None):
@@ -86,7 +89,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
             self.lon = lon
             self.lat = lat
             self.precision = precision
-            self.scale_factor_raw, self.scale_factor = self.GetScaleFactor(radius)
+            self.scale_factor = self.getScaleFactor(radius)
             self.radius = radius
             self.radius_scaled = radius / self.scale_factor
         elif bits is not None:
@@ -97,9 +100,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
     def decode_bits(self, bits):
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
-        self.scale_factor_raw = db.GetInt(2)
-        # TODO: scale factor should be a method of parent class
-        self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
+        self.scale_factor = self.decodeScaleFactor(db)
         self.lon = db.GetSignedInt(28) / 600000.
         self.lat = db.GetSignedInt(27) / 600000.
         self.precision = db.GetInt(3)
@@ -114,9 +115,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             self.lon = lon
             self.lat = lat
             self.precision = precision
-            self.scale_factor_raw = max(self.GetScaleFactor(east_dim),
-                                        self.GetScaleFactor(north_im))
-            self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
+            self.scale_factor = max(self.getScaleFactor(east_dim),
+                                        self.getScaleFactor(north_im))
             self.e_dim = east_dim
             self.n_dim = north_dim
             self.e_dim_scaled = east_dim / self.scale_factor
@@ -129,14 +129,14 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
     def decode_bits(self,bits):
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
-        self.scale_factor = db.GetInt(2)
+        self.scale_factor = self.decodeScaleFactor(db)
         self.lon = db.GetSignedInt(28) / 600000.
         self.lat = db.GetSignedInt(27) / 600000.
         self.precision = db.GetInt(3)
         self.e_dim_scaled = db.GetInt(8)
         self.n_dim_scaled = db.GetInt(8)
-        self.e_dim = self.e_dim_scaled * (1,10,100,1000)[self.scale_factor]
-        self.n_dim = self.n_dim_scaled * (1,10,100,1000)[self.scale_factor]
+        self.e_dim = self.e_dim_scaled * self.scale_factor
+        self.n_dim = self.n_dim_scaled * self.scale_factor
         self.orientation_deg = db.GetInt(9)
         self.spare = db.GetInt(8)
         db.Verify(SUB_AREA_SIZE)
@@ -149,8 +149,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
             self.lon = lon
             self.lat = lat
             self.precision = precision
-            self.scale_factor_raw = self.GetScaleFactor(radius)
-            self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
+            self.scale_factor = self.getScaleFactor(radius)
             self.radius = radius
             self.radius_scaled = int(radius / self.scale_factor)
             self.left_bound_deg  = left_bound_deg
@@ -161,12 +160,12 @@ class AreaNoticeSector(AreaNoticeSubArea):
     def decode_bits(self,bits):
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
-        self.scale_factor = db.GetInt(2)
+        self.scale_factor = self.decodeScaleFactor(db)
         self.lon = db.GetSignedInt(28) / 600000.
         self.lat = db.GetSignedInt(27) / 600000.
         self.precision = db.GetInt(3)
         self.radius_scaled = db.GetInt(12)
-        self.radius = self.radius_scaled * (1,10,100,1000)[self.scale_factor]
+        self.radius = self.radius_scaled * self.scale_factor
         self.left_bound_deg = db.GetInt(9)
         self.right_bound_deg = db.GetInt(9)
         self.spare = db.GetInt(3)
@@ -183,16 +182,15 @@ class AreaNoticePoly(AreaNoticeSubArea):
             self.points = points
             print('AreaNoticePoly points:', type(points), points)
             max_dist = max([pt[1] for pt in points])
-            self.scale_factor_raw = self.GetScaleFactor(max_dist)
-            self.scale_factor = (1,10,100,1000)[self.scale_factor_raw]
+            self.scale_factor = self.getScaleFactor(max_dist)
         elif bits is not None:
             self.decode_bits(bits, lon, lat)
 
     def decode_bits(self, bits, lon, lat):
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
-        self.scale_factor = db.GetInt(2)
-
+        self.scale_factor = self.decodeScaleFactor(db)
+        
         self.points = []
         done = False # used to flag when we should have no more points
         for i in range(4):
@@ -205,7 +203,7 @@ class AreaNoticePoly(AreaNoticeSubArea):
                 done = True
             if not done:
                 angle *= 0.5
-                dist = dist_scaled * (1,10,100,1000)[self.scale_factor]
+                dist = dist_scaled * self.scale_factor
                 self.points.append((angle,dist))
         self.spare = db.GetInt(7)
         db.Verify(SUB_AREA_SIZE)
