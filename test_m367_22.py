@@ -44,6 +44,17 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(subarea.radius, radius)
         self.assertEqual(subarea.spare, 0)
 
+    def checkPoly(self, sub_area, area_shape, scale_factor, lon, lat, points):
+        self.assertEqual(sub_area.area_shape, area_shape)
+        self.assertEqual(sub_area.scale_factor, scale_factor)
+        if lon is not None:
+            self.assertAlmostEqual(sub_area.lon, lon)
+            self.assertAlmostEqual(sub_area.lat, lat)
+        for point_num, point in enumerate(points):
+            angle, dist = point
+            self.assertAlmostEqual(sub_area.points[point_num][0], angle)
+            self.assertEqual(sub_area.points[point_num][1], dist)
+        self.assertEqual(sub_area.spare, 0)
         
     def testCircle(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19'
@@ -110,6 +121,24 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(subarea.right_bound_deg, 225)
         self.assertEqual(subarea.spare, 0)
 
+    def testPolylineAndText(self):
+        msg = ['!AIVDM,2,1,0,A,85M:Ih1KmPA`tBAs85`01cON31N;U`P00000H;Gl1gfp52tjFq20H3r9P000,0*64',
+               '!AIVDM,2,2,0,A,00000000bPbJT1Q9hd680000,0*03'
+               ]
+        area_notice = AreaNotice(nmea_strings=msg)
+        self.checkHeader(area_notice)
+        self.checkDacFi(area_notice)
+        self.checkAreaNoticeHeader(area_notice, link_id=104, area_type=120,
+                                   timestamp=(9,4,15,25), duration=2880)
+        self.assertEqual(len(area_notice.areas), 3)
+
+        #point = area_notice.areas[0]
+        line0, line1, text_block = area_notice.areas
+
+        points0 = [(45., 2000), (55.5, 1500), (20., 755), (75., 1825)]
+        lon, lat = -71.6816666666, 41.1483333333
+        self.checkPoly(line0, 3, 0, lon, lat, points0)
+
     def testPolygon(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAa8jAs85`01cN:41NI@`P00000P7Td4dUP00000000,0*71'
         area_notice = AreaNotice(nmea_strings=[msg])
@@ -120,7 +149,6 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(len(area_notice.areas), 2)
         self.checkCircle(area_notice.areas[0], scale_factor=1, lon=-71.753333333,
                          lat=41.241666667, precision=4, radius=0)
-
 
 if __name__ == '__main__':
     unittest.main()
