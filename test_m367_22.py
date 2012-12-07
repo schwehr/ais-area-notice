@@ -140,7 +140,6 @@ class TestAreaNotice(unittest.TestCase):
         lon, lat = None, None
         self.checkPoly(line1, 3, 1, lon, lat, points1)
 
-        print('text block:', text_block)
         self.assertTrue(text_block)
         self.checkText(text_block, 'TEST LINE 1')
         

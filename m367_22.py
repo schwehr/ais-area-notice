@@ -23,11 +23,9 @@ from imo_001_22_area_notice import BBM
 from imo_001_22_area_notice import ais_nmea_regex
 from imo_001_22_area_notice import nmea_checksum_hex
 from imo_001_22_area_notice import AisPackingException
-#from imo_001_22_area_notice import 
-#from imo_001_22_area_notice import 
-#from imo_001_22_area_notice import 
 
 SUB_AREA_SIZE = 96
+
 
 class DecodeBits(object):
     def __init__(self, bits):
@@ -54,7 +52,6 @@ class DecodeBits(object):
         text = aisstring.decode(self.bits[self.pos:end])
         at = text.find('@')
         if strip and at != -1:
-            # TODO: Crop from first @
            text = text[:at]
         self.pos += length
         return text
@@ -67,8 +64,6 @@ class DecodeBits(object):
 
 # TODO: Should this import from 1:22?
 class AreaNoticeSubArea(object):
-    #def __str__(self):
-    #    return self.__unicode__()
 
     def getScaleFactor(self, value):
         if value / 100. >= 4095:
@@ -180,7 +175,6 @@ class AreaNoticePoly(AreaNoticeSubArea):
             self.lat = lat
         if points:
             self.points = points
-            print('AreaNoticePoly points:', type(points), points)
             max_dist = max([pt[1] for pt in points])
             self.scale_factor = self.getScaleFactor(max_dist)
         elif bits is not None:
@@ -342,7 +336,6 @@ class AreaNotice(BBM):
     def subarea_factory(self, bits):
         shape = int(bits[:3])
         if shape == 0:
-            print('circle')
             return AreaNoticeCircle(bits=bits)
         elif shape == 1:
             return AreaNoticeRectangle(bits=bits)
@@ -350,17 +343,14 @@ class AreaNotice(BBM):
             return AreaNoticeSector(bits=bits)
         elif shape in (3, 4):
             if isinstance(self.areas[-1], AreaNoticeCircle):
-                print('circle before')
                 lon = self.areas[-1].lon
                 lat = self.areas[-1].lat
                 self.areas.pop()
             elif isinstance(self.areas[-1], AreaNoticePoly):
-                print('poly before')
                 last_pt = self.areas[-1].points[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
             else:
-                print('Last type was:', type(self.areas[-1]))
                 raise AisPackingException('Point or another polyline must preceed a polyline')
 
             return AreaNoticePoly(bits=bits, lon=lon, lat=lat)
