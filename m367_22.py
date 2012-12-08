@@ -77,7 +77,7 @@ class AreaNoticeSubArea(object):
     def decodeScaleFactor(self, db):
         scale_factor_raw = db.GetInt(2)
         return (1,10,100,1000)[scale_factor_raw]
-      
+
 class AreaNoticeCircle(AreaNoticeSubArea):
     def __init__(self, lon=None, lat=None, radius=0, precision=4, bits=None):
         if lon is not None:
@@ -184,7 +184,7 @@ class AreaNoticePoly(AreaNoticeSubArea):
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
         self.scale_factor = self.decodeScaleFactor(db)
-        
+
         self.points = []
         done = False # used to flag when we should have no more points
         for i in range(4):
@@ -356,4 +356,3 @@ class AreaNotice(BBM):
             return AreaNoticePoly(bits=bits, lon=lon, lat=lat)
         elif shape == 5:
             return AreaNoticeText(bits=bits)
-

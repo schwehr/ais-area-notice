@@ -21,10 +21,10 @@ class TestAreaNotice(unittest.TestCase):
         """
         timestamp is tuple: (month, day, hour, minute)
         """
-        
+
         self.assertEqual(area_notice.version, 1)
         self.assertEqual(area_notice.link_id, link_id)
-        self.assertEqual(area_notice.area_type, area_type) 
+        self.assertEqual(area_notice.area_type, area_type)
         year = datetime.datetime.utcnow().year
         timestamp = datetime.datetime(year, *timestamp)
         self.assertEqual(area_notice.when, timestamp)
@@ -65,14 +65,13 @@ class TestAreaNotice(unittest.TestCase):
         area_notice = AreaNotice(nmea_strings=[msg])
         self.checkHeader(area_notice)
         self.checkDacFi(area_notice)
-        # area type 13: Caution Area: Survey Operations        
+        # area type 13: Caution Area: Survey Operations
         # duration 2880 -> 48hrs
         self.checkAreaNoticeHeader(area_notice, link_id=101, area_type=13,
                                    timestamp=(9,4,15,25), duration=2880)
         self.assertEqual(len(area_notice.areas), 1)
         self.checkCircle(area_notice.areas[0], scale_factor=10, lon=-71.935,
                          lat=41.236666667, precision=4, radius=1800)
-
 
     def testRectangle(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAVhjAs80e0;cKBN1N:W8Q@:2`0,0*0C'
@@ -142,7 +141,7 @@ class TestAreaNotice(unittest.TestCase):
 
         self.assertTrue(text_block)
         self.checkText(text_block, 'TEST LINE 1')
-        
+
     def testPolygon(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAa8jAs85`01cN:41NI@`P00000P7Td4dUP00000000,0*71'
         area_notice = AreaNotice(nmea_strings=[msg])
