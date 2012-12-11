@@ -669,7 +669,8 @@ class AIVDM (object):
         @return: AIVDM sentences
         @rtype: list (even for normal_form for consistency)
         '''
-        if sequence_num is not None and (sequence_num <= 0 or sequence_num >= 9):
+        # Greg Johnson thinks that a sequence number of 0 is allowed.
+        if sequence_num is not None and (sequence_num < 0 or sequence_num >= 9):
             raise AisPackingException('sequence_num %d' % sequence_num)
         if channel not in ('A','B'):
             raise AisPackingException('channel',channel)
