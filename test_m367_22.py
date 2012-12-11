@@ -1,9 +1,42 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-import unittest
+import binary
 import datetime
 from m367_22 import AreaNotice
+from m367_22 import AreaNoticeCircle
+from m367_22 import SHAPES
+import unittest
+
+
+class DiffAreaNotice(object):
+
+    def __init__(self, an1, an2):
+        self.an1 = an1
+        self.an2 = an2
+        self.diff_fields = []
+        #fields = ['message_id', 'repeat_indicator', 'mmsi', 'spare', 'dac',
+        #          'fi', 'version', 'link_id', 'area_type', 'when',
+        #          'duration_min', 'spare2']
+        print('an1 keys:', an1.__dict__.keys())
+        print('an2 keys:', an2.__dict__.keys())
+
+        fields_an1 = set(an1.__dict__.keys())
+        fields_an2 = set(an2.__dict__.keys())
+        fields = fields_an1.intersection(fields_an2)
+
+        self.an1_missing = fields_an2.difference(fields_an1)
+        self.an2_missing = fields_an1.difference(fields_an2)
+
+        for field in fields:
+            self.CheckField(field)
+
+    def CheckField(self, field):
+        val1 = self.an1.__dict__[field]
+        val2 = self.an2.__dict__[field]
+        if val1 != val2:
+            self.diff_fields.append(field)
+
 
 class TestAreaNotice(unittest.TestCase):
 
@@ -72,6 +105,89 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(len(area_notice.areas), 1)
         self.checkCircle(area_notice.areas[0], scale_factor=10, lon=-71.935,
                          lat=41.236666667, precision=4, radius=1800)
+
+    def testOnlyCircleEncode(self):
+        lon = 1.
+        lat = -2.
+        radius = 4
+        precision = 3
+        c1 = AreaNoticeCircle(lon, lat, radius, precision)
+        bits = c1.get_bits()
+        c2 = AreaNoticeCircle(bits=bits)
+        self.assertEqual(SHAPES['CIRCLE'] , c2.area_shape)
+        #self.assertEqual(scale_factor , c2.scale_factor)
+        self.assertAlmostEqual(lon, c2.lon)
+        self.assertAlmostEqual(lat, c2.lat)
+        self.assertEqual(precision , c2.precision)
+        self.assertEqual(radius , c2.radius)
+        self.assertEqual(0 , c2.spare)
+
+
+
+    def testEncodeCircleMatchingUSCG(self):
+        """Make sure we can recreate the bits in the USCG circle test."""
+        msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19'
+        # grab just the sub area portion
+        circle_msg = msg.split(',')[5][-16:]
+        c1_bits = binary.ais6tobitvec(circle_msg)
+        # print(c1_bits)
+        c1 = AreaNoticeCircle(bits=c1_bits)
+        self.assertEqual(c1.area_shape, 0)
+        self.assertEqual(c1.scale_factor, 10)  # Network raw value of 1
+        self.assertAlmostEqual(c1.lon, -71.935)
+        self.assertAlmostEqual(c1.lat, 41.236666667)
+        self.assertEqual(c1.precision, 4)
+        self.assertEqual(c1.radius, 1800)
+        self.assertEqual(c1.spare, 0)
+
+        # Now we build the same.
+        c2 = AreaNoticeCircle(c1.lon, c1.lat, c1.radius, c1.precision)
+        c2.scale_factor = c1.scale_factor # USCG used a bizarre scale factor
+        self.assertEqual(c2.radius, 1800)
+        c2_bits = c2.get_bits()
+        c3 = AreaNoticeCircle(bits=c2_bits)
+        self.assertEqual(c1.area_shape, c3.area_shape)
+        self.assertEqual(10, c3.scale_factor)  # Raw value of 1
+        self.assertEqual(c1.scale_factor, c3.scale_factor)  # Raw value of 1
+        self.assertAlmostEqual(c1.lon, c3.lon)
+        self.assertAlmostEqual(c1.lat, c3.lat)
+        self.assertEqual(c1.precision, c3.precision)
+        self.assertEqual(c1.radius, c3.radius)
+        self.assertEqual(c3.spare, 0)
+
+    def testCircleEncode(self):
+        # Test agains 'Sample AN Data RTCMv1.xlsx' circle
+        year = datetime.datetime.utcnow().year
+        when = datetime.datetime(year, 9, 4, 15, 25)
+
+        # Match the USCG sample
+        duration = 2880
+        an = AreaNotice(area_type=13, when=when, duration_min=duration, link_id=101,
+                        mmsi=366123456)
+        circle = AreaNoticeCircle(lon=-71.935, lat=41.236666667, radius=1800,
+                                  precision=4)
+        circle.scale_factor = 10  # Match scale_factor by Greg Johnson
+        an.add_subarea(circle)
+        lines = an.get_aivdm(sequence_num=0, channel='A')
+        # print(lines)
+        self.assertEqual(len(lines), 1)
+
+        expected_msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19'
+        expected_an = AreaNotice(nmea_strings=[expected_msg])
+
+        expected_bits = expected_an.get_bits()
+        bits = an.get_bits()
+        # print('expected  bits:', expected_bits)
+        # print('generated bits:', bits)
+        self.assertEqual(expected_bits, bits)
+
+        # diff = DiffAreaNotice(expected_an, an)
+        # print('diff fields:', diff.diff_fields)
+
+        # print('expected:', expected_msg)
+        # print('got:     ', lines[0])
+
+        self.assertEqual(lines[0], expected_msg)
 
     def testRectangle(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAVhjAs80e0;cKBN1N:W8Q@:2`0,0*0C'
