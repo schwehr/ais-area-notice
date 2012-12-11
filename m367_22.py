@@ -215,7 +215,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         bb = BuildBits()
         bb.AddUInt(SHAPES['RECTANGLE'], 3)
         if 'scale_factor' not in self.__dict__:
-          self.scale_factor = self.getScaleFactor(max(self.e_dem, self.n_dim))
+            self.scale_factor = self.getScaleFactor(max(self.e_dem, self.n_dim))
         bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
         bb.AddInt(self.lon*600000, 28)
         bb.AddInt(self.lat*600000, 27)
@@ -236,9 +236,9 @@ class AreaNoticeSector(AreaNoticeSubArea):
             self.lat = lat
             self.precision = precision
             if scale_factor:
-              self.scale_factor = scale_factor
+                self.scale_factor = scale_factor
             else:
-              self.scale_factor = self.getScaleFactor(radius)
+                self.scale_factor = self.getScaleFactor(radius)
             self.radius = radius
             self.radius_scaled = int(radius / self.scale_factor)
             self.left_bound_deg  = left_bound_deg
@@ -251,7 +251,8 @@ class AreaNoticeSector(AreaNoticeSubArea):
         self.area_shape = db.GetInt(3)
         self.scale_factor = self.decodeScaleFactor(db)
         self.lon = db.GetSignedInt(28) / 600000.
-        self.lat = db.GetSignedInt(27) / 600000.
+        lat_raw = db.GetSignedInt(27)
+        self.lat = lat_raw / 600000.
         self.precision = db.GetInt(3)
         self.radius_scaled = db.GetInt(12)
         self.radius = self.radius_scaled * self.scale_factor
@@ -259,6 +260,23 @@ class AreaNoticeSector(AreaNoticeSubArea):
         self.right_bound_deg = db.GetInt(9)
         self.spare = db.GetInt(3)
         db.Verify(SUB_AREA_SIZE)
+
+    def get_bits(self):
+        bb = BuildBits()
+        bb.AddUInt(SHAPES['SECTOR'], 3)
+        if 'scale_factor' not in self.__dict__:
+            self.scale_factor = self.getScaleFactor(self.radius)
+        bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+        bb.AddInt(self.lon*600000, 28)
+        # TODO: do we round all before encoding?
+        bb.AddInt(round(self.lat*600000), 27)
+        bb.AddUInt(self.precision, 3)
+        bb.AddUInt(self.radius / self.scale_factor, 12)
+        bb.AddUInt(self.left_bound_deg, 9)
+        bb.AddUInt(self.right_bound_deg, 9)
+        bb.AddUInt(0, 3)
+        bb.Verify(SUB_AREA_SIZE)
+        return bb.GetBits()
 
 
 class AreaNoticePoly(AreaNoticeSubArea):

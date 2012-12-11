@@ -6,6 +6,8 @@ import datetime
 from m367_22 import AreaNotice
 from m367_22 import AreaNoticeCircle
 from m367_22 import AreaNoticeRectangle
+from m367_22 import AreaNoticeSector
+from m367_22 import AreaNoticePoly
 from m367_22 import SHAPES
 import unittest
 
@@ -64,7 +66,7 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(area_notice.when, timestamp)
         self.assertEqual(area_notice.duration_min, duration)
         if 'spare2' in area_notice.__dict__:
-          self.assertEqual(area_notice.spare2, 0)
+            self.assertEqual(area_notice.spare2, 0)
 
     def checkCircle(self, subarea, scale_factor, lon, lat, precision, radius):
         self.assertEqual(subarea.area_shape, SHAPES['CIRCLE'])
@@ -76,7 +78,7 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(subarea.radius_scaled, radius_scaled)
         self.assertEqual(subarea.radius, radius)
         if 'spare' in self.__dict__:
-          self.assertEqual(subarea.spare, 0)
+            self.assertEqual(subarea.spare, 0)
 
     def checkRectangle(self, subarea, scale_factor, lon, lat, precision,
                        e_dim, n_dim, orientation_deg):
@@ -87,9 +89,27 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(subarea.precision, precision)
         self.assertEqual(subarea.e_dim, e_dim)
         self.assertEqual(subarea.n_dim, n_dim)
+        if 'e_dim_scaled' in subarea.__dict__:
+            self.assertEqual(subarea.e_dim_scaled, e_dim / scale_factor)
+            self.assertEqual(subarea.n_dim_scaled, n_dim / scale_factor)
         self.assertEqual(subarea.orientation_deg, orientation_deg)
         if 'spare' in self.__dict__:
-          self.assertEqual(subarea.spare, 0)
+            self.assertEqual(subarea.spare, 0)
+
+    def checkSector(self, subarea, scale_factor, lon, lat, precision, radius,
+                    left_bound_deg, right_bound_deg):
+        self.assertEqual(subarea.area_shape, SHAPES['SECTOR'])
+        self.assertEqual(subarea.scale_factor, scale_factor)
+        self.assertAlmostEqual(subarea.lon, lon)
+        self.assertAlmostEqual(subarea.lat, lat)
+        self.assertEqual(subarea.precision, precision)
+        radius_scaled = radius / scale_factor
+        self.assertEqual(subarea.radius_scaled, radius_scaled)
+        self.assertEqual(subarea.radius, radius)
+        self.assertEqual(subarea.left_bound_deg, left_bound_deg)
+        self.assertEqual(subarea.right_bound_deg, right_bound_deg)
+        if 'spare' in self.__dict__:
+            self.assertEqual(subarea.spare, 0)
 
     def checkPoly(self, sub_area, area_shape, scale_factor, lon, lat, points):
         self.assertIn(area_shape, (3,4))
@@ -272,14 +292,36 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(len(area_notice.areas), 1)
         # One sector
         subarea = area_notice.areas[0]
-        self.assertEqual(subarea.area_shape, 2)
-        self.assertEqual(subarea.scale_factor, 100)
-        self.assertAlmostEqual(subarea.lon, -71.751666666)
-        self.assertAlmostEqual(subarea.lat, 41.116666666)
-        self.assertEqual(subarea.precision, 2)
-        self.assertEqual(subarea.left_bound_deg, 175)
-        self.assertEqual(subarea.right_bound_deg, 225)
-        self.assertEqual(subarea.spare, 0)
+        scale_factor = 100
+        lon = -71.751666666
+        lat = 41.116666666
+        precision = 2
+        radius = 5000
+        left = 175
+        right = 225
+        self.checkSector(subarea, scale_factor, lon, lat, precision, radius, left, right)
+
+    def testEncodeSectorMatchingUSCG(self):
+        msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAW5BAs80e0EcN<11N6th@6BgL8,0*13'
+        sub_area_msg = msg.split(',')[5][-16:]
+        sa1_bits = binary.ais6tobitvec(sub_area_msg)
+        sa1 = AreaNoticeSector(bits=sa1_bits)
+        scale_factor = 100
+        lon = -71.7516666667
+        lat = 41.116666666
+        precision = 2
+        radius = 5000
+        left = 175
+        right = 225
+        self.checkSector(sa1, scale_factor, lon, lat, precision, radius, left, right)
+
+        sa2 = AreaNoticeSector(lon, lat, radius, left, right, precision, scale_factor)
+        self.checkSector(sa2, scale_factor, lon, lat, precision, radius, left, right)
+        sa2_bits = sa2.get_bits()
+
+        sa3 = AreaNoticeSector(bits=sa2_bits)
+        self.checkSector(sa3, scale_factor, lon, lat, precision, radius, left, right)
+        self.assertEqual(sa1_bits, sa2_bits)
 
     def testPolylineAndText(self):
         msg = ['!AIVDM,2,1,0,A,85M:Ih1KmPA`tBAs85`01cON31N;U`P00000H;Gl1gfp52tjFq20H3r9P000,0*64',
