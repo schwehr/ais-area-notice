@@ -124,12 +124,16 @@ class AreaNoticeSubArea(object):
 
 
 class AreaNoticeCircle(AreaNoticeSubArea):
-    def __init__(self, lon=None, lat=None, radius=0, precision=4, bits=None):
+    def __init__(self, lon=None, lat=None, radius=0, precision=4, scale_factor=None, bits=None):
         if lon is not None:
+            self.area_shape = SHAPES['CIRCLE']
             self.lon = lon
             self.lat = lat
             self.precision = precision
-            self.scale_factor = self.getScaleFactor(radius)
+            if scale_factor:
+              self.scale_factor = scale_factor
+            else:
+              self.scale_factor = self.getScaleFactor(radius)
             self.radius = radius
             self.radius_scaled = radius / self.scale_factor
         elif bits is not None:
@@ -172,19 +176,23 @@ class AreaNoticeCircle(AreaNoticeSubArea):
 
 
 class AreaNoticeRectangle(AreaNoticeSubArea):
-    def __init__(self, lon=None, lat=None, east_dim=0, north_dim=0, orientation_deg=0, precision=4, bits=None):
+    def __init__(self, lon=None, lat=None, east_dim=0, north_dim=0,
+                 orientation_deg=0, precision=4, scale_factor=None, bits=None):
         if lon is not None:
+            self.area_shape = SHAPES['RECTANGLE']
             self.lon = lon
             self.lat = lat
             self.precision = precision
-            self.scale_factor = max(self.getScaleFactor(east_dim),
-                                    self.getScaleFactor(north_im))
+            if scale_factor:
+              self.scale_factor = scale_factor
+            else:
+              self.scale_factor = max(self.getScaleFactor(east_dim),
+                                      self.getScaleFactor(north_im))
             self.e_dim = east_dim
             self.n_dim = north_dim
             self.e_dim_scaled = east_dim / self.scale_factor
             self.n_dim_scaled = north_dim / self.scale_factor
             self.orientation_deg = orientation_deg
-
         elif bits is not None:
             self.decode_bits(bits)
 
@@ -203,11 +211,12 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         self.spare = db.GetInt(8)
         db.Verify(SUB_AREA_SIZE)
 
-    def get_bits(self, bits):
+    def get_bits(self):
         bb = BuildBits()
         bb.AddUInt(SHAPES['RECTANGLE'], 3)
-        scale_factor = self.getScaleFactor(max(e_dem, n_dim))
-        bb.AddUInt(self.getScaleFactorRaw(scale_factor), 2)
+        if 'scale_factor' not in self.__dict__:
+          self.scale_factor = self.getScaleFactor(max(self.e_dem, self.n_dim))
+        bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
         bb.AddInt(self.lon*600000, 28)
         bb.AddInt(self.lat*600000, 27)
         bb.AddUInt(self.precision, 3)
@@ -220,12 +229,16 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
 class AreaNoticeSector(AreaNoticeSubArea):
     def __init__(self, lon=None, lat=None, radius=0, left_bound_deg=0,
-                 right_bound_deg=0, precision=4, bits=None):
+                 right_bound_deg=0, precision=4, scale_factor=None, bits=None):
         if lon is not None:
+            self.area_shape = SHAPES['SECTOR']
             self.lon = lon
             self.lat = lat
             self.precision = precision
-            self.scale_factor = self.getScaleFactor(radius)
+            if scale_factor:
+              self.scale_factor = scale_factor
+            else:
+              self.scale_factor = self.getScaleFactor(radius)
             self.radius = radius
             self.radius_scaled = int(radius / self.scale_factor)
             self.left_bound_deg  = left_bound_deg

@@ -5,6 +5,7 @@ import binary
 import datetime
 from m367_22 import AreaNotice
 from m367_22 import AreaNoticeCircle
+from m367_22 import AreaNoticeRectangle
 from m367_22 import SHAPES
 import unittest
 
@@ -62,10 +63,11 @@ class TestAreaNotice(unittest.TestCase):
         timestamp = datetime.datetime(year, *timestamp)
         self.assertEqual(area_notice.when, timestamp)
         self.assertEqual(area_notice.duration_min, duration)
-        self.assertEqual(area_notice.spare2, 0)
+        if 'spare2' in area_notice.__dict__:
+          self.assertEqual(area_notice.spare2, 0)
 
     def checkCircle(self, subarea, scale_factor, lon, lat, precision, radius):
-        self.assertEqual(subarea.area_shape, 0)  # Circle
+        self.assertEqual(subarea.area_shape, SHAPES['CIRCLE'])
         self.assertEqual(subarea.scale_factor, scale_factor)
         self.assertAlmostEqual(subarea.lon, lon)
         self.assertAlmostEqual(subarea.lat, lat)
@@ -73,7 +75,21 @@ class TestAreaNotice(unittest.TestCase):
         radius_scaled = radius/scale_factor
         self.assertEqual(subarea.radius_scaled, radius_scaled)
         self.assertEqual(subarea.radius, radius)
-        self.assertEqual(subarea.spare, 0)
+        if 'spare' in self.__dict__:
+          self.assertEqual(subarea.spare, 0)
+
+    def checkRectangle(self, subarea, scale_factor, lon, lat, precision,
+                       e_dim, n_dim, orientation_deg):
+        self.assertEqual(subarea.area_shape, SHAPES['RECTANGLE'])
+        self.assertEqual(subarea.scale_factor, scale_factor)
+        self.assertAlmostEqual(subarea.lon, lon) # , places=4)
+        self.assertAlmostEqual(subarea.lat, lat) # , places=4)
+        self.assertEqual(subarea.precision, precision)
+        self.assertEqual(subarea.e_dim, e_dim)
+        self.assertEqual(subarea.n_dim, n_dim)
+        self.assertEqual(subarea.orientation_deg, orientation_deg)
+        if 'spare' in self.__dict__:
+          self.assertEqual(subarea.spare, 0)
 
     def checkPoly(self, sub_area, area_shape, scale_factor, lon, lat, points):
         self.assertIn(area_shape, (3,4))
@@ -114,15 +130,7 @@ class TestAreaNotice(unittest.TestCase):
         c1 = AreaNoticeCircle(lon, lat, radius, precision)
         bits = c1.get_bits()
         c2 = AreaNoticeCircle(bits=bits)
-        self.assertEqual(SHAPES['CIRCLE'] , c2.area_shape)
-        #self.assertEqual(scale_factor , c2.scale_factor)
-        self.assertAlmostEqual(lon, c2.lon)
-        self.assertAlmostEqual(lat, c2.lat)
-        self.assertEqual(precision , c2.precision)
-        self.assertEqual(radius , c2.radius)
-        self.assertEqual(0 , c2.spare)
-
-
+        self.checkCircle(c2, 1, lon, lat, precision, radius)
 
     def testEncodeCircleMatchingUSCG(self):
         """Make sure we can recreate the bits in the USCG circle test."""
@@ -132,28 +140,20 @@ class TestAreaNotice(unittest.TestCase):
         c1_bits = binary.ais6tobitvec(circle_msg)
         # print(c1_bits)
         c1 = AreaNoticeCircle(bits=c1_bits)
-        self.assertEqual(c1.area_shape, 0)
-        self.assertEqual(c1.scale_factor, 10)  # Network raw value of 1
-        self.assertAlmostEqual(c1.lon, -71.935)
-        self.assertAlmostEqual(c1.lat, 41.236666667)
-        self.assertEqual(c1.precision, 4)
-        self.assertEqual(c1.radius, 1800)
-        self.assertEqual(c1.spare, 0)
+        lon = -71.935
+        lat = 41.236666667
+        scale_factor = 10
+        precision = 4
+        radius = 1800
+        self.checkCircle(c1, scale_factor, lon, lat, precision, radius)
 
-        # Now we build the same.
-        c2 = AreaNoticeCircle(c1.lon, c1.lat, c1.radius, c1.precision)
-        c2.scale_factor = c1.scale_factor # USCG used a bizarre scale factor
-        self.assertEqual(c2.radius, 1800)
+        # Now we build the same, must force the scale factor to match USCG
+        c2 = AreaNoticeCircle(c1.lon, c1.lat, c1.radius, c1.precision, scale_factor)
+        self.checkCircle(c2, scale_factor, lon, lat, precision, radius)
+
         c2_bits = c2.get_bits()
         c3 = AreaNoticeCircle(bits=c2_bits)
-        self.assertEqual(c1.area_shape, c3.area_shape)
-        self.assertEqual(10, c3.scale_factor)  # Raw value of 1
-        self.assertEqual(c1.scale_factor, c3.scale_factor)  # Raw value of 1
-        self.assertAlmostEqual(c1.lon, c3.lon)
-        self.assertAlmostEqual(c1.lat, c3.lat)
-        self.assertEqual(c1.precision, c3.precision)
-        self.assertEqual(c1.radius, c3.radius)
-        self.assertEqual(c3.spare, 0)
+        self.checkCircle(c3, 10, lon, lat, precision, radius)
 
     def testCircleEncode(self):
         # Test agains 'Sample AN Data RTCMv1.xlsx' circle
@@ -165,8 +165,8 @@ class TestAreaNotice(unittest.TestCase):
         an = AreaNotice(area_type=13, when=when, duration_min=duration, link_id=101,
                         mmsi=366123456)
         circle = AreaNoticeCircle(lon=-71.935, lat=41.236666667, radius=1800,
-                                  precision=4)
-        circle.scale_factor = 10  # Match scale_factor by Greg Johnson
+                                  precision=4, scale_factor=10)
+        #circle.scale_factor = 10  # Match scale_factor by Greg Johnson
         an.add_subarea(circle)
         lines = an.get_aivdm(sequence_num=0, channel='A')
         # print(lines)
@@ -199,17 +199,68 @@ class TestAreaNotice(unittest.TestCase):
         self.assertEqual(len(area_notice.areas), 1)
         # One rectangle
         subarea = area_notice.areas[0]
-        self.assertEqual(subarea.area_shape, 1)
-        self.assertEqual(subarea.scale_factor, 10)
-        self.assertAlmostEqual(subarea.lon, -71.91)
-        self.assertAlmostEqual(subarea.lat, 41.141666666)
-        self.assertEqual(subarea.precision, 4)
         self.assertEqual(subarea.e_dim_scaled, 40)
         self.assertEqual(subarea.n_dim_scaled, 20)
-        self.assertEqual(subarea.e_dim, 400)
-        self.assertEqual(subarea.n_dim, 200)
-        self.assertEqual(subarea.orientation_deg, 42)
-        self.assertEqual(subarea.spare, 0)
+        scale_factor = 10
+        lon = -71.91
+        lat = 41.141666666
+        precision = 4
+        e_dim = 400
+        n_dim = 200
+        orientation_deg = 42
+        self.checkRectangle(subarea, scale_factor, lon, lat, precision, e_dim, n_dim,
+                            orientation_deg)
+
+    def testEncodeRectMatchingUSCG(self):
+        msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAVhjAs80e0;cKBN1N:W8Q@:2`0,0*0C'
+        sub_area_msg = msg.split(',')[5][-16:]
+        sa1_bits = binary.ais6tobitvec(sub_area_msg)
+        sa1 = AreaNoticeRectangle(bits=sa1_bits)
+        scale_factor = 10
+        lon = -71.91
+        lat = 41.1416666667
+        precision = 4
+        e_dim = 400
+        n_dim = 200
+        orientation_deg = 42
+        self.checkRectangle(sa1, scale_factor, lon, lat, precision, e_dim, n_dim, orientation_deg)
+
+        sa2 = AreaNoticeRectangle(lon, lat, e_dim, n_dim, orientation_deg, precision, scale_factor)
+        self.checkRectangle(sa2, scale_factor, lon, lat, precision, e_dim, n_dim, orientation_deg)
+        sa2_bits = sa2.get_bits()
+
+        sa3 = AreaNoticeRectangle(bits=sa2_bits)
+        self.checkRectangle(sa3, scale_factor, lon, lat, precision, e_dim, n_dim, orientation_deg)
+        self.assertEqual(sa1_bits, sa2_bits)
+
+    def testRectangleEncode(self):
+        year = datetime.datetime.utcnow().year
+        when = datetime.datetime(year, 9, 4, 15, 25)
+
+        duration = 360
+        scale_factor = 10
+        lon = -71.91
+        lat = 41.1416666667
+        precision = 4
+        e_dim = 400
+        n_dim = 200
+        orientation_deg = 42
+        an = AreaNotice(area_type=97, when=when, duration_min=duration,
+                        link_id=102, mmsi=366123456)
+        rect = AreaNoticeRectangle(lon, lat, e_dim, n_dim, orientation_deg,
+                                  precision, scale_factor)
+        an.add_subarea(rect)
+        self.checkAreaNoticeHeader(an, link_id=102, area_type=97,
+                                   timestamp=(9,4,15,25), duration=360)
+        lines = an.get_aivdm(sequence_num=0, channel='A')
+        self.assertEqual(len(lines), 1)
+
+        expected_msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAVhjAs80e0;cKBN1N:W8Q@:2`0,0*0C'
+        expected_an = AreaNotice(nmea_strings=[expected_msg])
+        expected_bits = expected_an.get_bits()
+        bits = an.get_bits()
+        self.assertEqual(expected_bits, bits)
+        self.assertEqual(lines[0], expected_msg)
 
     def testSector(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAW5BAs80e0EcN<11N6th@6BgL8,0*13'
