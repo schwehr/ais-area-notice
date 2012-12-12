@@ -13,3 +13,8 @@ the Rightwhale AIS Project (RAP).  Since then, the project is trying
 to include the other messages defined in that document to help create
 a free and public test set of messages to support other software
 projects.
+
+Forkes:
+
+https://github.com/schwehr/ais-areanotice-py/tree/uscg8_367_22_area_notice
+https://github.com/rolker/ais-areanotice-py/tree/an367
