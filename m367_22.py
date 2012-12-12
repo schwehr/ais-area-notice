@@ -338,11 +338,11 @@ class AreaNoticePoly(AreaNoticeSubArea):
         bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
         for i in range(len(self.points)):
             angle, dist = self.points[i]
-            print('get_bits', angle, dist)
-            bb.AddUInt(angle, 10)
+            print('get_bits angle:', angle, 'dist:', dist)
+            bb.AddUInt(int(angle * 2), 10)
             bb.AddUInt(dist / self.scale_factor, 11)
         # encode any empty points
-        for i in range(len(points), 4):
+        for i in range(len(self.points), 4):
             bb.AddUInt(720, 10)
             bb.AddUInt(0, 11)
         bb.AddUInt(0, 7)
