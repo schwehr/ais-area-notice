@@ -93,6 +93,14 @@ class BuildBits(object):
       self.bits_expected += num_bits
       self.bv_list.append(bits)
 
+  def AddText(self, val, num_bits):
+      num_char = num_bits / 6
+      assert num_bits % 6 == 0
+      text = val.ljust(num_char, '@')
+      bits = aisstring.encode(text)
+      self.bits_expected += num_bits
+      self.bv_list.append(bits)
+
   def Verify(self, num_bits):
       assert self.bits_expected == num_bits
 
@@ -246,7 +254,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
         elif bits is not None:
             self.decode_bits(bits)
 
-    def decode_bits(self,bits):
+    def decode_bits(self, bits):
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
         self.scale_factor = self.decodeScaleFactor(db)
@@ -281,18 +289,24 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
 class AreaNoticePoly(AreaNoticeSubArea):
     """Line or point."""
-    def __init__(self, points=None, lon=None, lat=None, bits=None):
+    def __init__(self, area_shape=None, points=None, scale_factor=None, lon=None, lat=None, bits=None):
+        if area_shape:
+            self.area_shape = area_shape
         if lon is not None:
             self.lon = lon
             self.lat = lat
         if points:
             self.points = points
             max_dist = max([pt[1] for pt in points])
-            self.scale_factor = self.getScaleFactor(max_dist)
+            if not scale_factor:
+              self.scale_factor = self.getScaleFactor(max_dist)
+        if scale_factor:
+            self.scale_factor = scale_factor
         elif bits is not None:
-            self.decode_bits(bits, lon, lat)
+            self.decode_bits(bits)
 
-    def decode_bits(self, bits, lon, lat):
+    def decode_bits(self, bits):
+        assert len(bits) == SUB_AREA_SIZE
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
         self.scale_factor = self.decodeScaleFactor(db)
@@ -314,6 +328,27 @@ class AreaNoticePoly(AreaNoticeSubArea):
         self.spare = db.GetInt(7)
         db.Verify(SUB_AREA_SIZE)
 
+    def get_bits(self):
+        bb = BuildBits()
+        assert self.area_shape in (SHAPES['POLYLINE'], SHAPES['POLYGON'])
+        bb.AddUInt(self.area_shape, 3)
+        if 'scale_factor' not in self.__dict__:
+            max_dist = max([pt[1] for pt in self.points])
+            self.scale_factor = self.getScaleFactor(max_dist)
+        bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+        for i in range(len(self.points)):
+            angle, dist = self.points[i]
+            print('get_bits', angle, dist)
+            bb.AddUInt(angle, 10)
+            bb.AddUInt(dist / self.scale_factor, 11)
+        # encode any empty points
+        for i in range(len(points), 4):
+            bb.AddUInt(720, 10)
+            bb.AddUInt(0, 11)
+        bb.AddUInt(0, 7)
+        bb.Verify(SUB_AREA_SIZE)
+        return bb.GetBits()
+
 
 class AreaNoticeText(AreaNoticeSubArea):
     def __init__(self, text=None, bits=None):
@@ -328,6 +363,14 @@ class AreaNoticeText(AreaNoticeSubArea):
         self.text = db.GetText(90, strip=True)
         self.spare = db.GetInt(3)
         db.Verify(SUB_AREA_SIZE)
+
+    def get_bits(self):
+        bb = BuildBits()
+        bb.AddUInt(SHAPES['TEXT'], 3)
+        bb.AddText(self.text, 90)
+        bb.AddUInt(0, 3)
+        bb.Verify(SUB_AREA_SIZE)
+        return bb.GetBits()
 
 
 class AreaNotice(BBM):

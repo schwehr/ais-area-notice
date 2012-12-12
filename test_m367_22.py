@@ -8,6 +8,7 @@ from m367_22 import AreaNoticeCircle
 from m367_22 import AreaNoticeRectangle
 from m367_22 import AreaNoticeSector
 from m367_22 import AreaNoticePoly
+from m367_22 import AreaNoticeText
 from m367_22 import SHAPES
 import unittest
 
@@ -118,16 +119,19 @@ class TestAreaNotice(unittest.TestCase):
         if lon is not None:
             self.assertAlmostEqual(sub_area.lon, lon)
             self.assertAlmostEqual(sub_area.lat, lat)
-        for point_num, point in enumerate(points):
-            angle, dist = point
+        for point_num in range(len(sub_area.points)):
+            angle, dist = points[point_num]
+            # print(point_num, angle, dist)
             self.assertAlmostEqual(sub_area.points[point_num][0], angle)
             self.assertEqual(sub_area.points[point_num][1], dist)
         self.assertEqual(sub_area.spare, 0)
 
     def checkText(self, sub_area, expected_text):
-        self.assertEqual(sub_area.area_shape, 5)
+        if 'area_shape' in sub_area.__dict__:
+            self.assertEqual(sub_area.area_shape, SHAPES['TEXT'])
         self.assertEqual(sub_area.text, expected_text)
-        self.assertEqual(sub_area.spare, 0)
+        if 'spare' in sub_area.__dict__:
+          self.assertEqual(sub_area.spare, 0)
 
     def testCircle(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19'
@@ -351,6 +355,28 @@ class TestAreaNotice(unittest.TestCase):
         self.assertTrue(text_block)
         self.checkText(text_block, 'TEST LINE 1')
 
+    def testPolylineOnly(self):
+        msg = ['!AIVDM,2,1,0,A,85M:Ih1KmPA`tBAs85`01cON31N;U`P00000H;Gl1gfp52tjFq20H3r9P000,0*64',
+               '!AIVDM,2,2,0,A,00000000bPbJT1Q9hd680000,0*03'
+               ]
+        body = ''.join([sentence.split(',')[5] for sentence in msg])
+        # print('\nbody:', body)
+        sub_area_msg = body[-32:-16]
+        # print ('sub_area_msg:', sub_area_msg)
+        self.assertEqual(16, len(sub_area_msg))
+        sa1_bits = binary.ais6tobitvec(sub_area_msg)
+        sa1 = AreaNoticePoly(bits=sa1_bits)
+        # print(sa1.__dict__)
+        points1 = [(15.5, 550), (0., 0.), (0., 0.), (0., 0.)]
+        scale_factor = 1 # Not what is in the example spreadsheet
+        self.checkPoly(sa1, SHAPES['POLYLINE'], scale_factor, None, None, points=points1)
+
+        sa2 = AreaNoticePoly(SHAPES['POLYLINE'], points1, scale_factor)
+        self.checkPoly(sa1, SHAPES['POLYLINE'], scale_factor, None, None, points=points1)
+        sa2_bits = sa2.get_bits()
+        self.assertEqual(sa1_bits, sa2_bits)
+
+
     def testPolygon(self):
         msg = '!AIVDM,1,1,0,A,85M:Ih1KmPAa8jAs85`01cN:41NI@`P00000P7Td4dUP00000000,0*71'
         area_notice = AreaNotice(nmea_strings=[msg])
@@ -366,6 +392,21 @@ class TestAreaNotice(unittest.TestCase):
         #self.checkCircle(area_notice.areas[0], scale_factor=1, lon=-71.753333333,
         #                 lat=41.241666667, precision=4, radius=0)
         self.checkPoly(area_notice.areas[0], 4, 1, lon, lat, points)
+
+    def testTextOnly(self):
+        msg = ['!AIVDM,2,1,0,A,85M:Ih1KmPA`tBAs85`01cON31N;U`P00000H;Gl1gfp52tjFq20H3r9P000,0*64',
+               '!AIVDM,2,2,0,A,00000000bPbJT1Q9hd680000,0*03'
+               ]
+        sub_area_msg = msg[1].split(',')[5][-16:]
+        sa1_bits = binary.ais6tobitvec(sub_area_msg)
+        sa1 = AreaNoticeText(bits=sa1_bits)
+        text = 'TEST LINE 1'
+        self.checkText(sa1, text)
+
+        sa2 = AreaNoticeText(text)
+        self.checkText(sa2, text)
+        sa2_bits = sa2.get_bits()
+        self.assertEqual(sa1_bits, sa2_bits)
 
 if __name__ == '__main__':
     unittest.main()
