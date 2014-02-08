@@ -1,4 +1,5 @@
 .DS_Store
-
+out.kml
 *~
 *.pyc
+*.orig

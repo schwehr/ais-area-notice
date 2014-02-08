@@ -641,7 +641,7 @@ class AIVDM (object):
         if source_mmsi      is None: source_mmsi      = self.source_mmsi
 
         if message_id is None or message_id<1 or message_id>63:
-            raise AisPackingException('message_id must be valid',message_id)
+            raise AisPackingException('message_id must be valid: %s' % message_id)
         if repeat_indicator is None or repeat_indicator<0 or repeat_indicator>3:
             raise AisPackingException('repeat_indicator must be valid: [%s]' % (repeat_indicator,))
 
@@ -670,7 +670,9 @@ class AIVDM (object):
         @rtype: list (even for normal_form for consistency)
         '''
         # Greg Johnson thinks that a sequence number of 0 is allowed.
-        if sequence_num is not None and (sequence_num < 0 or sequence_num >= 9):
+        if sequence_num is not None and (sequence_num <= 0 or sequence_num >= 9):
+        # if sequence_num is not None and (sequence_num < 0 or sequence_num >= 9):
+        # if sequence_num is not None and sequence_num not in range(9):
             raise AisPackingException('sequence_num %d' % sequence_num)
         if channel not in ('A','B'):
             raise AisPackingException('channel',channel)

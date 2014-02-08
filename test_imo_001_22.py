@@ -260,10 +260,8 @@ class Test1AIVDM(unittest.TestCase):
     def test_aivdm(self):
         'aivdm'
         a = an.AIVDM()
-        # Can't get_aivdm of nothing... it's really a pure virtual type class
-        # message_id
-        self.failUnlessRaises(an.AisPackingException, a.get_aivdm,
-                              sequence_num=0, channel='A', source_mmsi=123456789)
+        self.assertRaises(an.AisPackingException, a.get_aivdm,
+                          sequence_num=0, channel='A', source_mmsi=123456789)
         a.message_id = 5
         self.failUnlessRaises(an.AisPackingException, a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789)
         self.failUnlessRaises(NotImplementedError,a.get_aivdm, sequence_num=1, channel='A', source_mmsi=123456789, repeat_indicator=0)
@@ -466,7 +464,7 @@ class TestBitDecoding2(unittest.TestCase):
         notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) # 7
         notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) # 8
         notice.add_subarea(an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)) # 9
-        self.failUnless( len(notice.get_aivdm())==4 ) # FIX: calculate this to make sure it's right
+        self.assertEqual(len(notice.get_aivdm()), 3)
 
         # More than 9 should raise an exception... hijack the interface to add
         self.assertRaises(AisPackingException, notice.add_subarea, an.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290))

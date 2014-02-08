@@ -21,13 +21,16 @@ sdist: samples.txt
 	./setup.py sdist --formats=bztar
 
 
-# To verbose or not to verbose
-test:
+test-libs:
 	@./binary.py --test
 	@./aisstring.py --test
+
+test: test-libs
 	@./test_imo_001_22.py
 	@./test_imo_001_26_env.py
-#	./imo_001_22_area_notice.py
+	@./test_imo_001_31_met_hydro.py
+	@./test_m367_22.py
+
 
 docs:
 	epydoc -v imo_001_22_area_notice.py
