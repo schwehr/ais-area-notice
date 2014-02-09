@@ -58,7 +58,7 @@ sensor_type_lut = {
     3: 'predicted (based historical statistics)',
     4: 'forecast (predicted, refined with real-time information)',
     5: 'nowcast (a continuous forecast)',
-    # 6: '(reserved for future use)',
+    6: '(reserved for future use)',
     7: 'sensor not available',
 }
 
@@ -1356,7 +1356,7 @@ class Environment(BBM):
         assert 8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE
 
         for i in range(len(sensor_reports_bits) / SENSOR_REPORT_SIZE):
-            rpt_bits = sensor_reports_bits[ i*SENSOR_REPORT_SIZE : (i+1)*SENSOR_REPORT_SIZE ]
+            rpt_bits = sensor_reports_bits[i*SENSOR_REPORT_SIZE: (i+1)*SENSOR_REPORT_SIZE]
             sa_obj = self.sensor_report_factory(bits=rpt_bits)
             self.add_sensor_report(sa_obj)
 
