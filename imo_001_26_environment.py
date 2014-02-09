@@ -1231,7 +1231,7 @@ class Environment(BBM):
         self.add_sensor_report(report)
 
     def add_sensor_report(self, report):
-  	'Add another sensor report onto the message'
+        """Add another sensor report onto the message."""
         if not hasattr(self,'sensor_reports'):
             self.areas = [report,]
             return
@@ -1262,7 +1262,7 @@ class Environment(BBM):
             bv_list.append( BitVector(intVal=self.dac, size=10 ) )
             bv_list.append( BitVector(intVal=self.fi, size=6 ) )
 
-  	for report in self.sensor_reports:
+        for report in self.sensor_reports:
             bv_list.append( report.get_bits() )
 
         # Byte alignment if requested is handled by AIVDM byte_align
@@ -1312,8 +1312,8 @@ class Environment(BBM):
         # FIX: handle the option of without AIS hdr and MSG 8 hdr
         r = {}
         r['message_id']       = int( bits[:6] )
-	r['repeat_indicator'] = int(bits[6:8])
-	r['mmsi']             = int( bits[8:38] )
+        r['repeat_indicator'] = int(bits[6:8])
+        r['mmsi']             = int( bits[8:38] )
         r['spare']            = int( bits[38:40] )
         r['dac']       = int( bits[40:50] )
         r['fi']        = int( bits[50:56] )
@@ -1347,24 +1347,20 @@ class Environment(BBM):
 
     def sensor_report_factory(self, bits):
         'based on sensor bit reports, return a proper SensorReport instance'
-        #raise NotImplmented
+
         assert(len(bits) == SENSOR_REPORT_SIZE)
         report_type = int( bits[:4] )
-        #sys.stderr.write('sensor_report_factory: %d %d %s\n' % (report_type,
-        #                                                        len(bits),
-        #                                                        sensor_report_lut[report_type]))
         if 0 == report_type: return SensorReportLocation(bits=bits)
-	elif 1 == report_type: return SensorReportId(bits=bits)
-	elif 2 == report_type: return SensorReportWind(bits=bits)
-	elif 3 == report_type: return SensorReportWaterLevel(bits=bits)
-	elif 4 == report_type: return SensorReportCurrent2d(bits=bits)
-	elif 5 == report_type: return SensorReportCurrent3d(bits=bits)
-	elif 6 == report_type: return SensorReportCurrentHorz(bits=bits)
-	elif 7 == report_type: return SensorReportSeaState(bits=bits)
-	elif 8 == report_type: return SensorReportSalinity(bits=bits)
-	elif 9 == report_type: return SensorReportWeather(bits=bits)
-	elif 10 == report_type: return SensorReportAirGap(bits=bits)
-        # 11-15 (reservedforfutureuse)
+        elif 1 == report_type: return SensorReportId(bits=bits)
+        elif 2 == report_type: return SensorReportWind(bits=bits)
+        elif 3 == report_type: return SensorReportWaterLevel(bits=bits)
+        elif 4 == report_type: return SensorReportCurrent2d(bits=bits)
+        elif 5 == report_type: return SensorReportCurrent3d(bits=bits)
+        elif 6 == report_type: return SensorReportCurrentHorz(bits=bits)
+        elif 7 == report_type: return SensorReportSeaState(bits=bits)
+        elif 8 == report_type: return SensorReportSalinity(bits=bits)
+        elif 9 == report_type: return SensorReportWeather(bits=bits)
+        elif 10 == report_type: return SensorReportAirGap(bits=bits)
         raise AisUnpackingException('sensor reports 11-15 are reserved for future use')
 
     @property

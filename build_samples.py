@@ -2,13 +2,14 @@
 from __future__ import print_function
 """Generate sample data for Area Notice / Zone msg."""
 
-import sys
 import datetime
-import unittest
 import geojson
+import sys
+import unittest
 
 import imo_001_22_area_notice as an
 import imo_001_26_environment as env
+
 
 def env_dump(e, description):
     print ('\n#',description)
@@ -17,6 +18,7 @@ def env_dump(e, description):
     print ('bit_str:',e.get_bits())
     for line in e.get_aivdm(byte_align=True):
         print (line)
+
 
 def env_samples():
     # env each with 1 sensor report
@@ -38,14 +40,13 @@ def env_samples():
     sr_list = []
 
     e = env.Environment(source_mmsi=366001)
-    e.append(env.SensorReportLocation(year=2012, month=10, day=22, hour=0, minute=8,
-                                      site_id=1, owner=5, timeout=5))
+    e.append(env.SensorReportLocation(year=2012, month=10, day=22, hour=0,
+                                      minute=8, site_id=1, owner=5, timeout=5))
     env_dump(e, 'NO Location')
-    
-    # Jackson Lab, Adams Point, NH
+
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportLocation(year=year, month=month, day=day, hour=day, minute=minute,
-                                  site_id=site_id,
+    sr = env.SensorReportLocation(year=year, month=month, day=day, hour=day,
+                                  minute=minute, site_id=site_id,
                                   lon=x, lat=y, alt=2.1,
                                   owner=5, timeout=5)
     e.append(sr)
@@ -53,21 +54,22 @@ def env_samples():
     sr_list.append(sr)
 
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportId(year=year, month=month, day=day, hour=day, minute=minute,
-                            site_id=site_id,
+    sr = env.SensorReportId(year=year, month=month, day=day, hour=day,
+                            minute=minute, site_id=site_id,
                             id_str='UNH JEL PIER')
     e.append(sr)
     env_dump(e,'Id for UNH Jackson Estuarine Lab at Adams Point, NH')
     sr_list.append(sr)
 
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportWind(year=year, month=month, day=day, hour=day, minute=minute,
-                              site_id=site_id,
+    sr = env.SensorReportWind(year=year, month=month, day=day, hour=day,
+                              minute=minute, site_id=site_id,
                               speed = 4, gust = 8, dir = 160, gust_dir = 170,
                               data_descr = 1,
-                              forecast_speed=6, forecast_gust=9, forecast_dir=140,
-                              forecast_day=forecast_day,
-                              forecast_hour=forecast_hour, forecast_minute=forecast_minute,
+                              forecast_speed=6, forecast_gust=9,
+                              forecast_dir=140, forecast_day=forecast_day,
+                              forecast_hour=forecast_hour,
+                              forecast_minute=forecast_minute,
                               duration_min=10,
                             )
     e.append(sr)
@@ -75,21 +77,22 @@ def env_samples():
     sr_list.append(sr)
 
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportWaterLevel(year=year, month=month, day=day, hour=day, minute=minute,
-                                    site_id=site_id,
+    sr = env.SensorReportWaterLevel(year=year, month=month, day=day, hour=day,
+                                    minute=minute, site_id=site_id,
                                     wl_type=0, wl=0.14, trend=0, vdatum=0,
                                     data_descr=1,
                                     forecast_type=0, forecast_wl=0.31,
                                     forecast_day=forecast_day,
-                                    forecast_hour=forecast_hour, forecast_minute=forecast_minute,
+                                    forecast_hour=forecast_hour,
+                                    forecast_minute=forecast_minute,
                                     duration_min=6)
 
     e.append(sr)
     env_dump(e,'WaterLevel MLLW low tide and rising')
 
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportCurrent2d(year=year, month=month, day=day, hour=day, minute=minute,
-                                   site_id=site_id,
+    sr = env.SensorReportCurrent2d(year=year, month=month, day=day, hour=day,
+                                   minute=minute, site_id=site_id,
                                    speed_1=4.7, dir_1=175, level_1=0,
                                    speed_2=4.1, dir_2=183, level_2=2,
                                    speed_3=3.2, dir_3=189, level_3=4,
@@ -101,62 +104,66 @@ def env_samples():
 
     # FIX: This sensor report can't specify south, west, or down
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportCurrent3d(year=year, month=month, day=day, hour=day, minute=minute,
-                                   site_id=site_id,
+    sr = env.SensorReportCurrent3d(year=year, month=month, day=day, hour=day,
+                                   minute=minute, site_id=site_id,
                                    n_1=0.5, e_1=1.2, z_1=0.1, level_1=1,
                                    n_2=1.1, e_2=2.1, z_2=0.2, level_2=3,
                                    data_descr = 1
                             )
     e.append(sr)
-    env_dump(e,'The 3d currents sensor report can not handle west, south, or down?!?')
+    env_dump(e, 'The 3d currents sensor report can not handle west, '
+             'south, or down?!?')
 
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportCurrentHorz(year=year, month=month, day=day, hour=day, minute=minute,
-                                     bearing_1 = 96, dist_1 = 30, speed_1 = 1.4, dir_1 = 183, level_1 = 1,
-                                     bearing_2 = 96, dist_2 = 50, speed_2 = 2.3, dir_2 = 185, level_2 = 1,
+    sr = env.SensorReportCurrentHorz(year=year, month=month, day=day, hour=day,
+                                     minute=minute, bearing_1 = 96, dist_1 = 30,
+                                     speed_1 = 1.4, dir_1 = 183, level_1 = 1,
+                                     bearing_2 = 96, dist_2 = 50, speed_2 = 2.3,
+                                     dir_2 = 185, level_2 = 1,
                                      site_id=site_id,
                                      )
     e.append(sr)
     env_dump(e,'Horizontal current in two different locations')
 
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportSeaState(year=year, month=month, day=day, hour=day, minute=minute,
-                            site_id=site_id,
-                                  swell_height=0.2, swell_period=2, swell_dir=180,
-                                  sea_state=2, 
+    sr = env.SensorReportSeaState(year=year, month=month, day=day, hour=day,
+                                  minute=minute, site_id=site_id,
+                                  swell_height=0.2, swell_period=2,
+                                  swell_dir=180, sea_state=2,
                                   swell_data_descr=1,
                                   temp=10.3, temp_depth=0.5, temp_data_descr=1,
-                                  wave_height=0.3, wave_period=4, wave_dir=190, wave_data_descr=1,
-                                  salinity = 22.1,
-                            )
+                                  wave_height=0.3, wave_period=4, wave_dir=190,
+                                  wave_data_descr=1, salinity = 22.1
+                                )
     e.append(sr)
     env_dump(e,'Mild sea state')
 
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportSalinity(year=year, month=month, day=day, hour=day, minute=minute,
-                                  site_id=site_id,
+    sr = env.SensorReportSalinity(year=year, month=month, day=day, hour=day,
+                                  minute=minute, site_id=site_id,
                                   temp=10.3, cond=3.2, pres=30.1,
                                   salinity=22.1, salinity_type=0, data_descr=1,
                             )
     e.append(sr)
-    env_dump(e,'Conductivity and salitity are probably not possible in this combo')
+    env_dump(e,'Conductivity and salitity are probably not possible in '
+             'this combo')
 
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportWeather(year=year, month=month, day=day, hour=day, minute=minute,
-                                 site_id=site_id,
+    sr = env.SensorReportWeather(year=year, month=month, day=day, hour=day,
+                                 minute=minute, site_id=site_id,
                                  air_temp=23.3, air_temp_data_descr=1,
                                  precip=3, vis=14.2,
                                  dew=18.2, dew_data_descr=1,
-                                 air_pres= 1003, air_pres_trend = 1, air_pres_data_descr=1,
-                                 salinity=22.1,
+                                 air_pres= 1003, air_pres_trend = 1,
+                                 air_pres_data_descr=1, salinity=22.1
                                  )
     e.append(sr)
     env_dump(e,'A weather report')
     sr_list.append(sr)
 
     e = env.Environment(source_mmsi = mmsi)
-    sr = env.SensorReportAirGap(year=year, month=month, day=day, hour=day, minute=minute,
-                                site_id=site_id,
+    sr = env.SensorReportAirGap(year=year, month=month, day=day, hour=day,
+                                minute=minute, site_id=site_id,
                                 draft=4.5, gap=30.2, gap_trend=2, forecast_gap=22.2,
                                 forecast_day=20, forecast_hour=19, forecast_minute=30,
                             )
@@ -169,7 +176,7 @@ def env_samples():
         e.append(sr)
     env_dump(e,'Combining a bunch of types of reports together')
 
-    sys.stderr.write('FIX: need to create many more combinations of Env messages')
+    # TODO: Create more combinations of Env messages.
 
     return
 
@@ -188,13 +195,15 @@ def dump_all(area_notice, kmlfile, byte_align=False):
 
     print ('geojson:',geojson.dumps(area_notice))
     print ()
-    kmlfile.write(area_notice.kml(with_style=True, with_time=True, with_extended_data=True))
+    kmlfile.write(area_notice.kml(with_style=True, with_time=True,
+                                  with_extended_data=True))
     kmlfile.write('\n')
 
 
 def point(lon, lat,zone_type, kmlfile):
     print ('# Point')
-    pt1 = an.AreaNotice(zone_type, datetime.datetime(2011, 7, 6, 0, 0, 0),60,10, source_mmsi = 123456789)
+    pt1 = an.AreaNotice(zone_type, datetime.datetime(2011, 7, 6, 0, 0, 0),
+                        60, 10, source_mmsi = 123456789)
     pt1.add_subarea(an.AreaNoticeCirclePt(lon, lat, radius=0))
 
     print (str(pt1))
@@ -217,13 +226,16 @@ def point(lon, lat,zone_type, kmlfile):
     pt1.name = 'point-1'
     kmlfile.write(pt1.kml(with_style=True))
 
+
 def main():
-    # Start with simple one offs of all but the free text which requires something for position
+    """Simple one offs of all but the free text.
+
+    Free text which requires something for position.
+    """
 
     print ('# Building sample set on', datetime.datetime.utcnow() )
     print ('# ais-areanotice-py')
-    print ('# VERSION:', open('VERSION').read())
-    print ()
+    print ('# VERSION:', open('VERSION').read(), '\n')
 
     kmlfile = file('samples.kml','w')
     kmlfile.write(an.kml_head)
@@ -231,43 +243,33 @@ def main():
 
     lat = 42.0
     delta = 0.05
-    toggle = True  # turn on  the bulk of the messages
-    #toggle = False # turn off the bulk of the messages
 
+    point(-69.8, lat, zone_type=an.notice_type['cau_mammals_not_obs'],
+          kmlfile=kmlfile)
+    lat += delta
 
-    if toggle:
-         point(-69.8, lat, zone_type=an.notice_type['cau_mammals_not_obs'], kmlfile=kmlfile)
-         lat += delta
-    if toggle:
-         point(-69.7, lat, zone_type=an.notice_type['cau_mammals_reduce_speed'], kmlfile=kmlfile)
-         lat += delta
+    point(-69.7, lat, zone_type=an.notice_type['cau_mammals_reduce_speed'], kmlfile=kmlfile)
+    lat += delta
 
     zone_type = 2
-    #zone_type += 1
+    circle1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],
+                            datetime.datetime(2011, 7, 6, 1, 10, 0),
+                            60, 10, source_mmsi=123456789)
+    circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
+    circle1.name = 'circle-1-no-whales-obs'
 
-    if toggle:
-        #print ('# Circle - no whales')
-        circle1 = an.AreaNotice(an.notice_type['cau_mammals_not_obs'],datetime.datetime(2011, 7, 6, 1, 10, 0),60,10, source_mmsi = 123456789)
-        circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
-        circle1.name = 'circle-1-no-whales-obs'
+    lat += delta
+    dump_all(circle1,kmlfile)
 
-        lat += delta
-        dump_all(circle1,kmlfile)
+    circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime(2011, 7, 6, 2, 15, 0),60,10, source_mmsi = 123456789)
+    circle1.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=4260))
 
-    if toggle:
-        #print ('\n# Circle - WITH whales')
-        circle1 = an.AreaNotice(an.notice_type['cau_mammals_reduce_speed'],datetime.datetime(2011, 7, 6, 2, 15, 0),60,10, source_mmsi = 123456789)
-        circle1.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=4260))
+    lat += delta
+    circle1.name = 'circle-1-with-whales'
+    dump_all(circle1,kmlfile)
+    del circle1
 
-        lat += delta
-        circle1.name = 'circle-1-with-whales'
-        dump_all(circle1,kmlfile)
-        del circle1
-
-    #
     # Next two make sure that code can handle both byte aligned test data.
-    #
-
     circle_aligned = an.AreaNotice(an.notice_type['dis_collision'],datetime.datetime(2011, 2, 6, 2, 15, 0),60,10, source_mmsi = 366786)
     circle_aligned.name = 'circle-byte-aligned'
     circle_aligned.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=500))
@@ -299,205 +301,187 @@ def main():
     del circles
     lat += delta
 
-    if toggle:
-        rect1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 5, 31, 0),60,10, source_mmsi = 123456789)
-        zone_type += 1
-        rect1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 4000, 1000, 0))
-        lat += delta
-        rect1.name = 'Rectangle-1'
-        dump_all(rect1,kmlfile)
-        del rect1
+    rect1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 5, 31, 0),60,10, source_mmsi = 123456789)
+    zone_type += 1
+    rect1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 4000, 1000, 0))
+    lat += delta
+    rect1.name = 'Rectangle-1'
+    dump_all(rect1,kmlfile)
+    del rect1
 
-    if toggle:
-        sec1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 12, 49, 0),60,10, source_mmsi = 123456789)
-        sec1.add_subarea(an.AreaNoticeSector(-69.8, lat, 4000, 10, 50))
-        zone_type += 1
-        lat += delta
-        sec1.name = 'Sector-1'
-        dump_all(sec1,kmlfile)
-        del sec1
+    sec1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 12, 49, 0),60,10, source_mmsi = 123456789)
+    sec1.add_subarea(an.AreaNoticeSector(-69.8, lat, 4000, 10, 50))
+    zone_type += 1
+    lat += delta
+    sec1.name = 'Sector-1'
+    dump_all(sec1,kmlfile)
+    del sec1
 
-    if toggle:
-        line1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 15, 1, 0),60,10, source_mmsi = 123456789)
-        line1.add_subarea(an.AreaNoticePolyline([(10,2400),], -69.8, lat ))
-        zone_type += 1
-        lat += delta
-        line1.name = 'line-111'
-        dump_all(line1,kmlfile)
-        del line1
+    line1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 15, 1, 0),60,10, source_mmsi = 123456789)
+    line1.add_subarea(an.AreaNoticePolyline([(10,2400),], -69.8, lat ))
+    zone_type += 1
+    lat += delta
+    line1.name = 'line-111'
+    dump_all(line1,kmlfile)
+    del line1
 
-    if toggle:
-        poly1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 20, 59, 0),60,10, source_mmsi = 123456789)
-        poly1.add_subarea(an.AreaNoticePolygon([(10,1400),(90,1950)], -69.8, lat ))
-        zone_type += 1
-        lat += delta
-        poly1.name = 'Poly1-2seg-triangle'
-        dump_all(poly1,kmlfile)
-        del poly1
+    poly1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 20, 59, 0),60,10, source_mmsi = 123456789)
+    poly1.add_subarea(an.AreaNoticePolygon([(10,1400),(90,1950)], -69.8, lat ))
+    zone_type += 1
+    lat += delta
+    poly1.name = 'Poly1-2seg-triangle'
+    dump_all(poly1,kmlfile)
+    del poly1
 
-    if toggle:
-        text1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 23, 59, 0),60,10, source_mmsi = 123456789)
-        text1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
-        text1.add_subarea(an.AreaNoticeFreeText(text="Explanation"))
-        lat += delta
-        zone_type += 1
-        text1.name = 'Text-1-point'
-        dump_all(text1,kmlfile)
-        del text1
+    text1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 23, 59, 0),60,10, source_mmsi = 123456789)
+    text1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
+    text1.add_subarea(an.AreaNoticeFreeText(text="Explanation"))
+    lat += delta
+    zone_type += 1
+    text1.name = 'Text-1-point'
+    dump_all(text1,kmlfile)
+    del text1
 
-    if toggle:
-        lat += delta # extra
+    lat += delta # extra
 
-        one_of_each = an.AreaNotice(zone_type,datetime.datetime(2011, 11, 29, 0, 1, 0),60,10, source_mmsi = 123456789)
-        one_of_each.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=2000))
-        one_of_each.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
-        one_of_each.add_subarea(an.AreaNoticeRectangle(-69.6, lat, 2000, 1000, 0))
-        one_of_each.add_subarea(an.AreaNoticeSector(-69.4, lat, 6000, 10, 50))
-        one_of_each.add_subarea(an.AreaNoticePolyline([(170,7400),], -69.2, lat ))
-        one_of_each.add_subarea(an.AreaNoticePolygon([(10,1400),(90,1950)], -69.0, lat ))
-        one_of_each.add_subarea(an.AreaNoticeFreeText(text="Some Text"))
+    one_of_each = an.AreaNotice(zone_type,datetime.datetime(2011, 11, 29, 0, 1, 0),60,10, source_mmsi = 123456789)
+    one_of_each.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=2000))
+    one_of_each.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
+    one_of_each.add_subarea(an.AreaNoticeRectangle(-69.6, lat, 2000, 1000, 0))
+    one_of_each.add_subarea(an.AreaNoticeSector(-69.4, lat, 6000, 10, 50))
+    one_of_each.add_subarea(an.AreaNoticePolyline([(170,7400),], -69.2, lat ))
+    one_of_each.add_subarea(an.AreaNoticePolygon([(10,1400),(90,1950)], -69.0, lat ))
+    one_of_each.add_subarea(an.AreaNoticeFreeText(text="Some Text"))
 
-        lat += delta * 2
-        zone_type += 1
-        one_of_each.name = 'one-of-each'
-        dump_all(one_of_each,kmlfile)
-        del one_of_each
+    lat += delta * 2
+    zone_type += 1
+    one_of_each.name = 'one-of-each'
+    dump_all(one_of_each,kmlfile)
+    del one_of_each
 
-    if toggle:
-        many_sectors = an.AreaNotice(zone_type,datetime.datetime(2011, 12, 31, 0, 0, 0),60,10, source_mmsi = 123456789)
-        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 6000, 10, 40))
-        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 5000, 40, 80))
-        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 2000, 80, 110))
-        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 7000, 110, 130))
-        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 6000, 210, 220))
-        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 9000, 220, 290))
+    many_sectors = an.AreaNotice(zone_type,datetime.datetime(2011, 12, 31, 0, 0, 0),60,10, source_mmsi = 123456789)
+    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 6000, 10, 40))
+    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 5000, 40, 80))
+    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 2000, 80, 110))
+    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 7000, 110, 130))
+    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 6000, 210, 220))
+    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 9000, 220, 290))
 
-        lat += delta * 2
-        zone_type += 1
-        many_sectors.name = 'sectors-many'
-        dump_all(many_sectors,kmlfile)
-        del many_sectors
+    lat += delta * 2
+    zone_type += 1
+    many_sectors.name = 'sectors-many'
+    dump_all(many_sectors,kmlfile)
+    del many_sectors
 
 
-    if toggle:
-        full1 = an.AreaNotice(zone_type,datetime.datetime(2011, 1, 1, 0, 1, 0),60,10, source_mmsi = 123456789)
-        full1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0)) # 1
-        full1.add_subarea(an.AreaNoticeFreeText(text="12345678901234")) # 2
-        full1.add_subarea(an.AreaNoticeFreeText(text="More text that")) # 3
-        full1.add_subarea(an.AreaNoticeFreeText(text=" spans across")) # 4
-        full1.add_subarea(an.AreaNoticeFreeText(text=" multiple lin")) # 5
-        full1.add_subarea(an.AreaNoticeFreeText(text="es.  The text ")) # 6
-        full1.add_subarea(an.AreaNoticeFreeText(text="is supposed to")) # 7
-        full1.add_subarea(an.AreaNoticeFreeText(text=" be concatenat")) # 8
-        full1.add_subarea(an.AreaNoticeFreeText(text="ed together.")) # 9
-        lat += delta
-        zone_type += 1
-        full1.name = 'full-text'
-        dump_all(full1,kmlfile)
-        del full1
+    full1 = an.AreaNotice(zone_type,datetime.datetime(2011, 1, 1, 0, 1, 0),60,10, source_mmsi = 123456789)
+    full1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0)) # 1
+    full1.add_subarea(an.AreaNoticeFreeText(text="12345678901234")) # 2
+    full1.add_subarea(an.AreaNoticeFreeText(text="More text that")) # 3
+    full1.add_subarea(an.AreaNoticeFreeText(text=" spans across")) # 4
+    full1.add_subarea(an.AreaNoticeFreeText(text=" multiple lin")) # 5
+    full1.add_subarea(an.AreaNoticeFreeText(text="es.  The text ")) # 6
+    full1.add_subarea(an.AreaNoticeFreeText(text="is supposed to")) # 7
+    full1.add_subarea(an.AreaNoticeFreeText(text=" be concatenat")) # 8
+    full1.add_subarea(an.AreaNoticeFreeText(text="ed together.")) # 9
+    lat += delta
+    zone_type += 1
+    full1.name = 'full-text'
+    dump_all(full1,kmlfile)
+    del full1
 
     lon_off = 0
-    if toggle:
-        rr = an.AreaNotice(zone_type,datetime.datetime(2010, 9, 8, 17, 0, 0),60,10, source_mmsi = 200000000)
-        zone_type += 1
-        rr.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
-        rr.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 10))
-        lon_off += 0.1
+    rr = an.AreaNotice(zone_type,datetime.datetime(2010, 9, 8, 17, 0, 0),60,10, source_mmsi = 200000000)
+    zone_type += 1
+    rr.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
+    rr.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 10))
+    lon_off += 0.1
 
-        rr.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
-        rr.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 45))
-        lon_off += 0.1
+    rr.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
+    rr.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 45))
+    lon_off += 0.1
 
-        rr.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
-        rr.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 90))
-        lon_off += 0.1
+    rr.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
+    rr.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 90))
+    lon_off += 0.1
 
-        rr.name = 'Rect-rotated'
-        dump_all(rr,kmlfile)
-        del rr
-        #lat += delta
+    rr.name = 'Rect-rotated'
+    dump_all(rr,kmlfile)
+    del rr
 
-    if toggle:
-        rr2 = an.AreaNotice(zone_type,datetime.datetime(2010, 9, 8, 17, 0, 0),60,10, source_mmsi = 200000000)
-        zone_type += 1
-        rr2.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
-        rr2.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 135))
-        lon_off += 0.1
+    rr2 = an.AreaNotice(zone_type,datetime.datetime(2010, 9, 8, 17, 0, 0),60,10, source_mmsi = 200000000)
+    zone_type += 1
+    rr2.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
+    rr2.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 135))
+    lon_off += 0.1
 
-        rr2.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
-        rr2.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 180))
-        lon_off += 0.1
+    rr2.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
+    rr2.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 180))
+    lon_off += 0.1
 
-        rr2.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
-        rr2.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 225))
-        lon_off += 0.1
+    rr2.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
+    rr2.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 225))
+    lon_off += 0.1
 
-        rr2.name = 'rect-rot-2'
-        dump_all(rr2,kmlfile)
-        del rr2
-        #lat += delta
+    rr2.name = 'rect-rot-2'
+    dump_all(rr2,kmlfile)
+    del rr2
 
-    if toggle:
-        rr3 = an.AreaNotice(zone_type,datetime.datetime(2010, 9, 8, 17, 0, 0),60,10, source_mmsi = 200000000)
-        zone_type += 1
-        rr3.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
-        rr3.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 270))
-        lon_off += 0.1
+    rr3 = an.AreaNotice(zone_type,datetime.datetime(2010, 9, 8, 17, 0, 0),60,10, source_mmsi = 200000000)
+    zone_type += 1
+    rr3.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
+    rr3.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 270))
+    lon_off += 0.1
 
-        rr3.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
-        rr3.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 315))
-        lon_off += 0.1
+    rr3.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
+    rr3.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 315))
+    lon_off += 0.1
 
-        rr3.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
-        rr3.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 350))
-        lon_off += 0.1
-        rr3.name = 'rect-rot 3'
-        dump_all(rr3,kmlfile)
+    rr3.add_subarea(an.AreaNoticeCirclePt(-69.8+lon_off, lat, radius=0))
+    rr3.add_subarea(an.AreaNoticeRectangle(-69.8+lon_off, lat, 6000, 1000, 350))
+    lon_off += 0.1
+    rr3.name = 'rect-rot 3'
+    dump_all(rr3,kmlfile)
 
-        del rr3
-        lat += delta
+    del rr3
+    lat += delta
 
-    if toggle:
-        print ('\n# rect-multi-scale')
-        rect1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 0, 0, 0),60,10, source_mmsi = 123456789)
-        zone_type += 1
-        rect1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 3, 3, 0)) # scale 1
-        rect1.add_subarea(an.AreaNoticeRectangle(-69.7, lat, 300, 300, 0))
-        rect1.add_subarea(an.AreaNoticeRectangle(-69.6, lat, 3000, 3000, 0))
-        rect1.add_subarea(an.AreaNoticeRectangle(-69.5, lat, 3000, 15000, 0))
-        rect1.add_subarea(an.AreaNoticeRectangle(-69.4, lat, 3000, 25000, 0))
-        rect1.add_subarea(an.AreaNoticeRectangle(-69.3, lat, 3000, 250000, 0))
-        print ('scale:',[r.scale_factor for r in rect1.areas])
+    print ('\n# rect-multi-scale')
+    rect1 = an.AreaNotice(zone_type,datetime.datetime(2011, 7, 6, 0, 0, 0),60,10, source_mmsi = 123456789)
+    zone_type += 1
+    rect1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 3, 3, 0)) # scale 1
+    rect1.add_subarea(an.AreaNoticeRectangle(-69.7, lat, 300, 300, 0))
+    rect1.add_subarea(an.AreaNoticeRectangle(-69.6, lat, 3000, 3000, 0))
+    rect1.add_subarea(an.AreaNoticeRectangle(-69.5, lat, 3000, 15000, 0))
+    rect1.add_subarea(an.AreaNoticeRectangle(-69.4, lat, 3000, 25000, 0))
+    rect1.add_subarea(an.AreaNoticeRectangle(-69.3, lat, 3000, 250000, 0))
+    print ('scale:',[r.scale_factor for r in rect1.areas])
 
-        rect1.name = 'rect-mult-scale'
-        dump_all(rect1,kmlfile)
+    rect1.name = 'rect-mult-scale'
+    dump_all(rect1,kmlfile)
 
-        del rect1
-        lat += delta
+    del rect1
+    lat += delta
 
 
-    if False: # toggle:
-        sys.stderr.write('FIX: Pretty sure that polygons did not yet get fixed')
-    else:
-        sbnms_boundary = ((-70.21843022378545,42.76615489511191),(-70.50115721630971,42.65050054498564),(-70.51967876543651,42.60272606451101),
-                          (-70.57304911621775,42.57377457462803),(-70.59648154279975,42.54931636682287),(-70.47022780667521,42.12880495859612),
-                          (-70.27963801765786,42.11493035173643),(-70.21841922873237,42.13078851361118),(-70.15414112337952,42.1322179530808),
-                          (-70.03638677586507,42.09377754051238)
-                          )
+    sbnms_boundary = ((-70.21843022378545,42.76615489511191),(-70.50115721630971,42.65050054498564),(-70.51967876543651,42.60272606451101),
+                      (-70.57304911621775,42.57377457462803),(-70.59648154279975,42.54931636682287),(-70.47022780667521,42.12880495859612),
+                      (-70.27963801765786,42.11493035173643),(-70.21841922873237,42.13078851361118),(-70.15414112337952,42.1322179530808),
+                      (-70.03638677586507,42.09377754051238)
+                      )
 
-        angles_and_offsets = an.ll_to_polyline(sbnms_boundary[:5])
-        #angles_and_offsets = an.ll_to_polyline((-70,42),())
-        start = sbnms_boundary[0]
-        sbnms1 = an.AreaNotice(zone_type,datetime.datetime(2010, 9, 8, 20, 0, 17), 60, 10, source_mmsi = 369871000)
-        sbnms1.add_subarea(an.AreaNoticePolyline((angles_and_offsets), start[0], start[1]))
-        sbnms1.name = 'sbnms_part1'
+    angles_and_offsets = an.ll_to_polyline(sbnms_boundary[:5])
+    start = sbnms_boundary[0]
+    sbnms1 = an.AreaNotice(zone_type,datetime.datetime(2010, 9, 8, 20, 0, 17), 60, 10, source_mmsi = 369871000)
+    sbnms1.add_subarea(an.AreaNoticePolyline((angles_and_offsets), start[0], start[1]))
+    sbnms1.name = 'sbnms_part1'
 
-        dump_all(sbnms1,kmlfile)
+    dump_all(sbnms1,kmlfile)
 
-    print ()
-    print ('# FIX: add a polyline that takes multiple subareas')
-    print ('# FIX: add a polygon that takes multiple subareas')
-    print ('# FIX: add case where lines and polygons have more than 4 points')
+
+    # TODO: Add a polyline that takes multiple subareas.
+    # TODO: Add a polygon that takes multiple subareas.
+    # TODO: Add case with more than 4 points in lines and polygons.
 
     kmlfile.write(an.kml_tail)
 

@@ -451,7 +451,7 @@ class AreaNotice(BBM):
         db = DecodeBits(bits)
         self.message_id = db.GetInt(6)
         self.repeat_indicator = db.GetInt(2)
-	self.mmsi = db.GetInt(30)
+        self.mmsi = db.GetInt(30)
         self.spare = db.GetInt(2)
         self.dac = db.GetInt(10)
         self.fi = db.GetInt(6)

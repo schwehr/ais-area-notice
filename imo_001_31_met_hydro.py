@@ -13,13 +13,14 @@ Be aware of:
 from imo_001_22_area_notice import BBM, AisPackingException, AisUnpackingException
 from imo_001_26_environment import beaufort_scale, almost_equal
 
-import binary
+import sys
+import datetime
+
 import aisstring
+import binary
 
 from BitVector import BitVector
 
-import sys
-import datetime
 
 MSG_SIZE=360
 
@@ -283,8 +284,6 @@ class MetHydro31(BBM):
         'unpack nmea instrings into objects'
 
         for msg in strings:
-            #print ('msg_decoding:',msg)
-            #print ('type:',type(ais_nmea_regex), type(ais_nmea_regex.search(msg)))
             msg_dict = ais_nmea_regex.search(msg).groupdict()
 
             if  msg_dict['checksum'] != nmea_checksum_hex(msg):
@@ -319,8 +318,8 @@ class MetHydro31(BBM):
         'decode the bits for a message'
 
         message_id       = int( bits[:6] )
-	repeat_indicator = int(bits[6:8])
-	self.source_mmsi      = int( bits[8:38] )
+        repeat_indicator = int(bits[6:8])
+        self.source_mmsi      = int( bits[8:38] )
         spare            = int( bits[38:40] )
         dac       = int( bits[40:50] )
         fi        = int( bits[50:56] )
