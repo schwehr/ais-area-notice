@@ -1,23 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
-
-__author__    = 'Kurt Schwehr'
-__version__   = '$Revision: 4799 $'.split()[1]
-__revision__  = __version__ # For pylint
-__date__ = '$Date: 2006-09-25 11:09:02 -0400 (Mon, 25 Sep 2006) $'.split()[1]
-__copyright__ = '2009'
-__license__   = 'GPL v3'
-__contact__   = 'kurt at ccom.unh.edu'
-
-__doc__ ='''
-Generate sample data for Area Notice / Zone msg
-
-@license: LGPL v3
-@undocumented: __doc__
-@since: 2009-Jul-05
-@status: under development
-@organization: U{CCOM<http://ccom.unh.edu/>}
-'''
+"""Generate sample data for Area Notice / Zone msg."""
 
 import sys
 import datetime

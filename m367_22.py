@@ -1,22 +1,12 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-__author__    = 'Kurt Schwehr'
-__version__   = '0'
-__revision__  = __version__
-__date__ = '2012-12-03'
-__copyright__ = '2012'
-__license__   = 'LGPL v3'
-__contact__   = 'schwehr@google.com'
-
-__doc__ = '''USCG Area Notice Message similar to 8_1_22.
+"""USCG Area Notice Message similar to 8_1_22.
 
 Just different.
 
-TODO(schwehr): Unify the coding conventions!
-
 http://en.wikipedia.org/wiki/Rhumb_line
-'''
+"""
 
 import aisstring
 import binary

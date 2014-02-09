@@ -24,7 +24,7 @@ if __name__=='__main__':
               'Copyright 2006-2011 by Kurt Schwehr.'
               'Copyright 2012-present by Google.'
               ),
-          license=__license__,
+          license='Apache License, Version 2.0',
           keywords='AIS, binary messages, NMEA',
           platforms='All platforms',
           classifiers=[
@@ -32,7 +32,7 @@ if __name__=='__main__':
             'Development Status :: 4 - Beta',
             'Environment :: Console',
             'Intended Audience :: Science/Research',
-            'License :: OSI Approved :: GNU Lesser General Public License (GPL)',
+            'License :: OSI Approved :: Apache Software License',
             'Topic :: Communications',
             'Topic :: Scientific/Engineering :: Information Analysis',
             'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',

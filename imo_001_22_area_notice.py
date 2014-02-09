@@ -1,20 +1,10 @@
 #!/usr/bin/env python
 from __future__ import print_function
-
-__author__    = 'Kurt Schwehr'
-__version__   = '$Revision: 4799 $'.split()[1]
-__revision__  = __version__ # For pylint
-__date__ = '$Date: 2006-09-25 11:09:02 -0400 (Mon, 25 Sep 2006) $'.split()[1]
-__copyright__ = '2009'
-__license__   = 'LGPL v3'
-__contact__   = 'kurt at ccom.unh.edu'
-
-__doc__ ='''
-Trying to do a more sane design for AIS BBM message.
+"""Trying to do a more sane design for AIS BBM message.
 
 http://vislab-ccom.unh.edu/~schwehr/papers/2010-IMO-SN.1-Circ.289.pdf
 
-WARNING: The IMO Circ is not byte aligned.  ITU 1371-3, Annex 2,
+WARNING: The IMO Circ message is not byte-aligned.  ITU 1371-3, Annex 2,
 1.2.3.1 says that the message must be byte aligned.  And Annex 2,
 3.3.7 says "Unused bits in the last byte should be set to zero in
 order to preserve byte boundary."  That that refers to the VDL data.
@@ -22,38 +12,28 @@ It is unclear if that is after the bit stuffing and if those extra
 bits should be returned back into into the NMEA message.  The code here
 has the option to byte align the resulting bits in get_aivdm.
 
-@requires: U{Python<http://python.org/>} >= 2.6
-@requires: U{epydoc<http://epydoc.sourceforge.net/>} >= 3.0.1
-@requires: U{lxml<http://codespeak.net/lxml/lxmlhtml.html>} >= 2.0
-@requires: U{shapely<http://pypi.python.org/pypi/Shapely/>}
-@requires: U{BitVector<http://pypi.python.org/pypi/BitVector/>}
-@requires: U{pyproj<http://code.google.com/p/pyproj/>}
-@requires: U{geojson<http://pypi.python.org/pypi/geojson/>}
+Requires:
+Python<http://python.org/>} >= 2.6
+epydoc<http://epydoc.sourceforge.net/>} >= 3.0.1
+lxml<http://codespeak.net/lxml/lxmlhtml.html>} >= 2.0
+shapely<http://pypi.python.org/pypi/Shapely/>}
+BitVector<http://pypi.python.org/pypi/BitVector/>}
+pyproj<http://code.google.com/p/pyproj/>}
+geojson<http://pypi.python.org/pypi/geojson/>}
 
-@license: GPL v3
-@undocumented: __doc__
-@since: 2009-Jun-01
-@status: under development
-@organization: U{CCOM<http://ccom.unh.edu/>}
-
-@todo: handle polyline and polygons that span multiple subareas
-@todo: handle text that spans adjacent subareas
-'''
-
-# http://blog.lucanatali.it/2006/12/nmea-checksum-in-python.html
+TODO: Handle polyline and polygons that span multiple subareas.
+TODO: Handle text that spans adjacent subareas.
+"""
 
 import sys
-#from decimal import Decimal
 import datetime, time
 from operator import xor # for checksum
 
 import operator
-#from math import *
 import math
 
 from pyproj import Proj
 import shapely.geometry
-#import geojson
 
 import lxml
 from lxml.html import builder as E
@@ -72,15 +52,6 @@ SUB_AREA_SIZE = 87
 '87 Bits for IMO Circ 289 rather than the 90 for USCG and Nav 55 version'
 
 iso8601_timeformat = '%Y-%m-%dT%H:%M:%SZ'
-
-# ais_nmea_regex_str = r'''[!$](?P<talker>AI)(?P<stringType>VD[MO])
-# ,(?P<total>\d?)
-# ,(?P<sen_num>\d?)
-# ,(?P<seq_id>[0-9]?)
-# ,(?P<chan>[AB])
-# ,(?P<body>[;:=@a-zA-Z0-9<>\?\'\`]*)
-# ,(?P<fill_bits>\d)\*(?P<checksum>[0-9A-F][0-9A-F])'''
-# '''Ignore USCG metadata'''
 
 # With USCG metadata
 ais_nmea_regex_str = r'''^!(?P<talker>AI)(?P<string_type>VD[MO])

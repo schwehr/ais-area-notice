@@ -1,16 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
-
-__author__    = 'Kurt Schwehr'
-__version__   = '$Revision: 4799 $'.split()[1]
-__revision__  = __version__ # For pylint
-__date__ = '$Date: 2006-09-25 11:09:02 -0400 (Mon, 25 Sep 2006) $'.split()[1]
-__copyright__ = '2009'
-__license__   = 'LGPL v3'
-__contact__   = 'kurt at ccom.unh.edu'
-
-__doc__ ='''
-Implement IMO Circ 289 Msg 8:1:26 Environmental
+"""Implement IMO Circ 289 Msg 8:1:26 environmental report.
 
 Issues:
 - What does the sensor data description apply to?  e.g. with wind, does it apply to the last 10 minutes or the forecast?
@@ -21,7 +11,7 @@ Issues:
 
 Be aware of:
 - year and month are not a part of the timestamps send through the binary AIS messages
-'''
+"""
 
 from imo_001_22_area_notice import BBM, AisPackingException, AisUnpackingException
 

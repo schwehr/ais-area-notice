@@ -1,18 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
-
-__author__    = 'Kurt Schwehr'
-__version__   = '$Revision: 4799 $'.split()[1]
-__revision__  = __version__ # For pylint
-__date__ = '$Date: 2006-09-25 11:09:02 -0400 (Mon, 25 Sep 2006) $'.split()[1]
-__copyright__ = '2009'
-__license__   = 'LGPL v3'
-__contact__   = 'kurt at ccom.unh.edu'
-
-__doc__ ='''
-Implement IMO Circ 289 Msg 8:1:31 Meteorological and Hydrographic data.
-
-Since 22-Feb-2011
+"""Implement IMO Circ 289 Msg 8:1:31 Meteorological and Hydrographic data.
 
 Issues:
 - Add constants for the not available values and bit value for each data member
@@ -20,7 +8,7 @@ Issues:
 Be aware of:
 - This message uses longitude, latitude (x,y).  The only 8:1:11 message used y,x
 - air temp and dew are different in terms of their unknown value.
-'''
+"""
 
 from imo_001_22_area_notice import BBM, AisPackingException, AisUnpackingException
 from imo_001_26_environment import beaufort_scale, almost_equal
