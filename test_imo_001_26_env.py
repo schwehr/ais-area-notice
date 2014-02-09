@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
-
 """Test the Environmental message and all of the constituent SensorReports.
 
 TODO(schwehr): Test NMEA decoding.
@@ -1005,8 +1003,7 @@ class TestEnvironment(unittest.TestCase):
 
     def test_single(self):
         e_instances = []
-        for sr_class in (env.sensor_report_classes):
-
+        for sr_class in env.sensor_report_classes:
             e = env.Environment(source_mmsi = 123456)
             self.assertEqual(e, e)
             site_id = int(math.floor(random.random() * 128))
@@ -1014,7 +1011,12 @@ class TestEnvironment(unittest.TestCase):
             report_type = sr.report_type
             e.add_sensor_report(sr)
             self.assertEqual(e, e)
-            bits = e.get_bits()
+
+            sr_bits = sr.get_bits()
+            self.assertEqual(len(sr_bits), 112)  # 85 + report header.
+
+            bits = e.get_bits(include_bin_hdr=True)
+            self.assertEqual(len(bits), 168)
             e_b = env.Environment(bits=bits)
             self.assertEqual(e, e_b)
             e_instances.append(e)
@@ -1024,6 +1026,7 @@ class TestEnvironment(unittest.TestCase):
                 if i == other: continue
                 self.assertNotEqual(msg, e_instances[other])
 
+    def test_wind(self):
         e = env.Environment(source_mmsi = 656565)
 
         sr = env.SensorReportWind(site_id=25, day=15, hour=13,minute=35,
@@ -1035,7 +1038,7 @@ class TestEnvironment(unittest.TestCase):
                                     forecast_minute=49,
                                     duration_min=35)
         e.add_sensor_report(sr)
-        e_b = env.Environment(bits = e.get_bits())
+        e_b = env.Environment(bits = e.get_bits(include_bin_hdr=True))
         sr_b = e_b.sensor_reports[0]
         self.assertEqual(sr_b.day, 15)
         self.assertEqual(sr_b.hour, 13)
@@ -1055,18 +1058,18 @@ class TestEnvironment(unittest.TestCase):
         self.assertEqual(sr_b.forecast_minute, 49)
         self.assertEqual(sr_b.duration_min, 35)
 
-    def _OFF_test_single2(self):
+    def test_single2(self):
         'Try messages with random content'
         for i in range(FUZZ_COUNT):
             e = env.Environment(source_mmsi = random.randint(100000,999999999) )
             sr = random_sensorreport()
             e.add_sensor_report(sr)
-            e_b = env.Environment(bits=e.get_bits())
+            e_b = env.Environment(bits=e.get_bits(include_bin_hdr=True))
             self.assertEqual(1, len(e_b.sensor_reports))
             self.assertEqual(sr, e_b.sensor_reports[0])
             self.assertEqual(e,e_b)
 
-    def _OFF_test_two(self):
+    def test_two(self):
         for i in range(FUZZ_COUNT/2):
             e = env.Environment(source_mmsi = random.randint(100000,999999999) )
             sr1 = random_sensorreport()
@@ -1075,7 +1078,7 @@ class TestEnvironment(unittest.TestCase):
             e.append(sr2)
             self.assertEqual(sr1,e.sensor_reports[0])
             self.assertEqual(sr2,e.sensor_reports[1])
-            e_b = env.Environment(bits=e.get_bits())
+            e_b = env.Environment(bits=e.get_bits(include_bin_hdr=True))
             self.assertEqual(e,e_b)
 
     def test_salinity_eq_trouble(self):
@@ -1116,6 +1119,7 @@ class TestEnvironment(unittest.TestCase):
                     sys.stderr.write('%s\n'%str(e_b.sensor_reports[sr_num]))
                 self.assertEqual(sr, e_b.sensor_reports[sr_num])
             self.assertEqual(e,e_b)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
 """Implement IMO Circ 289 Msg 8:1:26 environmental report.
 
 Issues:
@@ -300,7 +299,6 @@ class SensorReportLocation(SensorReport):
                    BitVector(size=12)
                    ]
         bits = binary.joinBV(bv_list)
-        #print ('siteloc_len:',len(bits))
         assert len(bits) == SENSOR_REPORT_SIZE
         return bits
 
@@ -680,7 +678,6 @@ class SensorReportCurrent3d(SensorReport):
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
-            print ('ERROR: c3d',len(bits), SENSOR_REPORT_SIZE)
             raise AisUnpackingException('bit length'+str(len(bits)))
         assert(self.report_type == int(bits[:4]))
         SensorReport.decode_bits(self, bits)
@@ -757,7 +754,6 @@ class SensorReportCurrentHorz(SensorReport):
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
-            print ('ERROR: ch',len(bits), SENSOR_REPORT_SIZE)
             raise AisUnpackingException('bit length'+str(len(bits)))
         assert(self.report_type == int(bits[:4]))
         SensorReport.decode_bits(self, bits)
@@ -955,7 +951,6 @@ class SensorReportSalinity(SensorReport):
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
-            print ('ERROR: salinity',len(bits), SENSOR_REPORT_SIZE)
             raise AisUnpackingException('bit length'+str(len(bits)))
         assert(self.report_type == int(bits[:4]))
         SensorReport.decode_bits(self, bits)
@@ -1144,7 +1139,6 @@ class SensorReportAirGap(SensorReport):
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
-            print ('ERROR: gap',len(bits), SENSOR_REPORT_SIZE)
             raise AisUnpackingException('bit length'+str(len(bits)))
         assert(self.report_type == int(bits[:4]))
         SensorReport.decode_bits(self, bits)
@@ -1271,6 +1265,7 @@ class Environment(BBM):
         if len(self.sensor_reports) > 9:
             raise AisPackingException('Too many sensor reports (8 max).')
         self.sensor_reports.append(report)
+
     def get_report_types(self):
         s = []
         for sr in self.sensor_reports:
@@ -1295,7 +1290,6 @@ class Environment(BBM):
             bv_list.append(BitVector(intVal=mmsi, size=30))
 
         if include_bin_hdr or include_dac_fi:
-             # TODO(schwehr): Should this be here or in the bin_hdr?
             bv_list.append(BitVector(size=2))
             bv_list.append(BitVector(intVal=self.dac, size=10))
             bv_list.append(BitVector(intVal=self.fi, size=6))
@@ -1305,6 +1299,7 @@ class Environment(BBM):
 
         # Byte alignment if requested is handled by AIVDM byte_align.
         bv = binary.joinBV(bv_list)
+
         if len(bv) > 953:
             raise AisPackingException('Too large (%d bits > 953).' % len(bv))
         return bv
@@ -1353,10 +1348,20 @@ class Environment(BBM):
         del bits   # Be safe.
 
         # TODO(schwehr): Change this to raise an exception.
+        if not(8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE):
+            msg = (
+                'Environment(BBM) trouble: %d > 8.  '
+                ' for %d %% %d' % (
+                    len(sensor_reports_bits) % SENSOR_REPORT_SIZE,
+                    len(sensor_reports_bits), SENSOR_REPORT_SIZE)
+                )
+            raise AisUnpackingException(msg)
+
         assert 8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE
 
         for i in range(len(sensor_reports_bits) / SENSOR_REPORT_SIZE):
-            rpt_bits = sensor_reports_bits[i*SENSOR_REPORT_SIZE: (i+1)*SENSOR_REPORT_SIZE]
+            rpt_bits = sensor_reports_bits[i*SENSOR_REPORT_SIZE:
+                                           (i+1)*SENSOR_REPORT_SIZE]
             sa_obj = self.sensor_report_factory(bits=rpt_bits)
             self.add_sensor_report(sa_obj)
 
@@ -1385,15 +1390,16 @@ class Environment(BBM):
         """Provide a Geo Interface for GeoJSON serialization."""
         raise NotImplmented
 
-sensor_report_classes = [SensorReportLocation,
-                         SensorReportId,
-                         SensorReportWind,
-                         SensorReportWaterLevel,
-                         SensorReportCurrent2d,
-                         SensorReportCurrent3d,
-                         SensorReportCurrentHorz,
-                         SensorReportSeaState,
-                         SensorReportSalinity,
-                         SensorReportWeather,
-                         SensorReportAirGap,
-                         ]
+sensor_report_classes = [
+    SensorReportLocation,
+    SensorReportId,
+    SensorReportWind,
+    SensorReportWaterLevel,
+    SensorReportCurrent2d,
+    SensorReportCurrent3d,
+    SensorReportCurrentHorz,
+    SensorReportSeaState,
+    SensorReportSalinity,
+    SensorReportWeather,
+    SensorReportAirGap
+    ]

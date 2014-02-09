@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
 """Trying to do a more sane design for AIS BBM message.
 
 http://vislab-ccom.unh.edu/~schwehr/papers/2010-IMO-SN.1-Circ.289.pdf
@@ -462,10 +461,8 @@ def deltas_to_angle_dist(deltas_m):
         p1 = deltas_m[i-1]
         p2 = deltas_m[i]
         dist_m = dist(p1, p2)
-        #print ('angle_from:',p2[1]-p1[1], dist_m)
         angle = math.acos( (p2[1]-p1[1]) / dist_m) # cos alpha = dy / dist_m
         if p2[0]<p1[0]:
-            #print ('switching_sense:',angle,2*math.pi-angle)
             angle = 2*math.pi - angle
         r.append((math.degrees(angle),dist_m))
     return r
@@ -479,9 +476,6 @@ def ll_to_polyline(ll_points):
         dx_m,dy_m = ll_to_delta_m(ll[i-1][0],ll[i-1][1], ll[i][0],ll[i][1])
         deltas_m.append((dx_m,dy_m))
     offsets = deltas_to_angle_dist(deltas_m)
-    #print ('ll_points:',ll_points)
-    #print ('deltas_m:',deltas_m)
-    #print ('angles_and_offsets:',offsets)
     return offsets
 
 def polyline_to_ll(start, angles_and_offsets):
@@ -498,16 +492,13 @@ def polyline_to_ll(start, angles_and_offsets):
 
     pts = [(0,0)]
     cur = (0,0)
-    #print ('points:',points)
     for pt in points:
         alpha = math.radians(pt[0]) # Angle
         d = pt[1] # Offset
         dx,dy = d * math.sin(alpha), d * math.cos(alpha)
         cur = vec_add(cur,(dx,dy))
-        #print ('pt:',proj(*cur,inverse=True))
         pts.append(cur)
 
-    #print (pts)
     pts = [vec_add(p1,pt) for pt in pts]
     pts = [proj(*pt,inverse=True) for pt in pts]
     return pts
@@ -565,21 +556,27 @@ def geom2kml(geom_dict):
 
 
 class AisException(Exception):
-    pass
+
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __repr__(self):
+        return self.msg
+
+    def __str__(self):
+        return self.msg
 
 
 class AisPackingException(AisException):
+
     def __init__(self, msg):
         self.msg = msg
-    def __repr__(self):
-        return msg
 
 
 class AisUnpackingException(AisException):
+
     def __init__(self, msg):
         self.msg = msg
-    def __repr__(self):
-        return msg
 
 
 def nmea_checksum_hex(sentence):
@@ -646,9 +643,9 @@ class AIVDM (object):
         @rtype: list (even for normal_form for consistency)
         """
         # Greg Johnson thinks that a sequence number of 0 is allowed.
-        if sequence_num is not None and (sequence_num <= 0 or sequence_num >= 9):
+        # if sequence_num is not None and (sequence_num <= 0 or sequence_num >= 9):
         # if sequence_num is not None and (sequence_num < 0 or sequence_num >= 9):
-        # if sequence_num is not None and sequence_num not in range(9):
+        if sequence_num is not None and sequence_num not in range(9):
             raise AisPackingException('sequence_num %d' % sequence_num)
         if channel not in ('A','B'):
             raise AisPackingException('channel',channel)
@@ -667,7 +664,6 @@ class AIVDM (object):
 
         header = self.get_bits_header(repeat_indicator=repeat_indicator,source_mmsi=source_mmsi)
 
-        #payload, pad = binary.bitvectoais6(header + self.get_bits())
         bits = header + self.get_bits()
         if byte_align:
             bits_over = len(bits) % 8
@@ -745,7 +741,6 @@ class AIVDM (object):
         for area in self.areas:
             geo_i = area.__geo_interface__
             if 'geometry' not in geo_i:
-                #print ('Skipping area:',str(area))
                 continue
             kml_shape = geom2kml(geo_i)
 
@@ -761,7 +756,6 @@ class AIVDM (object):
 
             if with_extended_data:
                 o.append('<ExtendedData>')
-                #print ('self.__dict__:',self.__dict__)
 
                 for key in ( 'message_id', 'source_mmsi', 'dac', 'fi', 'link_id', 'when', 'duration', 'area_type', ):
                     o.append('\t<Data name="{key}"><value>{value}</value></Data>'.format(key=key,value=self.__dict__[key]))
@@ -1275,9 +1269,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         for i in range(4):
             base = 5 + i*20
             angle = int ( bits[base:base+10] )
-            #print 'angle:',angle
             if angle == 720:
-                #print 'should be no more points'
                 done = True
                 continue
             else:
@@ -1329,7 +1321,6 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
         bv = binary.joinBV(bvList)
         if len(bv) != SUB_AREA_SIZE:
-            print ('Polyline_or_gon_len_error:',[len(b) for b in bvList],'->',len(bv),'is not',SUB_AREA_SIZE)
             raise AisPackingException('area not '+str(SUB_AREA_SIZE)+' bits %d:' % len(bv))
 
         return start_pt_bits + bv
@@ -1599,7 +1590,6 @@ class AreaNotice(BBM):
             elif self.source_mmsi is not None:
                 bvList.append( binary.setBitVectorSize( BitVector(intVal=self.source_mmsi), 30 ) )
             else:
-                print ('WARNING: using a default mmsi')
                 bvList.append( binary.setBitVectorSize( BitVector(intVal=999999999), 30 ) )
 
         if include_bin_hdr or include_dac_fi:
@@ -1644,7 +1634,6 @@ class AreaNotice(BBM):
             raise AisUnpackingException('one or more NMEA lines did were malformed')
 
         bits = []
-        #print 'len_msgs:',len(msgs)
         for msg in msgs:
             msg['fill_bits'] = int(msg['fill_bits'])
             bv = binary.ais6tobitvec(msg['body'])
@@ -1728,7 +1717,6 @@ class AreaNotice(BBM):
                 lat = self.areas[-1].lat
                 self.areas.pop()
             elif isinstance(self.areas[-1], AreaNoticePolyline):
-                print ('FIX: check multi packet polyline', self.areas[-1].geom)
                 last_pt = self.areas[-1].get_points[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
@@ -1744,7 +1732,6 @@ class AreaNotice(BBM):
                 lat = self.areas[-1].lat
                 self.areas.pop()
             elif isinstance(self.areas[-1], AreaNoticePolyline):
-                print ('FIX: check multi packet polyline', self.areas[-1].geom)
                 last_pt = self.areas[-1].get_points[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
@@ -1776,10 +1763,8 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
                              verbose=False
                              ):
     'Take an AreaNotice and produce a Fetcher Formatter CSV'
-    v = verbose
-
-    if v:
-        print ('message_2_fetcherformatter:',str(msg))
+    if verbose:
+        print 'message_2_fetcherformatter:',nstr(msg)
 
     if timestamp is None:
         timestamp=int(time.time())
@@ -1788,9 +1773,9 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
 
     timestamp += 24*3600
     if v:
-        print ('Moving time up by 4 hours to deal with Windows time coding issues...')
-        print ('\t\tEDT is 4 to 5 hours off utc')
-        print ('\t\t24 hours means this code will work anywhere in the world with windows timezone troubles')
+        print 'Moving time up by 4 hours to deal with Windows time coding issues...'
+        print '\t\tEDT is 4 to 5 hours off utc'
+        print '\t\t24 hours means this code will work anywhere in the world with windows timezone troubles'
 
     if message_type is None:
         if isinstance(msg,AreaNotice):
@@ -1802,9 +1787,6 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
         if message_type < 1000:
             # AreaNotice message type has to be greater than 1000
             message_type += 1000
-    # if not isinstance(msg,EnvMessage) and isinstance(msg,AreaNotice):
-    #     # This mechanism is only defined for these two IMO Circ 289 messages
-    #     assert False
 
     if link_id == None:
         link_id = msg.link_id
@@ -1815,8 +1797,8 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
     dacfi = dac+fi
     bits = msg.get_bits(include_dac_fi=False)
     if v:
-        print ('dacfi:',str(dacfi))
-        print ('bits: len=',len(bits),' ... ',str(bits))
+        print 'dacfi:',str(dacfi)
+        print 'bits: len=',len(bits),' ... ',str(bits)
 
     line = [magic_number,site_name,
             xmin,ymax,xmax,ymin,
@@ -1859,11 +1841,11 @@ class NormQueue(Queue.Queue):
 
         if sen_num == 1:
             # Flush that station's seq and start it with a new msg component
-            self.stations[station][seq] = [msg['body'],] # START
+            self.stations[station][seq] = [msg['body'],]  # Start.
             return
 
         if sen_num != len(self.stations[station][seq]) + 1:
-            self.stations[station][seq] = [ ] # DROP and flush... bad seq
+            self.stations[station][seq] = [ ]  # Drop and flush: bad seq.
             return
 
         if sen_num == total:
@@ -1872,7 +1854,8 @@ class NormQueue(Queue.Queue):
             if len(msgs) != total - 1:
                 return # INCOMPLETE was missing part - so just drop it
 
-            # all parts should have the same metadata, but last has the fill bits
+            # All parts should have the same metadata.
+            # Last line last has the fill bits.
             msg['body'] = ''.join(msgs) + msg['body']
             msg['total'] = msg['seq_num'] = 1
             Queue.Queue.put(self,msg)
@@ -1883,7 +1866,7 @@ class NormQueue(Queue.Queue):
 
 def main():
     from optparse import OptionParser
-    parser = OptionParser(usage="%prog [options]",version="%prog "+__version__)
+    parser = OptionParser(usage='%prog [options]')
 
     (options,args) = parser.parse_args()
     norm_queue = NormQueue()
@@ -1893,35 +1876,32 @@ def main():
     kmlfile.write(file('areanotice_styles.kml').read())
 
     if 0==len(args):
-        # Assume stdin
         assert False
     if '!AIVDM' in args[0]:
         an = AreaNotice(nmea_strings=args)
-        print ('Area Notice:',str(an))
+        print 'Area Notice:',str(an)
     else:
         # Assume these are files
 
         for filename in args:
 
             for line in open(filename):
-                #print ('line:',line.strip())
                 try:
                     match = ais_nmea_regex.search(line).groupdict()
                 except AttributeError:
-                    if 'AIVDM' in line: print ('BAD_MATCH:',line)
+                    if 'AIVDM' in line: print 'BAD_MATCH:',line
                     continue
 
                 norm_queue.put(match)
                 if norm_queue.qsize()>0:
                     msg = norm_queue.get(False)
                     if msg['body'][0] != '8':
-                        #print ('skipping non-8')
                         continue
                     nmea = '!AIVDM,1,1,,A,{body},{fill_bits}*{{checksum}},{station},{time_stamp}'.format(**msg)
                     checksum = nmea_checksum_hex(nmea)
                     nmea = nmea.format(checksum=checksum)
                     area_notice = AreaNotice(nmea_strings=(nmea,))
-                    print ('AreaNotice:',area_notice)
+                    print 'AreaNotice:',area_notice
                     kmlfile.write(area_notice.kml(with_style=True, with_time=True, with_extended_data=True))
 
     kmlfile.write(kml_tail)
