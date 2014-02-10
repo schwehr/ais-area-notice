@@ -1278,15 +1278,10 @@ class Environment(BBM):
         bv_list = []
         if include_bin_hdr:
             bv_list.append(BitVector(intVal=8, size=6))  # Messages ID.
-            bv_list.append(BitVector(size=2))  # Repeat Indicator.
-            # TODO(schwehr): Change the following to:
-            #   mmsi = mmsi or self.source_mmsi
-            #   if not mmsi:
-            #       raise.
-            if mmsi is None and self.source_mmsi is None:
+            bv_list.append(BitVector(size=2))  # Repeat Indicator of 0.
+            mmsi = mmsi or self.source_mmsi
+            if not mmsi:
                 raise AisPackingException('No mmsi specified.')
-            if mmsi is None:
-                mmsi = self.source_mmsi
             bv_list.append(BitVector(intVal=mmsi, size=30))
 
         if include_bin_hdr or include_dac_fi:
@@ -1316,9 +1311,8 @@ class Environment(BBM):
             msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
         except AttributeError:
             raise AisUnpackingException('NMEA line malformed: %s ' % strings)
-        # TODO(schwehr): Change to:
-        #   if not all(msgs):
-        if None in msgs:
+
+        if not all(msgs):
             raise AisUnpackingException('Nothing decoded from: %s' % strings)
 
     def decode_bits(self, bits, year=None):
@@ -1335,19 +1329,17 @@ class Environment(BBM):
 
         self.message_id = r['message_id']
         self.repeat_indicator = r['repeat_indicator']
-        self.source_mmsi = r['mmsi']  # The mmsi will probably get ignored.
+        self.source_mmsi = r['mmsi']
         self.dac = r['dac']
         self.fi = r['fi']
 
         if len(bits) == 56:
-            # TODO(schwehr): should this raise an exception?
+            # TODO(schwehr): Should this raise an exception?
             self.sensor_reports = []
             return
 
         sensor_reports_bits = bits[56:]
-        del bits   # Be safe.
 
-        # TODO(schwehr): Change this to raise an exception.
         if not(8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE):
             msg = (
                 'Environment(BBM) trouble: %d > 8.  '
@@ -1356,8 +1348,6 @@ class Environment(BBM):
                     len(sensor_reports_bits), SENSOR_REPORT_SIZE)
                 )
             raise AisUnpackingException(msg)
-
-        assert 8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE
 
         for i in range(len(sensor_reports_bits) / SENSOR_REPORT_SIZE):
             rpt_bits = sensor_reports_bits[i*SENSOR_REPORT_SIZE:
