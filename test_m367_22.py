@@ -177,7 +177,7 @@ class TestAreaNotice(unittest.TestCase):
         self.checkCircle(c3, 10, lon, lat, precision, radius)
 
     def testCircleEncode(self):
-        # Test agains 'Sample AN Data RTCMv1.xlsx' circle
+        # Test against 'Sample AN Data RTCMv1.xlsx' circle
         year = datetime.datetime.utcnow().year
         when = datetime.datetime(year, 9, 4, 15, 25)
 
