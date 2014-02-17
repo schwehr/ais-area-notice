@@ -464,7 +464,7 @@ class AreaNotice(BBM):
         day = db.GetInt(5)
         hour = db.GetInt(5)
         minute = db.GetInt(6)
-        # TODO(schwehr): handle year boundary
+        # TODO(schwehr): Handle year boundary.
         now = datetime.datetime.utcnow()
         self.when = datetime.datetime(now.year, month, day, hour, minute)
         self.duration_min = db.GetInt(18)
@@ -473,7 +473,8 @@ class AreaNotice(BBM):
 
         sub_areas_bits = bits[120:]
         num_sub_areas = len(sub_areas_bits) / SUB_AREA_SIZE
-        assert len(sub_areas_bits) % SUB_AREA_SIZE == 0 # TODO(schwehr): change this to raising an error
+        # TODO(schwehr): change this to raising an error.
+        assert len(sub_areas_bits) % SUB_AREA_SIZE == 0
         assert num_sub_areas <= self.max_areas
         for area_num in range(num_sub_areas):
             start = area_num * SUB_AREA_SIZE

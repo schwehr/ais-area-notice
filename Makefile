@@ -29,6 +29,7 @@ test: test-libs
 	@./test_imo_001_22.py
 	@./test_imo_001_26_env.py
 	@./test_imo_001_31_met_hydro.py
+	@./test_m366_22.py
 	@./test_m367_22.py
 
 
