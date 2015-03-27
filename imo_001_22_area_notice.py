@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """Trying to do a more sane design for AIS BBM message.
 
 http://vislab-ccom.unh.edu/~schwehr/papers/2010-IMO-SN.1-Circ.289.pdf
@@ -1772,7 +1773,7 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
         timestamp = calendar.timegm(datetime.datetime.utctimetuple(timestamp))
 
     timestamp += 24*3600
-    if v:
+    if verbose:
         print 'Moving time up by 4 hours to deal with Windows time coding issues...'
         print '\t\tEDT is 4 to 5 hours off utc'
         print '\t\t24 hours means this code will work anywhere in the world with windows timezone troubles'
@@ -1796,7 +1797,7 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
 
     dacfi = dac+fi
     bits = msg.get_bits(include_dac_fi=False)
-    if v:
+    if verbose:
         print 'dacfi:',str(dacfi)
         print 'bits: len=',len(bits),' ... ',str(bits)
 

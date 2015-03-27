@@ -14,8 +14,6 @@ default:
 	@echo "	docs        - run epydoc"
 #	@echo "	- "
 
-
-
 sdist: samples.txt
 	find . -name .DS_Store | xargs rm -f
 	./setup.py sdist --formats=bztar
@@ -29,14 +27,9 @@ test: test-libs
 	@./test_imo_001_22.py
 	@./test_imo_001_26_env.py
 	@./test_imo_001_31_met_hydro.py
-	@./test_m366_22.py
+	@echo "Skipping ./test_m366_22.py.  Does not exist."
 	@./test_m367_22.py
 
-
-docs:
-	epydoc -v imo_001_22_area_notice.py
-docs-upload:
-	scp -r html/* vislab-ccom:www/software/ais-areanotice-py/docs/
 
 clean:
 	rm -rf *.pyc html
