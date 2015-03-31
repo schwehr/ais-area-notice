@@ -26,27 +26,25 @@ TODO: Handle text that spans adjacent subareas.
 """
 
 import sys
-import datetime, time
-from operator import xor
-
-import operator
+import datetime
 import math
+import operator
+from operator import xor
+import Queue
+import re
+import time
 
+from BitVector import BitVector
+from lxml.html import builder as E
+import lxml
 from pyproj import Proj
 import shapely.geometry
 
-import lxml
-from lxml.html import builder as E
-
-from BitVector import BitVector
-
-import binary, aisstring
-import Queue
-import re
+import aisstring
+import binary
 
 next_sequence=1
 'Track the next value to use for multiline nmea messages'
-
 
 SUB_AREA_SIZE = 87
 '87 Bits for IMO Circ 289 rather than the 90 for USCG and Nav 55 version'
@@ -1403,7 +1401,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
             text = text.upper()
             assert len(text) <= 14
             for c in text:
-                assert c in aisstring.characterDict
+                assert c in aisstring.character_dict
             self.text = text
         elif bits is not None:
             self.decode_bits(bits)
@@ -1418,14 +1416,14 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
 
         area_shape = int( bits[:3] )
         assert self.area_shape == area_shape
-        self.text = aisstring.decode(bits[3:]).rstrip('@')
+        self.text = aisstring.Decode(bits[3:]).rstrip('@')
 
     def get_bits(self):
         'Build a BitVector for this area'
         bvList = []
         bvList.append( binary.setBitVectorSize( BitVector(intVal=self.area_shape), 3 ))
         text = self.text.ljust(14,'@')
-        bvList.append(aisstring.encode(text))
+        bvList.append(aisstring.Encode(text))
         # No spare
 
         bv = binary.joinBV(bvList)

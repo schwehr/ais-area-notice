@@ -50,7 +50,7 @@ class DecodeBits(object):
     def GetText(self, length, strip=True):
         assert length % 6 == 0
         end = self.pos + length
-        text = aisstring.decode(self.bits[self.pos:end])
+        text = aisstring.Decode(self.bits[self.pos:end])
         at = text.find('@')
         if strip and at != -1:
            text = text[:at]
@@ -87,7 +87,7 @@ class BuildBits(object):
       num_char = num_bits / 6
       assert num_bits % 6 == 0
       text = val.ljust(num_char, '@')
-      bits = aisstring.encode(text)
+      bits = aisstring.Encode(text)
       self.bits_expected += num_bits
       self.bv_list.append(bits)
 

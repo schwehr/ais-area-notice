@@ -6,26 +6,19 @@
 @bug: needs to throw an exception if the character is not in the LUT.
 @bug: what to do about string with trailing @@@ or "   " (white space).
 
-characterLUT: list, lookup table for decode to fetch characters faster.
+character_lut: list, lookup table for decode to fetch characters faster.
 
-characterBits: dict, lookup table for going from a single character to
+character_bits: dict, lookup table for going from a single character to
   a 6 bit BitVector.
 """
 
-
-
-# python standard library
 import sys
 
-# External libs
 from BitVector import BitVector
 
-# Local
 import binary
-#import verbosity
-#from verbosity import BOMBASTIC,VERBOSE,TRACE,TERSE,ALWAYS
 
-characterLUT=[
+character_lut = [
     '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
     'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
     'Z', '[', '\\', ']', '^', '-', ' ', '!', '"', '#', '$', '%', '&',
@@ -33,7 +26,7 @@ characterLUT=[
     '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?'
     ]
 
-characterDict={
+character_dict = {
     '@': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7,
     'H': 8, 'I': 9, 'J': 10, 'K': 11, 'L': 12, 'M': 13, 'N': 14, 'O':
     15, 'P': 16, 'Q': 17, 'R': 18, 'S': 19, 'T': 20, 'U': 21, 'V': 22,
@@ -46,97 +39,74 @@ characterDict={
 }
 """Fast lookup for the AIS int code for a character """
 
-characterBits = {}
-characterBits['@'] = binary.setBitVectorSize(BitVector(intVal=0),6)
-characterBits['A'] = binary.setBitVectorSize(BitVector(intVal=1),6)
-characterBits['B'] = binary.setBitVectorSize(BitVector(intVal=2),6)
-characterBits['C'] = binary.setBitVectorSize(BitVector(intVal=3),6)
-characterBits['D'] = binary.setBitVectorSize(BitVector(intVal=4),6)
-characterBits['E'] = binary.setBitVectorSize(BitVector(intVal=5),6)
-characterBits['F'] = binary.setBitVectorSize(BitVector(intVal=6),6)
-characterBits['G'] = binary.setBitVectorSize(BitVector(intVal=7),6)
-characterBits['H'] = binary.setBitVectorSize(BitVector(intVal=8),6)
-characterBits['I'] = binary.setBitVectorSize(BitVector(intVal=9),6)
-characterBits['J'] = binary.setBitVectorSize(BitVector(intVal=10),6)
-characterBits['K'] = binary.setBitVectorSize(BitVector(intVal=11),6)
-characterBits['L'] = binary.setBitVectorSize(BitVector(intVal=12),6)
-characterBits['M'] = binary.setBitVectorSize(BitVector(intVal=13),6)
-characterBits['N'] = binary.setBitVectorSize(BitVector(intVal=14),6)
-characterBits['O'] = binary.setBitVectorSize(BitVector(intVal=15),6)
-characterBits['P'] = binary.setBitVectorSize(BitVector(intVal=16),6)
-characterBits['Q'] = binary.setBitVectorSize(BitVector(intVal=17),6)
-characterBits['R'] = binary.setBitVectorSize(BitVector(intVal=18),6)
-characterBits['S'] = binary.setBitVectorSize(BitVector(intVal=19),6)
-characterBits['T'] = binary.setBitVectorSize(BitVector(intVal=20),6)
-characterBits['U'] = binary.setBitVectorSize(BitVector(intVal=21),6)
-characterBits['V'] = binary.setBitVectorSize(BitVector(intVal=22),6)
-characterBits['W'] = binary.setBitVectorSize(BitVector(intVal=23),6)
-characterBits['X'] = binary.setBitVectorSize(BitVector(intVal=24),6)
-characterBits['Y'] = binary.setBitVectorSize(BitVector(intVal=25),6)
-characterBits['Z'] = binary.setBitVectorSize(BitVector(intVal=26),6)
-characterBits['['] = binary.setBitVectorSize(BitVector(intVal=27),6)
-characterBits['\\'] = binary.setBitVectorSize(BitVector(intVal=28),6)
-characterBits[']'] = binary.setBitVectorSize(BitVector(intVal=29),6)
-characterBits['^'] = binary.setBitVectorSize(BitVector(intVal=30),6)
-characterBits['-'] = binary.setBitVectorSize(BitVector(intVal=31),6)
-characterBits[' '] = binary.setBitVectorSize(BitVector(intVal=32),6)
-characterBits['!'] = binary.setBitVectorSize(BitVector(intVal=33),6)
-characterBits['"'] = binary.setBitVectorSize(BitVector(intVal=34),6)
-characterBits['#'] = binary.setBitVectorSize(BitVector(intVal=35),6)
-characterBits['$'] = binary.setBitVectorSize(BitVector(intVal=36),6)
-characterBits['%'] = binary.setBitVectorSize(BitVector(intVal=37),6)
-characterBits['&'] = binary.setBitVectorSize(BitVector(intVal=38),6)
-characterBits['`'] = binary.setBitVectorSize(BitVector(intVal=39),6)
-characterBits['('] = binary.setBitVectorSize(BitVector(intVal=40),6)
-characterBits[')'] = binary.setBitVectorSize(BitVector(intVal=41),6)
-characterBits['*'] = binary.setBitVectorSize(BitVector(intVal=42),6)
-characterBits['+'] = binary.setBitVectorSize(BitVector(intVal=43),6)
-characterBits[','] = binary.setBitVectorSize(BitVector(intVal=44),6)
-characterBits['-'] = binary.setBitVectorSize(BitVector(intVal=45),6)
-characterBits['.'] = binary.setBitVectorSize(BitVector(intVal=46),6)
-characterBits['/'] = binary.setBitVectorSize(BitVector(intVal=47),6)
-characterBits['0'] = binary.setBitVectorSize(BitVector(intVal=48),6)
-characterBits['1'] = binary.setBitVectorSize(BitVector(intVal=49),6)
-characterBits['2'] = binary.setBitVectorSize(BitVector(intVal=50),6)
-characterBits['3'] = binary.setBitVectorSize(BitVector(intVal=51),6)
-characterBits['4'] = binary.setBitVectorSize(BitVector(intVal=52),6)
-characterBits['5'] = binary.setBitVectorSize(BitVector(intVal=53),6)
-characterBits['6'] = binary.setBitVectorSize(BitVector(intVal=54),6)
-characterBits['7'] = binary.setBitVectorSize(BitVector(intVal=55),6)
-characterBits['8'] = binary.setBitVectorSize(BitVector(intVal=56),6)
-characterBits['9'] = binary.setBitVectorSize(BitVector(intVal=57),6)
-characterBits[':'] = binary.setBitVectorSize(BitVector(intVal=58),6)
-characterBits[';'] = binary.setBitVectorSize(BitVector(intVal=59),6)
-characterBits['<'] = binary.setBitVectorSize(BitVector(intVal=60),6)
-characterBits['='] = binary.setBitVectorSize(BitVector(intVal=61),6)
-characterBits['>'] = binary.setBitVectorSize(BitVector(intVal=62),6)
-characterBits['?'] = binary.setBitVectorSize(BitVector(intVal=63),6)
+character_bits = {}
+character_bits['@'] = binary.setBitVectorSize(BitVector(intVal=0),6)
+character_bits['A'] = binary.setBitVectorSize(BitVector(intVal=1),6)
+character_bits['B'] = binary.setBitVectorSize(BitVector(intVal=2),6)
+character_bits['C'] = binary.setBitVectorSize(BitVector(intVal=3),6)
+character_bits['D'] = binary.setBitVectorSize(BitVector(intVal=4),6)
+character_bits['E'] = binary.setBitVectorSize(BitVector(intVal=5),6)
+character_bits['F'] = binary.setBitVectorSize(BitVector(intVal=6),6)
+character_bits['G'] = binary.setBitVectorSize(BitVector(intVal=7),6)
+character_bits['H'] = binary.setBitVectorSize(BitVector(intVal=8),6)
+character_bits['I'] = binary.setBitVectorSize(BitVector(intVal=9),6)
+character_bits['J'] = binary.setBitVectorSize(BitVector(intVal=10),6)
+character_bits['K'] = binary.setBitVectorSize(BitVector(intVal=11),6)
+character_bits['L'] = binary.setBitVectorSize(BitVector(intVal=12),6)
+character_bits['M'] = binary.setBitVectorSize(BitVector(intVal=13),6)
+character_bits['N'] = binary.setBitVectorSize(BitVector(intVal=14),6)
+character_bits['O'] = binary.setBitVectorSize(BitVector(intVal=15),6)
+character_bits['P'] = binary.setBitVectorSize(BitVector(intVal=16),6)
+character_bits['Q'] = binary.setBitVectorSize(BitVector(intVal=17),6)
+character_bits['R'] = binary.setBitVectorSize(BitVector(intVal=18),6)
+character_bits['S'] = binary.setBitVectorSize(BitVector(intVal=19),6)
+character_bits['T'] = binary.setBitVectorSize(BitVector(intVal=20),6)
+character_bits['U'] = binary.setBitVectorSize(BitVector(intVal=21),6)
+character_bits['V'] = binary.setBitVectorSize(BitVector(intVal=22),6)
+character_bits['W'] = binary.setBitVectorSize(BitVector(intVal=23),6)
+character_bits['X'] = binary.setBitVectorSize(BitVector(intVal=24),6)
+character_bits['Y'] = binary.setBitVectorSize(BitVector(intVal=25),6)
+character_bits['Z'] = binary.setBitVectorSize(BitVector(intVal=26),6)
+character_bits['['] = binary.setBitVectorSize(BitVector(intVal=27),6)
+character_bits['\\'] = binary.setBitVectorSize(BitVector(intVal=28),6)
+character_bits[']'] = binary.setBitVectorSize(BitVector(intVal=29),6)
+character_bits['^'] = binary.setBitVectorSize(BitVector(intVal=30),6)
+character_bits['-'] = binary.setBitVectorSize(BitVector(intVal=31),6)
+character_bits[' '] = binary.setBitVectorSize(BitVector(intVal=32),6)
+character_bits['!'] = binary.setBitVectorSize(BitVector(intVal=33),6)
+character_bits['"'] = binary.setBitVectorSize(BitVector(intVal=34),6)
+character_bits['#'] = binary.setBitVectorSize(BitVector(intVal=35),6)
+character_bits['$'] = binary.setBitVectorSize(BitVector(intVal=36),6)
+character_bits['%'] = binary.setBitVectorSize(BitVector(intVal=37),6)
+character_bits['&'] = binary.setBitVectorSize(BitVector(intVal=38),6)
+character_bits['`'] = binary.setBitVectorSize(BitVector(intVal=39),6)
+character_bits['('] = binary.setBitVectorSize(BitVector(intVal=40),6)
+character_bits[')'] = binary.setBitVectorSize(BitVector(intVal=41),6)
+character_bits['*'] = binary.setBitVectorSize(BitVector(intVal=42),6)
+character_bits['+'] = binary.setBitVectorSize(BitVector(intVal=43),6)
+character_bits[','] = binary.setBitVectorSize(BitVector(intVal=44),6)
+character_bits['-'] = binary.setBitVectorSize(BitVector(intVal=45),6)
+character_bits['.'] = binary.setBitVectorSize(BitVector(intVal=46),6)
+character_bits['/'] = binary.setBitVectorSize(BitVector(intVal=47),6)
+character_bits['0'] = binary.setBitVectorSize(BitVector(intVal=48),6)
+character_bits['1'] = binary.setBitVectorSize(BitVector(intVal=49),6)
+character_bits['2'] = binary.setBitVectorSize(BitVector(intVal=50),6)
+character_bits['3'] = binary.setBitVectorSize(BitVector(intVal=51),6)
+character_bits['4'] = binary.setBitVectorSize(BitVector(intVal=52),6)
+character_bits['5'] = binary.setBitVectorSize(BitVector(intVal=53),6)
+character_bits['6'] = binary.setBitVectorSize(BitVector(intVal=54),6)
+character_bits['7'] = binary.setBitVectorSize(BitVector(intVal=55),6)
+character_bits['8'] = binary.setBitVectorSize(BitVector(intVal=56),6)
+character_bits['9'] = binary.setBitVectorSize(BitVector(intVal=57),6)
+character_bits[':'] = binary.setBitVectorSize(BitVector(intVal=58),6)
+character_bits[';'] = binary.setBitVectorSize(BitVector(intVal=59),6)
+character_bits['<'] = binary.setBitVectorSize(BitVector(intVal=60),6)
+character_bits['='] = binary.setBitVectorSize(BitVector(intVal=61),6)
+character_bits['>'] = binary.setBitVectorSize(BitVector(intVal=62),6)
+character_bits['?'] = binary.setBitVectorSize(BitVector(intVal=63),6)
 
 
-def buildDict():
-    """Helper to build the build the carachterBits and Dict tables.
-
-    @rtype: test to stdout
-    """
-    count=0
-    print 'characterDict={'
-    for i in range(len(characterLUT)):
-        count += 1
-        c = characterLUT[i]
-        if c=='\\': c='\\\\'
-        print "'"+c+"': "+str(i)+",",
-        if count%6==0:
-            print
-        print '}'
-
-    print 'characterBits={}'
-    for i in range(len(characterLUT)):
-        c = characterLUT[i]
-        if c=='\\': c='\\\\'
-        print "characterBits['"+c+"']"+'=binary.setBitVectorSize(BitVector(intVal='+str(i)+'),6)'
-
-
-def decode(bits,dropAfterFirstAt=False):
+def Decode(bits,dropAfterFirstAt=False):
     """Decode bits as a string.
 
     Does not remove the end space or @@@@.  Must be an multiple of 6 bits.
@@ -155,12 +125,12 @@ def decode(bits,dropAfterFirstAt=False):
         val = int(charbits)
         if dropAfterFirstAt and val==0:
             break  # 0 is the @ character which is used to pad strings.
-        s.append(characterLUT[val])
+        s.append(character_lut[val])
 
     return ''.join(s)
 
 
-def encode(string, bitSize=None):
+def Encode(string, bitSize=None):
     """Convert a string to a BitVector.
     @param string: python ascii string to encode.
     @type string: str
@@ -177,7 +147,7 @@ def encode(string, bitSize=None):
         assert(bitSize%6==0)
     bv = BitVector(size=0)
     for i in range(len(string)):
-        bv = bv+characterBits[string[i]]
+        bv = bv+character_bits[string[i]]
     if bitSize:
         if bitSize < len(bv):
             print 'ERROR:  Too many bits in string: "'+string+'"',
@@ -275,6 +245,3 @@ if __name__ == '__main__':
         if numfail==0: print 'ok'
         else:
             sys.exit('Something Failed')
-
-
-

@@ -46,7 +46,7 @@ def random_id():
     date = random_date()
     site_id = random.randint(0,127)
     msg_len = random.randint(0,14)
-    msg_char = [random.choice(aisstring.characterLUT) for i in range(msg_len)]
+    msg_char = [random.choice(aisstring.character_lut) for i in range(msg_len)]
     id_str = ''.join(msg_char)
     return env.SensorReportId(
         year=date.year, month=date.month, day=date.day, hour=date.hour,

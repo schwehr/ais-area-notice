@@ -1,4 +1,5 @@
 #SHELL:=/bin/bash
+
 PKG:=ais-areanotice-py
 VERSION := ${shell cat VERSION}
 DIST_TAR=dist/${PKG}-${VERSION}.tar.bz2
@@ -12,7 +13,6 @@ default:
 	@echo "	test        - run unit tests"
 	@echo "	samples.txt - create the published test dataset"
 	@echo "	docs        - run epydoc"
-#	@echo "	- "
 
 sdist: samples.txt
 	find . -name .DS_Store | xargs rm -f
@@ -43,8 +43,6 @@ svn-branch:
 register:
 	./setup.py register
 
-#	echo -n '# ' > samples.txt
-#	date >> samples.txt
 samples.txt: build_samples.py imo_001_22_area_notice.py
 	./build_samples.py  > samples.txt
 

@@ -337,12 +337,12 @@ class SensorReportId(SensorReport):
             raise AisUnpackingException('bit length',len(bits))
         assert(self.report_type == int(bits[:4]))
         SensorReport.decode_bits(self, bits)
-        self.id_str = aisstring.decode(bits[27:-1])
+        self.id_str = aisstring.Decode(bits[27:-1])
         # 1 spare bit
 
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self),
-                   aisstring.encode(self.id_str.ljust(14, '@')),
+                   aisstring.Encode(self.id_str.ljust(14, '@')),
                    BitVector(size=1)  # Spare.
                    ]
         bits = binary.joinBV(bv_list)
