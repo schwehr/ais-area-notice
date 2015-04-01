@@ -1,7 +1,7 @@
 #SHELL:=/bin/bash
 
 PKG:=ais-areanotice
-VERSION := ${shell cat VERSION}
+VERSION := ${shell grep 'version' ais_areanotice/__init__.py | cut -d\' -f 2}
 DIST_TAR=dist/${PKG}-${VERSION}.tar.bz2
 
 default:
@@ -10,8 +10,8 @@ default:
 	@echo
 	@echo "  AIS Binary Message Reference Implementation"
 	@echo
-	@echo "	 test        - run unit tests"
-	@echo "	 samples.txt - create the published test dataset"
+	@echo "  test        - run unit tests"
+	@echo "  samples.txt - create the published test dataset"
 	@echo "  sdist  -  Build a source distribution tar ball"
 	@echo "  clean  -  Remove temporary files"
 
