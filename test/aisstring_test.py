@@ -3,7 +3,8 @@
 """Tests for aisstring."""
 
 import unittest
-import aisstring
+
+from ais_areanotice import aisstring
 
 
 class AisstringTest(unittest.TestCase):

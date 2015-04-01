@@ -8,8 +8,6 @@ SensorReports.
 since: Mon Feb 14 15:55:02 2011 -0500
 '''
 
-import imo_001_31_met_hydro as met_hydro
-import aisstring
 
 import math
 import random
@@ -17,10 +15,13 @@ import sys
 import unittest
 import datetime
 
-FUZZ_COUNT = 30
-'How many loops to do on fuzz testing'
+import ais_areanotice.aisstring
+import ais_areanotice.imo_001_31_met_hydro as met_hydro
 
-from test_imo_001_26_env import random_date  # , beaufort_scale
+from imo_001_26_env_test import random_date
+
+'How many loops to do on fuzz testing'
+FUZZ_COUNT = 30
 
 
 def random_msg():

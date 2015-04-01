@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 """Test USCG specific 8:367:22 area notice message."""
 
-import binary
 import datetime
 import unittest
 
-from m367_22 import AreaNotice
-from m367_22 import AreaNoticeCircle
-from m367_22 import AreaNoticeRectangle
-from m367_22 import AreaNoticeSector
-from m367_22 import AreaNoticePoly
-from m367_22 import AreaNoticeText
-from m367_22 import SHAPES
+from ais_areanotice import binary
+
+from ais_areanotice.m367_22 import AreaNotice
+from ais_areanotice.m367_22 import AreaNoticeCircle
+from ais_areanotice.m367_22 import AreaNoticeRectangle
+from ais_areanotice.m367_22 import AreaNoticeSector
+from ais_areanotice.m367_22 import AreaNoticePoly
+from ais_areanotice.m367_22 import AreaNoticeText
+from ais_areanotice.m367_22 import SHAPES
 
 
 class DiffAreaNotice(object):

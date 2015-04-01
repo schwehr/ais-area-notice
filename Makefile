@@ -1,6 +1,6 @@
 #SHELL:=/bin/bash
 
-PKG:=ais-areanotice-py
+PKG:=ais-areanotice
 VERSION := ${shell cat VERSION}
 DIST_TAR=dist/${PKG}-${VERSION}.tar.bz2
 
@@ -10,42 +10,33 @@ default:
 	@echo
 	@echo "  AIS Binary Message Reference Implementation"
 	@echo
-	@echo "	test        - run unit tests"
-	@echo "	samples.txt - create the published test dataset"
-	@echo "	docs        - run epydoc"
+	@echo "	 test        - run unit tests"
+	@echo "	 samples.txt - create the published test dataset"
+	@echo "  sdist  -  Build a source distribution tar ball"
+	@echo "  clean  -  Remove temporary files"
 
-sdist: samples.txt
-	find . -name .DS_Store | xargs rm -f
+sdist: samples.txt clean
 	./setup.py sdist --formats=bztar
 
-
-test-libs:
-	@./binary.py --test
-	@./aisstring.py --test
-
-test: test-libs
-	@./test_imo_001_22.py
-	@./test_imo_001_26_env.py
-	@./test_imo_001_31_met_hydro.py
-	@echo "Skipping ./test_m366_22.py.  Does not exist."
-	@./test_m367_22.py
-
+.PHONY: test
+test:
+	python setup.py test
 
 clean:
 	rm -rf *.pyc html
+	find . -name .DS_Store | xargs rm -f
 
-upload:
-	scp ChangeLog.html ${DIST_TAR} vislab-ccom:www/software/ais-areanotice-py/downloads/
-
-svn-branch:
-	svn cp https://cowfish.unh.edu/projects/schwehr/trunk/src/ais-areanotice-py https://cowfish.unh.edu/projects/schwehr/branches/ais-areanotice-py/ais-areanotice-py-${VERSION}
+real-clean: clean
+	rm -f MANIFEST
+	rm -rf build dist
 
 register:
 	./setup.py register
 
 samples.txt: build_samples.py imo_001_22_area_notice.py
-	./build_samples.py  > samples.txt
+	./ais_areanotice/build_samples.py  > samples.txt
 
 samples-upload:
 	scp samples.txt vislab-ccom:www/software/ais-areanotice-py/samples/samples-`date +%Y%m%d`.txt
 	scp samples.kml vislab-ccom:www/software/ais-areanotice-py/samples/samples-`date +%Y%m%d`.kml
+

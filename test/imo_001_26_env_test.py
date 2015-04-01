@@ -10,12 +10,12 @@ import random
 import sys
 import unittest
 
-import aisstring
-import imo_001_26_environment as env
+from ais_areanotice import aisstring
+import ais_areanotice.imo_001_26_environment as env
 
 
+# How many loops to do on fuzz testing
 FUZZ_COUNT = 30
-'How many loops to do on fuzz testing'
 
 
 def random_date():
