@@ -2,16 +2,12 @@
 
 """Handle encoding and decoding AIS strings.
 
-@bug: Need more doctests.
-@bug: needs to throw an exception if the character is not in the LUT.
-@bug: what to do about string with trailing @@@ or "   " (white space).
-
 character_lut: list, lookup table for decode to fetch characters faster.
 
 character_bits: dict, lookup table for going from a single character to
   a 6 bit BitVector.
 """
-
+import re
 import sys
 
 from BitVector import BitVector
@@ -106,142 +102,87 @@ character_bits['>'] = binary.setBitVectorSize(BitVector(intVal=62),6)
 character_bits['?'] = binary.setBitVectorSize(BitVector(intVal=63),6)
 
 
-def Decode(bits,dropAfterFirstAt=False):
+def Decode(bits, drop_after_first_at=False):
     """Decode bits as a string.
 
     Does not remove the end space or @@@@.  Must be an multiple of 6 bits.
 
-    @param bits: n*6 bits that represent a string.
-    @type bits: BitVector
-    @return: string with pad spaces or @@@@
-    @rtype: str
+    Args:
+      bits: BitVector, n*6 bits that represent a string.
+      drop_after_first_at: Strip trailing add.
+
+    Returns:
+      A string with pad spaces or @@@@.
     """
-    numchar=len(bits)/6
+    numchar = len(bits) / 6
     s = []
     for i in range(numchar):
         start = 6 * i
         end = start+6
         charbits=bits[start:end]
         val = int(charbits)
-        if dropAfterFirstAt and val==0:
+        if drop_after_first_at and val==0:
             break  # 0 is the @ character which is used to pad strings.
         s.append(character_lut[val])
 
     return ''.join(s)
 
 
-def Encode(string, bitSize=None):
+def Encode(string, bit_size=None):
     """Convert a string to a BitVector.
-    @param string: python ascii string to encode.
-    @type string: str
-    @param bitSize: how many bits should this take.  must be a multiple of 6
-    @type bitSize: int
-    @return: enocded bits for the string
-    @rtype: BitVector
-    @bug: force to upper case
-    @bug: building this in reverse may be faster
-    @bug: check that bitSize is a multple of 6
-    @bug: pad with "@" to reach requested bitSize
+
+    TODO(schwehr): Pad with "@" to reach requested bitSize.
+
+    Args:
+      string: str to encode.
+      bit_size: integer: multiple of 6 size of the resulting bits.
+
+    Returns:
+      String representing the bits encoded as an AIS VDM armored characters.
     """
-    if bitSize:
-        assert(bitSize%6==0)
+    if bit_size:
+        assert(bit_size%6==0)
     bv = BitVector(size=0)
     for i in range(len(string)):
         bv = bv+character_bits[string[i]]
-    if bitSize:
-        if bitSize < len(bv):
-            print 'ERROR:  Too many bits in string: "'+string+'"',
-            print '  ', bitSize, len(bv)
+    if bit_size:
+        if bit_size < len(bv):
+            print 'ERROR:  Too many bits in string: "' + string + '"',
+            print '  ', bit_size, len(bv)
             assert False
-        extra = bitSize - len(bv)
-        bv = bv+BitVector(size=extra)
+        extra = bit_size - len(bv)
+        bv = bv + BitVector(size=extra)
+
     return bv
 
 
-def unpad(string,removeBlanks=True):
+def Strip(string, remove_blanks=True):
+    """Remove AIS string padding @ characters and spaces on the right.
+
+    Args:
+      string: A string to cleanup.
+      remove_blanks: Set to true to strip spaces on the right.
+
+    Returns:
+      A cleaned up string.
     """
-    Remove AIS string padding
-
-    >>> unpad('@')
-    ''
-    >>> unpad('A@')
-    'A'
-    >>> unpad('ABCDEF1234@@@@@')
-    'ABCDEF1234'
-
-    FIX: is this the correct response?
-
-    >>> unpad('A@B')
-    'A@B'
-
-    This is non standard behavior, but some AIS systems space pad the right
-
-    >>> unpad(' ')
-    ''
-    >>> unpad('MY SHIP NAME    ')
-    'MY SHIP NAME'
-
-    The standard implies this behavior with is less fun
-
-    >>> unpad('MY SHIP NAME    ',removeBlanks=False)
-    'MY SHIP NAME    '
-
-    @bug: use a faster algorithm for truncating the string
-    @param string: string to cleanup
-    @type string: str
-    @param removeBlanks: set to true to strip spaces on the right
-    @type removeBlanks: bool
-    @return: cleaned up string
-    @rtype: str
-    """
-    while len(string)>0 and string[-1]=='@':
-        string=string[:-1]
-    if removeBlanks:
-        while len(string)>0 and string[-1]==' ':
-            string=string[:-1]
+    string = re.sub('@.*', '', string)
+    if remove_blanks:
+        return string.rstrip()
     return string
 
-def pad(string,length):
+
+def Pad(string,length):
     """Pad string to length with @ characters.
 
-    >>> pad('',0)
-    ''
-    >>> pad('',1)
-    '@'
-    >>> pad('A',1)
-    'A'
-    >>> pad('A',2)
-    'A@'
-    >>> pad('MY SHIP NAME',20)
-    'MY SHIP NAME@@@@@@@@'
+    Args:
+      string: String to pad out.
+      length: Number of characters that the string must be.
 
-    @param string: string to pad out
-    @type string: str
-    @param length: number of characters that the string must be
-    @type length: int
-    @return: str of len length
-    @rtype: str
-
-    @bug: Use a list and join to make the string building faster
+    Returns:
+      str of the require length that is right padded.
     """
-    while len(string)<length: string += '@'
+    pad = length - len(string)
+    if pad > 0:
+        string += '@' * pad
     return string
-
-
-if __name__ == '__main__':
-    from optparse import OptionParser
-    myparser = OptionParser(usage="%prog [options]")
-    myparser.add_option('--test', '--doc-test', dest='doctest',
-                        default=False, action='store_true',
-                        help='run the documentation tests')
-
-    (options,args) = myparser.parse_args()
-
-    if options.doctest:
-        import os; print os.path.basename(sys.argv[0]), 'doctests ...',
-        sys.argv= [sys.argv[0]]
-        import doctest
-        numfail,numtests=doctest.testmod()
-        if numfail==0: print 'ok'
-        else:
-            sys.exit('Something Failed')
