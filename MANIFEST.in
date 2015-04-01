@@ -1,9 +1,15 @@
 # -*- shell-script -*- for emacs
-# $Revision: 10140 $
-
-# support:
+include ChangeLog.html
+include LICENSE
+include Makefile
+include MANIFEST.in
+include README
 include VERSION
-include MANIFEST.in ChangeLog.html
+
+include *.kml
 include *.png
-include areanotice_styles.kml samples.kml samples.txt
-include TODO.txt
+include *.txt
+
+recursive-include ais_areanotice *.py
+recursive-include test *.py
+

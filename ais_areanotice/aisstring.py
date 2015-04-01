@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Handle encoding and decoding AIS strings.
 
 character_lut: list, lookup table for decode to fetch characters faster.

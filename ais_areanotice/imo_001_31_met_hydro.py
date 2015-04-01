@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import print_function
 """Implement IMO Circ 289 Msg 8:1:31 Meteorological and Hydrographic data.
 

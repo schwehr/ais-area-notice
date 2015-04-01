@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import print_function
 
 """USCG Area Notice Message similar to 8_1_22.

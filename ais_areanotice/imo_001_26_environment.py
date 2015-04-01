@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Implement IMO Circ 289 Msg 8:1:26 environmental report.
 
 Issues:

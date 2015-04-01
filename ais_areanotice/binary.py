@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """AIS binary helper functions.
 
 Code to convert AIS messages between binary BitVectors and strings.
@@ -21,7 +20,6 @@ TODO: Test cases for ais6tobitvec.
 """
 
 import doctest
-import optparse
 import os
 import struct
 import sys
@@ -527,27 +525,3 @@ def unstuffBits(bv):
   @see: stuffBits
   """
   assert False
-
-if __name__ == '__main__':
-  from optparse import OptionParser
-  parser = OptionParser(usage='%prog [options]')
-  parser.add_option('--test', '--doc-test', dest='doctest', default=False,
-                    action='store_true', help='run the documentation tests')
-  parser.add_option('-v', '--verbose', dest='verbose', default=False,
-                    action='store_true', help='Make the test output verbose')
-  (options, args) = parser.parse_args()
-
-  success = True
-
-  if options.doctest:
-    import os
-    print os.path.basename(sys.argv[0]), 'doctests ...',
-    sys.argv = [sys.argv[0]]
-    if options.verbose: sys.argv.append('-v')
-    import doctest
-    numfail, numtests = doctest.testmod()
-    if numfail == 0:
-      print 'ok'
-    else:
-      print 'FAILED'
-      sys.exit('Something Failed')

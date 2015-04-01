@@ -23,7 +23,10 @@ test:
 	python setup.py test
 
 clean:
-	rm -rf *.pyc html
+	rm -f *.pyc
+	rm -f */*.pyc
+	rm -rf */__pycache__
+	rm -rf *.egg-info
 	find . -name .DS_Store | xargs rm -f
 
 real-clean: clean

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """USCG Area Notice version 23, 8_366_22, similar to 8_1_22.
 
 Just different.
