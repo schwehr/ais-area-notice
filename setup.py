@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-VERSION = open('VERSION').readline().strip()
+VERSION = open('ais_areanotice/__init__.py').readline().split('\'')[1]
 
 from setuptools import setup, find_packages, Extension
 # from distutils.core import setup

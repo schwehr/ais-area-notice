@@ -4,7 +4,6 @@ include LICENSE
 include Makefile
 include MANIFEST.in
 include README
-include VERSION
 
 include *.kml
 include *.png

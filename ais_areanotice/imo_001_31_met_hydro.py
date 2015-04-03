@@ -49,8 +49,11 @@ class MetHydro31(BBM):
                  lon=181, lat=91, pos_acc=0,
                  day=0, hour=24, minute=60,
                  wind=127, gust=127, wind_dir=360, gust_dir=360,
-                 # FIX: check the air_pres not avail comes out as 511 in the bits
-                 air_temp=-102.4, humid=101, dew=50.1, air_pres=399+510, air_pres_trend=3, vis=12.7,
+                 # TODO(schwehr): Check air_pres not avail is 511 in the bits.
+                 air_temp=-102.4, humid=101, dew=50.1,
+                 air_pres=399+510, air_pres_trend=3,
+                 vis=12.7,
+                 # Water level
                  wl=30.01, wl_trend=3,
                  cur_1=25.5, cur_dir_1=360, # Surface current
                  cur_2=25.5, cur_dir_2=360, cur_level_2=31,

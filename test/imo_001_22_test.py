@@ -11,6 +11,7 @@ import sys
 import unittest
 
 import geojson
+import lxml.html
 
 import ais_areanotice.imo_001_22_area_notice as an
 from ais_areanotice.imo_001_22_area_notice import vec_rot, vec_add
@@ -326,7 +327,6 @@ class Test5AreaNoticeSimple(unittest.TestCase):
     whales.add_subarea(
         an.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260))
     whales.add_subarea(an.AreaNoticeCirclePt(-69.8, 42.07, radius=0))
-    import lxml.html
     # TODO: Write the test.
     # print lxml.html.tostring(whales.html())
 

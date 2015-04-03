@@ -3,9 +3,10 @@ from __future__ import print_function
 """Generate sample data for Area Notice / Zone msg."""
 
 import datetime
-import geojson
 import sys
 import unittest
+
+import geojson
 
 import imo_001_22_area_notice as an
 import imo_001_26_environment as env
@@ -42,7 +43,7 @@ def env_samples():
   e = env.Environment(source_mmsi=366001)
   e.append(env.SensorReportLocation(year=2012, month=10, day=22, hour=0,
                                     minute=8, site_id=1, owner=5, timeout=5))
-  env_dump(e, 'NO Location')
+  env_dump(e, 'No location')
 
   e = env.Environment(source_mmsi=mmsi)
   sr = env.SensorReportLocation(year=year, month=month, day=day, hour=day,

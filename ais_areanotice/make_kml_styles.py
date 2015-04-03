@@ -17,21 +17,21 @@ def rand_hex_color():
 for i in range(1,127+1):
 
     print '''
-	<!-- AreaNotice {number}: {name} -->
-	<StyleMap id="AreaNotice_{number}">
-		<Pair><key>normal</key><styleUrl>#AreaNotice_{number}_normal</styleUrl></Pair>
-		<Pair><key>highlight</key><styleUrl>#AreaNotice_{number}_highlight</styleUrl></Pair>
-	</StyleMap>
+        <!-- AreaNotice {number}: {name} -->
+        <StyleMap id="AreaNotice_{number}">
+                <Pair><key>normal</key><styleUrl>#AreaNotice_{number}_normal</styleUrl></Pair>
+                <Pair><key>highlight</key><styleUrl>#AreaNotice_{number}_highlight</styleUrl></Pair>
+        </StyleMap>
 
-	<Style id="AreaNotice_{number}_highlight">
+        <Style id="AreaNotice_{number}_highlight">
           <IconStyle><scale>1.2</scale></IconStyle>
-	  <LineStyle><color>{c1}</color><width>8</width></LineStyle>
-	  <PolyStyle><color>{c2}</color></PolyStyle>
+          <LineStyle><color>{c1}</color><width>8</width></LineStyle>
+          <PolyStyle><color>{c2}</color></PolyStyle>
         </Style>
-	<Style id="AreaNotice_{number}_normal">
-	  <LineStyle><color>{c3}</color><width>8</width></LineStyle>
-	  <PolyStyle><color>{c4}</color></PolyStyle>
-	</Style>'''.format(number=i, name=notice_type[i],
+        <Style id="AreaNotice_{number}_normal">
+          <LineStyle><color>{c3}</color><width>8</width></LineStyle>
+          <PolyStyle><color>{c4}</color></PolyStyle>
+        </Style>'''.format(number=i, name=notice_type[i],
                            c1=rand_hex_color(),
                            c2=rand_hex_color(),
                            c3=rand_hex_color(),
