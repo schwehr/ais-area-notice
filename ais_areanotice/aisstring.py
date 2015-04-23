@@ -6,11 +6,11 @@ character_bits: dict, lookup table for going from a single character to
   a 6 bit BitVector.
 """
 import re
-import sys
 
-from BitVector import BitVector
 
 import binary
+from BitVector import BitVector
+
 
 character_lut = [
     '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
@@ -20,6 +20,9 @@ character_lut = [
     '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?'
 ]
 
+# Fast lookup for the AIS int code for a character.
+# TODO(schwehr): Remove duplicate character entry without breaking things.
+# pylint: disable=duplicate-key
 character_dict = {
     '@': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7,
     'H': 8, 'I': 9, 'J': 10, 'K': 11, 'L': 12, 'M': 13, 'N': 14, 'O': 15,
@@ -31,7 +34,6 @@ character_dict = {
     '3': 51, '4': 52, '5': 53, '6': 54, '7': 55, '8': 56, '9': 57,
     ':': 58, ';': 59, '<': 60, '=': 61, '>': 62, '?': 63
 }
-"""Fast lookup for the AIS int code for a character """
 
 character_bits = {}
 character_bits['@'] = binary.setBitVectorSize(BitVector(intVal=0), 6)
@@ -139,17 +141,17 @@ def Encode(string, bit_size=None):
     String representing the bits encoded as an AIS VDM armored characters.
   """
   if bit_size:
-    assert(bit_size % 6 == 0)
+    assert bit_size % 6 == 0
   bv = BitVector(size=0)
   for i in range(len(string)):
-    bv = bv + character_bits[string[i]]
+    bv += character_bits[string[i]]
   if bit_size:
     if bit_size < len(bv):
       print 'ERROR:  Too many bits in string: "' + string + '"',
       print '  ', bit_size, len(bv)
       assert False
     extra = bit_size - len(bv)
-    bv = bv + BitVector(size=extra)
+    bv += BitVector(size=extra)
 
   return bv
 
