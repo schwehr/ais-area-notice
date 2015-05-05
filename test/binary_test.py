@@ -1,8 +1,10 @@
-"""Tests for ais_areanotice.binary."""
+#!/usr/bin/env python
+
+"""Tests for ais_area_notice.binary."""
 
 import unittest
 
-from ais_areanotice import binary
+from ais_area_notice import binary
 import BitVector
 
 # TODO(schwehr): Test joinBV.

@@ -10,8 +10,8 @@ import random
 import sys
 import unittest
 
-from ais_areanotice import aisstring
-import ais_areanotice.imo_001_26_environment as env
+from ais_area_notice import ais_string
+import ais_area_notice.imo_001_26_environment as env
 
 
 # How many loops to do on fuzz testing
@@ -46,7 +46,7 @@ def random_id():
   date = random_date()
   site_id = random.randint(0, 127)
   msg_len = random.randint(0, 14)
-  msg_char = [random.choice(aisstring.character_lut) for i in range(msg_len)]
+  msg_char = [random.choice(ais_string.character_lut) for i in range(msg_len)]
   id_str = ''.join(msg_char)
   return env.SensorReportId(
       year=date.year, month=date.month, day=date.day, hour=date.hour,
@@ -360,7 +360,6 @@ class TestSensorReports(unittest.TestCase):
       self.assertEqual(id_str.ljust(14, '@'), sr_ib.id_str)
       self.assertEqual(sr_i, sr_ib)
 
-    # TODO(schwehr): What is the best way to test printing?
     s1 = str(sr_i)
     s2 = str(sr_ib)
     self.assertTrue(' id' in s1)

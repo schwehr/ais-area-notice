@@ -5,6 +5,7 @@ character_lut: list, lookup table for decode to fetch characters faster.
 character_bits: dict, lookup table for going from a single character to
   a 6 bit BitVector.
 """
+import logging
 import re
 
 
@@ -147,8 +148,8 @@ def Encode(string, bit_size=None):
     bv += character_bits[string[i]]
   if bit_size:
     if bit_size < len(bv):
-      print 'ERROR:  Too many bits in string: "' + string + '"',
-      print '  ', bit_size, len(bv)
+      logging.error('ERROR:  Too many bits in string: "%s %s %s"',
+                    string, bit_size, len(bv))
       assert False
     extra = bit_size - len(bv)
     bv += BitVector(size=extra)

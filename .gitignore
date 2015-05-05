@@ -3,3 +3,4 @@ out.kml
 *~
 *.pyc
 *.orig
+*.egg-info

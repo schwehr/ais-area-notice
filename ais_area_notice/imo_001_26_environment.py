@@ -15,7 +15,7 @@ through the binary AIS messages.
 import datetime
 import sys
 
-import aisstring
+import ais_string
 import binary
 from BitVector import BitVector
 
@@ -160,7 +160,7 @@ class SensorReport(object):
     if (year is None or month is None or day is None
         or hour is None or minute is None):
       now = datetime.datetime.utcnow()
-      # TODO(schwehr): Switch to year = year or now.year
+      # TODO(schwehr): Switch to year = year or now.year.
       if year is None: year = now.year
       if month is None: month = now.month
       if day is None: day = now.day
@@ -345,12 +345,12 @@ class SensorReportId(SensorReport):
       raise AisUnpackingException('bit length', len(bits))
     assert(self.report_type == int(bits[:4]))
     SensorReport.decode_bits(self, bits)
-    self.id_str = aisstring.Decode(bits[27:-1])
+    self.id_str = ais_string.Decode(bits[27:-1])
     # 1 spare bit
 
   def get_bits(self):
     bv_list = [SensorReport.get_bits(self),
-               aisstring.Encode(self.id_str.ljust(14, '@')),
+               ais_string.Encode(self.id_str.ljust(14, '@')),
                BitVector(size=1)  # Spare.
               ]
     bits = binary.joinBV(bv_list)
@@ -1146,7 +1146,8 @@ class SensorReportWeather(SensorReport):
 
 
 class SensorReportAirGap(SensorReport):
-  'Mr. President, we must not allow... a mine shaft gap'
+  """Mr. President, we must not allow... a mine shaft gap."""
+
   report_type = 10
 
   def __init__(self,
@@ -1321,7 +1322,7 @@ class Environment(BBM):
 
   def get_bits(self, include_bin_hdr=False, mmsi=None, include_dac_fi=True):
     """Child classes must implement this."""
-    # TODO: include_bin_hdr appears to double the binary header.
+    # TODO(schwehr): include_bin_hdr appears to double the binary header.
     bv_list = []
     if include_bin_hdr:
       bv_list.append(BitVector(intVal=8, size=6))  # Messages ID.
@@ -1363,7 +1364,7 @@ class Environment(BBM):
       raise AisUnpackingException('Nothing decoded from: %s' % strings)
 
   def decode_bits(self, bits, year=None):
-    'decode the bits for a message'
+    """Decode the bits for a message."""
 
     # TODO(schwehr): Handle the option of without AIS hdr and message 8 hdr.
     r = {}
@@ -1403,7 +1404,7 @@ class Environment(BBM):
       self.add_sensor_report(sa_obj)
 
   def sensor_report_factory(self, bits):
-    'based on sensor bit reports, return a proper SensorReport instance'
+    """Based on sensor bit reports, return a proper SensorReport instance."""
 
     assert(len(bits) == SENSOR_REPORT_SIZE)
     report_type = int(bits[:4])

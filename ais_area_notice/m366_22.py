@@ -5,14 +5,15 @@ Just different.
 http://en.wikipedia.org/wiki/Rhumb_line
 """
 import datetime
+import logging
 
 import an_util
 import binary
-from imo_001_22_area_notice import BBM
-from imo_001_22_area_notice import notice_type
 from imo_001_22_area_notice import ais_nmea_regex
 from imo_001_22_area_notice import AisPackingException
+from imo_001_22_area_notice import BBM
 from imo_001_22_area_notice import nmea_checksum_hex
+from imo_001_22_area_notice import notice_type
 
 DAC = 366
 FI = 22
@@ -61,7 +62,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
       raise Error('Must specify bits or parameters.')
 
   def DecodeBits(self, bits):
-    print('areanotice CIRCLE - decode bits', len(bits), bits)
+    logging.info('areanotice CIRCLE - decode bits %d %s', len(bits), bits)
     if len(bits) != SUB_AREA_BIT_SIZE:
       raise Error('Wrong bit string length.')
     db = an_util.DecodeBits(bits)
@@ -123,10 +124,8 @@ class AreaNotice(BBM):
     for msg in msgs:
       msg['fill_bits'] = int(msg['fill_bits'])
       bv = binary.ais6tobitvec(msg['body'])
-      # print 'len:', len(bv), 'fill_bits:', msg['fill_bits']
       if int(msg['fill_bits']):
         bv = bv[:-msg['fill_bits']]
-      # print 'len:', len(bv)
       bits.append(bv)
     bits = binary.joinBV(bits)
     self.DecodeBits(bits)
@@ -167,7 +166,7 @@ class AreaNotice(BBM):
       start = area_num * SUB_AREA_BIT_SIZE
       end = start + SUB_AREA_BIT_SIZE
       bits = sub_areas_bits[start:end]
-      print 'bits for sub area:', len(bits), start, end
+      logging.info('bits for sub area: %d %d %d', len(bits), start, end)
       subarea = self.SubareaFactory(bits)
       # self.add_subarea(subarea)
 

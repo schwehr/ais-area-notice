@@ -5,7 +5,7 @@
 import datetime
 import unittest
 
-from ais_areanotice import m366_22
+from ais_area_notice import m366_22
 # from m366_22 import AreaNotice
 # from m366_22 import AreaNoticeCircle
 # from m366_22 import AreaNoticeRectangle

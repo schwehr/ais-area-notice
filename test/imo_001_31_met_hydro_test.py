@@ -1,13 +1,8 @@
 #!/usr/bin/env python
-from __future__ import print_function
-
-__doc__ = '''
-Test the Environmental message and all of the constituent
-SensorReports.
+"""Test the Environmental message and all of the constituent SensorReports.
 
 since: Mon Feb 14 15:55:02 2011 -0500
-'''
-
+"""
 
 import math
 import random
@@ -15,12 +10,10 @@ import sys
 import unittest
 import datetime
 
-import ais_areanotice.aisstring
-import ais_areanotice.imo_001_31_met_hydro as met_hydro
-
+import ais_area_notice.imo_001_31_met_hydro as met_hydro
 from imo_001_26_env_test import random_date
 
-'How many loops to do on fuzz testing'
+# Number of loops to do on fuzz testing.
 FUZZ_COUNT = 30
 
 
@@ -55,7 +48,7 @@ def random_msg():
       water_temp=random.randint(-100, 501) / 10.,
       precip=random.choice(met_hydro.precip_types.keys()), salinity=50.1,
       ice=random.choice(0, 1, 3))
-# FIX: ohmex extension?
+# TODO(schwehr): Ohmex extension?
 
 
 class TestMetHydro31(unittest.TestCase):
@@ -74,6 +67,7 @@ class TestMetHydro31(unittest.TestCase):
       self.assertEqual(mh, mh)
       mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
       self.assertEqual(mh, mh_b)
+
 
 if __name__ == '__main__':
   unittest.main()

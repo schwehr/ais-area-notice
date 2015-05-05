@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 """USCG Area Notice Message similar to 8_1_22.
 
 Just different.
@@ -7,14 +5,16 @@ Just different.
 http://en.wikipedia.org/wiki/Rhumb_line
 """
 
-import aisstring
+import datetime
+import logging
+
+import ais_string
 import binary
 from BitVector import BitVector
-import datetime
-from imo_001_22_area_notice import BBM
 from imo_001_22_area_notice import ais_nmea_regex
-from imo_001_22_area_notice import nmea_checksum_hex
 from imo_001_22_area_notice import AisPackingException
+from imo_001_22_area_notice import BBM
+from imo_001_22_area_notice import nmea_checksum_hex
 
 SUB_AREA_SIZE = 96
 
@@ -34,14 +34,14 @@ class DecodeBits(object):
     self.bits = bits
     self.pos = 0
 
-  # TODO: This should be GetUInt
+  # TODO(schwehr): This should be GetUInt.
   def GetInt(self, length):
     end = self.pos + length
     value = int(self.bits[self.pos:end])
     self.pos += length
     return value
 
-  # TODO: This should be GetInt
+  # TODO(schwehr): This should be GetInt.
   def GetSignedInt(self, length):
     end = self.pos + length
     value = binary.signedIntFromBV(self.bits[self.pos:end])
@@ -51,7 +51,7 @@ class DecodeBits(object):
   def GetText(self, length, strip=True):
     assert length % 6 == 0
     end = self.pos + length
-    text = aisstring.Decode(self.bits[self.pos:end])
+    text = ais_string.Decode(self.bits[self.pos:end])
     at = text.find('@')
     if strip and at != -1:
       text = text[:at]
@@ -60,7 +60,7 @@ class DecodeBits(object):
 
   def Verify(self, offset):
     if self.pos != offset:
-      print('DecodeBits FAILING!  expect:', offset, 'got:', self.pos)
+      logging.info('DecodeBits FAILING!  expect: %s got: %s', offset, self.pos)
     assert self.pos == offset
 
 
@@ -72,7 +72,6 @@ class BuildBits(object):
 
   def AddUInt(self, val, num_bits):
     """Add an unsigned integer."""
-    # print('AddUInt:', val, num_bits)
     bits = binary.setBitVectorSize(BitVector(intVal=val), num_bits)
     assert num_bits == len(bits)
     self.bits_expected += num_bits
@@ -89,7 +88,7 @@ class BuildBits(object):
     num_char = num_bits / 6
     assert num_bits % 6 == 0
     text = val.ljust(num_char, '@')
-    bits = aisstring.Encode(text)
+    bits = ais_string.Encode(text)
     self.bits_expected += num_bits
     self.bv_list.append(bits)
 
@@ -101,7 +100,7 @@ class BuildBits(object):
     assert len(bits) == self.bits_expected
     return bits
 
-# TODO: Should this import from 1:22?
+# TODO(schwehr): Should this import from 1:22?
 
 
 class AreaNoticeSubArea(object):
@@ -143,11 +142,11 @@ class AreaNoticeCircle(AreaNoticeSubArea):
       self.radius_scaled = radius / self.scale_factor
     elif bits is not None:
       self.decode_bits(bits)
-    # TODO: warn for else
+    # TODO(schwehr): Warn for else.
+
     return  # Return an empty object
 
   def decode_bits(self, bits):
-    # print('areanotice CIRCLE - decode bits', len(bits), bits)
     assert len(bits) == SUB_AREA_SIZE
     db = DecodeBits(bits)
     self.area_shape = db.GetInt(3)
@@ -161,14 +160,11 @@ class AreaNoticeCircle(AreaNoticeSubArea):
     db.Verify(SUB_AREA_SIZE)
 
   def get_bits(self):
-    # print('areanotice CIRCLE - get bits')
     bb = BuildBits()
     bb.AddUInt(SHAPES['CIRCLE'], 3)  # Area shape
     if 'scale_factor' not in self.__dict__:
       scale_factor = self.getScaleFactor(self.radius)
-      # print('get_bits getScaleFactor:', self.getScaleFactor(self.radius), 'from', self.radius)
     bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
-    # print('get_bits getScaleFactorRaw:', self.getScaleFactorRaw(self.scale_factor))
     bb.AddInt(self.lon * 600000, 28)
     bb.AddInt(self.lat * 600000, 27)
     bb.AddUInt(self.precision, 3)
@@ -276,7 +272,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
       self.scale_factor = self.getScaleFactor(self.radius)
     bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
     bb.AddInt(self.lon * 600000, 28)
-    # TODO: do we round all before encoding?
+    # TODO(schwehr): Do we round all before encoding?
     bb.AddInt(round(self.lat * 600000), 27)
     bb.AddUInt(self.precision, 3)
     bb.AddUInt(self.radius / self.scale_factor, 12)
@@ -341,7 +337,6 @@ class AreaNoticePoly(AreaNoticeSubArea):
     bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
     for i in range(len(self.points)):
       angle, dist = self.points[i]
-      print('get_bits angle:', angle, 'dist:', dist)
       bb.AddUInt(int(angle * 2), 10)
       bb.AddUInt(dist / self.scale_factor, 11)
     # encode any empty points
@@ -392,14 +387,13 @@ class AreaNotice(BBM):
       self.decode_nmea(nmea_strings)
     elif area_type is not None:
       self.area_type = area_type
-      # Leave out seconds
+      # Leave out seconds.
       self.when = datetime.datetime(when.year, when.month, when.day,
                                     when.hour, when.minute)
-      # print('setting duration:', duration_min)
       self.duration_min = duration_min
       self.link_id = link_id
       self.mmsi = mmsi
-      self.source_mmsi = self.mmsi  # TODO(schwehr): make all just mmsi
+      self.source_mmsi = self.mmsi  # TODO(schwehr): Make all just mmsi.
 
   def add_subarea(self, area):
     if not hasattr(self, 'areas'):
@@ -410,36 +404,37 @@ class AreaNotice(BBM):
     self.areas.append(area)
 
   def get_bits(self, include_bin_hdr=False, include_dac_fi=True):
-    bvList = []
+    bv_list = []
     if include_bin_hdr:
       # Messages ID
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=8), 6))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=8), 6))
       # Repeat Indicator
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=0), 2))
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=self.mmsi), 30))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 2))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.mmsi), 30))
 
     if include_bin_hdr or include_dac_fi:
-      bvList.append(BitVector(bitstring='00'))
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=self.dac), 10))
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=self.fi), 6))
+      bv_list.append(BitVector(bitstring='00'))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.dac), 10))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.fi), 6))
 
     version = 1
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=version), 6))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.link_id), 10))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.area_type), 7))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=version), 6))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.link_id), 10))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.area_type), 7))
 
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.when.month), 4))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.when.day), 5))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.when.hour), 5))
-    bvList.append(
+    bv_list.append(
+        binary.setBitVectorSize(BitVector(intVal=self.when.month), 4))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.day), 5))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.hour), 5))
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.when.minute), 6))
-    bvList.append(
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.duration_min), 18))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=0), 3))  # spare
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 3))  # spare
 
     for i, area in enumerate(self.areas):
-      bvList.append(area.get_bits())
-    bv = binary.joinBV(bvList)
+      bv_list.append(area.get_bits())
+    bv = binary.joinBV(bv_list)
     if len(bv) > 984:
       raise AisPackingException(
           'Message to large:  %d > %d' % (len(bv), self.max_bits))

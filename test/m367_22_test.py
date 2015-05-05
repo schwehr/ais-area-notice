@@ -4,15 +4,15 @@
 import datetime
 import unittest
 
-from ais_areanotice import binary
+from ais_area_notice import binary
 
-from ais_areanotice.m367_22 import AreaNotice
-from ais_areanotice.m367_22 import AreaNoticeCircle
-from ais_areanotice.m367_22 import AreaNoticeRectangle
-from ais_areanotice.m367_22 import AreaNoticeSector
-from ais_areanotice.m367_22 import AreaNoticePoly
-from ais_areanotice.m367_22 import AreaNoticeText
-from ais_areanotice.m367_22 import SHAPES
+from ais_area_notice.m367_22 import AreaNotice
+from ais_area_notice.m367_22 import AreaNoticeCircle
+from ais_area_notice.m367_22 import AreaNoticeRectangle
+from ais_area_notice.m367_22 import AreaNoticeSector
+from ais_area_notice.m367_22 import AreaNoticePoly
+from ais_area_notice.m367_22 import AreaNoticeText
+from ais_area_notice.m367_22 import SHAPES
 
 
 class DiffAreaNotice(object):
@@ -21,8 +21,6 @@ class DiffAreaNotice(object):
     self.an1 = an1
     self.an2 = an2
     self.diff_fields = []
-    print 'an1 keys:', an1.__dict__.keys()
-    print 'an2 keys:', an2.__dict__.keys()
 
     fields_an1 = set(an1.__dict__.keys())
     fields_an2 = set(an2.__dict__.keys())
@@ -55,8 +53,7 @@ class TestAreaNotice(unittest.TestCase):
 
   def checkAreaNoticeHeader(self, area_notice, link_id, area_type, timestamp,
                             duration):
-    """timestamp is tuple: (month, day, hour, minute)
-    """
+    """Timestamp is tuple: (month, day, hour, minute)."""
 
     self.assertEqual(area_notice.version, 1)
     self.assertEqual(area_notice.link_id, link_id)
@@ -341,10 +338,11 @@ class TestAreaNotice(unittest.TestCase):
     lon, lat = -71.6816666666, 41.1483333333
     self.checkPoly(line0, 3, 1, lon, lat, points0)
 
-    # The USCG / Greg Johnson is not following the specs with 0,0 marking no point.
+    # The USCG / Greg Johnson is not following the specs with 0, 0 marking
+    # no point.
     # (15.5, 550), (0., 0), (0., 0), (0., 0)
     points1 = [(15.5, 550)]
-    # TODO: Check the lat,lon are being pulled correct
+    # TODO: Check the lat, lon are being pulled correctly.
     lon, lat = None, None
     self.checkPoly(line1, 3, 1, lon, lat, points1)
 

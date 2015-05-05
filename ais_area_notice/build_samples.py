@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
 """Generate sample data for Area Notice / Zone msg."""
 
 import datetime
@@ -13,12 +12,12 @@ import imo_001_26_environment as env
 
 
 def env_dump(e, description):
-  print ('\n#', description)
-  print (e.__str__(verbose=True))
-  print ('bit_len:', len(e.get_bits()))
-  print ('bit_str:', e.get_bits())
-  for line in e.get_aivdm(byte_align=True):
-    print (line)
+  print '\n#', description
+  print e.__str__(verbose=True)
+  print 'bit_len:', len(e.get_bits())
+  print 'bit_str:', e.get_bits()
+  for line in e.get_aivdm(byte_align=True:
+    print line
 
 
 def env_samples():
@@ -101,7 +100,7 @@ def env_samples():
   env_dump(e, '2d currents heading south ish')
   sr_list.append(sr)
 
-  # FIX: This sensor report can't specify south, west, or down
+  # TODO(schwehr): This sensor report can't specify south, west, or down.
   e = env.Environment(source_mmsi=mmsi)
   sr = env.SensorReportCurrent3d(year=year, month=month, day=day, hour=day,
                                  minute=minute, site_id=site_id,
@@ -168,52 +167,49 @@ def env_samples():
     e.append(sr)
   env_dump(e, 'Combining a bunch of types of reports together')
 
-  # TODO: Create more combinations of Env messages.
+  # TODO(schwehr): Create more combinations of Env messages.
 
   return
 
 
 def dump_all(area_notice, kmlfile, byte_align=False):
-  print ('#', area_notice.name)
-  print (str(area_notice))
+  print '#', area_notice.name
+  print str(area_notice)
   for line in area_notice.get_bbm():
-    print (line)
+    print line
   for line in area_notice.get_aivdm(byte_align=byte_align):
-    print (line)
-  print ('bit_str:', str(area_notice.get_bits(include_bin_hdr=True)))
+    print line
+  print 'bit_str:', str(area_notice.get_bits(include_bin_hdr=True))
 
   # USCG/AlionScience Fetcher Formatter message for Queue Manager
-  print ('ff:', an.message_2_fetcherformatter(area_notice, verbose=False))
+  print 'ff:', an.message_2_fetcherformatter(area_notice, verbose=False)
 
-  print ('geojson:', geojson.dumps(area_notice))
-  print ()
+  print 'geojson:', geojson.dumps(area_notice)
+  print
   kmlfile.write(area_notice.kml(with_style=True, with_time=True,
                                 with_extended_data=True))
   kmlfile.write('\n')
 
 
 def point(lon, lat, zone_type, kmlfile):
-  print ('# Point')
+  print '# Point'
   pt1 = an.AreaNotice(zone_type, datetime.datetime(2011, 7, 6, 0, 0, 0),
                       60, 10, source_mmsi=123456789)
   pt1.add_subarea(an.AreaNoticeCirclePt(lon, lat, radius=0))
 
-  print (str(pt1))
+  print str(pt1)
   for line in pt1.get_bbm():
-    print (line)
+    print line
   aivdms = []
   for line in pt1.get_aivdm(source_mmsi=123456789):
-    print (line)
+    print line
     aivdms.append(line)
   bits = pt1.get_bits(include_bin_hdr=True)
-  print (str(bits))
+  print str(bits)
 
   notice = an.AreaNotice(nmea_strings=aivdms)
-  #print ('decoded:',str(notice))
-  #print ('original_geojson:',geojson.dumps(pt1))
-  #print ('decoded_geojson: ',geojson.dumps(notice))
-  print ('geojson: ', geojson.dumps(notice))
-  print ()
+  print 'geojson: ', geojson.dumps(notice)
+  print
 
   pt1.name = 'point-1'
   kmlfile.write(pt1.kml(with_style=True))
@@ -224,10 +220,9 @@ def main():
 
   Free text which requires something for position.
   """
-
-  print ('# Building sample set on', datetime.datetime.utcnow())
-  print ('# ais-areanotice-py')
-  print ('# VERSION:', open('VERSION').read(), '\n')
+  print '# Building sample set on', datetime.datetime.utcnow()
+  print '# ais-areanotice-py'
+  print '# VERSION:', open('VERSION').read(), '\n'
 
   kmlfile = file('samples.kml', 'w')
   kmlfile.write(an.kml_head)
@@ -478,7 +473,7 @@ def main():
   del rr3
   lat += delta
 
-  print ('\n# rect-multi-scale')
+  print '\n# rect-multi-scale'
   rect1 = an.AreaNotice(
       zone_type, datetime.datetime(2011, 7, 6, 0, 0, 0), 60, 10,
       source_mmsi=123456789)
@@ -489,7 +484,7 @@ def main():
   rect1.add_subarea(an.AreaNoticeRectangle(-69.5, lat, 3000, 15000, 0))
   rect1.add_subarea(an.AreaNoticeRectangle(-69.4, lat, 3000, 25000, 0))
   rect1.add_subarea(an.AreaNoticeRectangle(-69.3, lat, 3000, 250000, 0))
-  print ('scale:', [r.scale_factor for r in rect1.areas])
+  print 'scale:', [r.scale_factor for r in rect1.areas]
 
   rect1.name = 'rect-mult-scale'
   dump_all(rect1, kmlfile)
@@ -520,9 +515,9 @@ def main():
 
   dump_all(sbnms1, kmlfile)
 
-  # TODO: Add a polyline that takes multiple subareas.
-  # TODO: Add a polygon that takes multiple subareas.
-  # TODO: Add case with more than 4 points in lines and polygons.
+  # TODO(schwehr): Add a polyline that takes multiple subareas.
+  # TODO(schwehr): Add a polygon that takes multiple subareas.
+  # TODO(schwehr): Add case with more than 4 points in lines and polygons.
 
   kmlfile.write(an.kml_tail)
 

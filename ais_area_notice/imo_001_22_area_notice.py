@@ -12,46 +12,37 @@ It is unclear if that is after the bit stuffing and if those extra
 bits should be returned back into into the NMEA message.  The code here
 has the option to byte align the resulting bits in get_aivdm.
 
-Requires:
-Python<http://python.org/>} >= 2.6
-epydoc<http://epydoc.sourceforge.net/>} >= 3.0.1
-lxml<http://codespeak.net/lxml/lxmlhtml.html>} >= 2.0
-shapely<http://pypi.python.org/pypi/Shapely/>}
-BitVector<http://pypi.python.org/pypi/BitVector/>}
-pyproj<http://code.google.com/p/pyproj/>}
-geojson<http://pypi.python.org/pypi/geojson/>}
-
-TODO: Handle polyline and polygons that span multiple subareas.
-TODO: Handle text that spans adjacent subareas.
+TODO(schwehr): Handle polyline and polygons that span multiple subareas.
+TODO(schwehr): Handle text that spans adjacent subareas.
 """
 
-import sys
 import datetime
+import logging
 import math
 import operator
-from operator import xor
+import optparse
 import Queue
 import re
+import sys
 import time
 
+import ais_string
+import binary
 from BitVector import BitVector
-from lxml.html import builder as E
 import lxml
+from lxml.html import builder as E
 from pyproj import Proj
 import shapely.geometry
 
-import aisstring
-import binary
 
+# Track the next value to use for multiline nmea messages.
 next_sequence = 1
-'Track the next value to use for multiline nmea messages'
 
+# 87 Bits for IMO Circ 289 rather than the 90 for USCG and Nav 55 version.
 SUB_AREA_SIZE = 87
-'87 Bits for IMO Circ 289 rather than the 90 for USCG and Nav 55 version'
-
-iso8601_timeformat = '%Y-%m-%dT%H:%M:%SZ'
 
 # With USCG metadata
+# msg_id is only valid on the first message in a group.
 ais_nmea_regex_str = r"""^!(?P<talker>AI)(?P<string_type>VD[MO])
 ,(?P<total>\d?)
 ,(?P<sen_num>\d?)
@@ -71,108 +62,35 @@ ais_nmea_regex_str = r"""^!(?P<talker>AI)(?P<string_type>VD[MO])
 (,(?P<time_stamp>\d+([.]\d+)?))?
 """
 
-# msg_id is only valid on the first message in a group
-
 ais_nmea_regex = re.compile(ais_nmea_regex_str, re.VERBOSE)
 
-kml_head = """<?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
-<Document>
-"""
-'Beginning of a KML file for visualization'
+# Beginning of a KML file for visualization.
+kml_head = (
+    '<?xml version="1.0" encoding="UTF-8"?>'
+    '<kml xmlns="http://www.opengis.net/kml/2.2" '
+    'xmlns:gx="http://www.google.com/kml/ext/2.2" '
+    'xmlns:kml="http://www.opengis.net/kml/2.2" '
+    'xmlns:atom="http://www.w3.org/2005/Atom">'
+    '<Document>'
+)
 
-kml_tail = """</Document>
-</kml>
-"""
-'Finish a kml file'
+# Finish a KML file.
+kml_tail = '</Document></kml>'
 
-
-def kml_lookat(time_begin=None, time_end=None,
-               x=None, y=None,
-               alt=None, heading=None,
-               tilt=None, range=None):
-  """Create a LookAt KML entry"""
-
-  o = ['<LookAt>']  # build a list of strings to include
-  if time_begin is not None or time_end is not None:
-    o.append('<gx:TimeSpan>')
-    if time_begin is not None: o.append('<begin>'+time_begin+'</begin>')
-    if time_end   is not None: o.append('<end>'  +time_end  +'</end>')
-    o.append('</gx:TimeSpan>')
-  if x is not None: o.append('<longitude>%s</longitude>' % (x,))
-  if y is not None: o.append('<latitude>%s</latitude>' % (y,))
-  if alt is not None: o.append('<altitude>%s</altitude>' % (alt,))
-  if range is not None: o.append('<range>%s</range>' % (range,))
-  o.append('</LookAt>')
-  return '\n'.join(o)
-
-
-def lon_to_utm_zone(lon):
-  return int((lon + 180) / 6) + 1
-
+# ISO time format for NetworkLinkControl strftime.
 iso8601_timeformat = '%Y-%m-%dT%H:%M:%SZ'
-"""ISO time format for NetworkLinkControl strftime"""
 
-
-nmea_talkers = {
-    'PS': 'FIX: something to do with Class B AIS',
-    # http://yachtelectronics.blogspot.com/2011/02/srt-proprietary-ais-commands.html
-    'AG': 'Autopilot - General',
-    'AI': 'Automatic Identification System',
-    'AP': 'Autopilot - Magnetic',
-    'CC': 'Computer - Programmed Calculator (outdated)',
-    'CD': 'Communications - Digital Selective Calling (DSC)',
-    'CM': 'Computer - Memory Data (outdated)',
-    'CS': 'Communications - Satellite',
-    'CT': 'Communications - Radio-Telephone (MF/HF)',
-    'CV': 'Communications - Radio-Telephone (VHF)',
-    'CX': 'Communications - Scanning Receiver',
-    'DE': 'DECCA Navigation (outdated)',
-    'DF': 'Direction Finder',
-    'EC': 'Electronic Chart Display & Information System (ECDIS)',
-    'EP': 'Emergency Position Indicating Beacon (EPIRB)',
-    'ER': 'Engine Room Monitoring Systems',
-    'GP': 'Global Positioning System (GPS)',
-    'HC': 'Heading - Magnetic Compass',
-    'HE': 'Heading - North Seeking Gyro',
-    'HN': 'Heading - Non North Seeking Gyro',
-    'II': 'Integrated Instrumentation',
-    'IN': 'Integrated Navigation',
-    'LA': 'Loran A (outdated)',
-    'LC': 'Loran C',
-    'MP': 'Microwave Positioning System (outdated)',
-    'OM': 'OMEGA Navigation System (outdated)',
-    'OS': 'Distress Alarm System (outdated)',
-    'RA': 'RADAR and/or ARPA',
-    'SD': 'Sounder, Depth',
-    'SN': 'Electronic Positioning System, other/general',
-    'SS': 'Sounder, Scanning',
-    'TI': 'Turn Rate Indicator',
-    'TR': 'TRANSIT Navigation System',
-    'VD': 'Velocity Sensor, Doppler, other/general',
-    'DM': 'Velocity Sensor, Speed Log, Water, Magnetic',  # Should this be VD?
-    'VW': 'Velocity Sensor, Speed Log, Water, Mechanical',
-    'WI': 'Weather Instruments ',
-    'YC': 'Transducer - Temperature (outdated)',
-    'YD': 'Transducer - Displacement, Angular or Linear (outdated)',
-    'YF': 'Transducer - Frequency (outdated)',
-    'YL': 'Transducer - Level (outdated)',
-    'YP': 'Transducer - Pressure (outdated)',
-    'YR': 'Transducer - Flow Rate (outdated)',
-    'YT': 'Transducer - Tachometer (outdated)',
-    'YV': 'Transducer - Volume (outdated)',
-    'YX': 'Transducer',
-    'ZA': 'Timekeeper - Atomic Clock',
-    'ZC': 'Timekeeper - Chronometer',
-    'ZQ': 'Timekeeper - Quartz',
-    'ZV': 'Timekeeper - Radio Update, WWV or WWVH',
-}
-"""Prefixes for NMEA strings that say where a message originated.
-
-http://gpsd.berlios.de/NMEA.txt
-BBM messages may require having EC as the prefix.
-"""
-
+# By name or number.
+#
+# cau == caution area
+# res == restricted
+# anc == anchorage
+# env == environmental caution
+# sec == security
+# des == distress
+# inst == instructional
+# info == informational
+# chart == chart features
 notice_type = {
     # Rats, they got rid of the "NOT observed", but I will still use it that way
     'cau_mammans': 0,
@@ -406,17 +324,6 @@ notice_type = {
     126: 'Cancellation - cancel area as identified by Message Linka',
     127: 'Undefined (default)',
 }
-""" by name or number.
-
- cau == caution area
- res == restricted
- anc == anchorage
- env == environmental caution
- sec == security
- des == distress
- inst == instructional
- info == informational
- chart == chart features"""
 
 shape_types = {
     0: 'circle_or_point',
@@ -451,7 +358,7 @@ def lon_to_utm_zone(lon):
 
 
 def ll_to_delta_m(lon1, lat1, lon2, lat2):
-  'calculate dx and dy in meters between two points'
+  """Calculate dx and dy in meters between two points."""
   zone = lon_to_utm_zone((lon1 + lon2) / 2.)  # Just don't cross the dateline!
   params = {'proj': 'utm', 'zone': zone}
   proj = Proj(params)
@@ -482,7 +389,7 @@ def deltas_to_angle_dist(deltas_m):
 
 
 def ll_to_polyline(ll_points):
-  # Skips the first point as that is returned as an x,y.  ll==lonlat
+  # Skips the first point as that is returned as an x, y.  ll==lonlat
   ll = ll_points
   assert(len(ll) >= 2)
   deltas_m = [(0, 0)]
@@ -494,7 +401,7 @@ def ll_to_polyline(ll_points):
 
 
 def polyline_to_ll(start, angles_and_offsets):
-  # start lon,lat plus a list of (angle,offset) from that point
+  # Start lon, lat plus a list of (angle, offset) from that point
   # 0 is true north and runs clockwise
   points = angles_and_offsets
 
@@ -520,7 +427,7 @@ def polyline_to_ll(start, angles_and_offsets):
 
 
 def frange(start, stop=None, step=None):
-  'range but with float steps'
+  """Range but with float steps."""
   if stop is None:
     stop = float(start)
     start = 0.0
@@ -537,7 +444,7 @@ def vec_add(a, b):
 
 
 def vec_rot(a, theta):
-  'counter clockwise rotation by theta radians'
+  """Counter clockwise rotation by theta radians."""
   x, y = a
   x1 = x * math.cos(theta) - y * math.sin(theta)
   y1 = x * math.sin(theta) + y * math.cos(theta)
@@ -545,7 +452,7 @@ def vec_rot(a, theta):
 
 
 def geom2kml(geom_dict):
-  """Convert a geointerface geometry to KML
+  """Convert a geointerface geometry to KML.
 
   Args:
     geom_dict: dict, 'geometry' as defined by the geo interface in
@@ -601,7 +508,7 @@ class AisUnpackingException(AisException):
 def nmea_checksum_hex(sentence):
   """8-bit XOR of everything between the [!$] and the *."""
   nmea = map(ord, sentence.split('*')[0][1:])
-  checksum = reduce(xor, nmea)
+  checksum = reduce(operator.xor, nmea)
   checksum_str = hex(checksum).split('x')[1].upper()
   if len(checksum_str) == 1:
     checksum_str = '0' + checksum_str
@@ -642,12 +549,12 @@ class AIVDM (object):
       raise AisPackingException(
           'repeat_indicator must be valid: [%s]' % (repeat_indicator,))
 
-    bvList = []
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=message_id), 6))
-    bvList.append(
+    bv_list = []
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=message_id), 6))
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=repeat_indicator), 2))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=source_mmsi), 30))
-    bv = binary.joinBV(bvList)
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=source_mmsi), 30))
+    bv = binary.joinBV(bv_list)
     if len(bv) != 38:
       raise AisPackingExpeption('invalid  header size', len(bv))
     return bv
@@ -765,7 +672,7 @@ class AIVDM (object):
   def kml(
       self, with_style=False, full=False, with_time=False,
       with_extended_data=False):
-    """return kml str for google earth
+    """Return a KML str for Google Earth.
 
     @param with_style: if style is True, it will use the standard style.  Set to
     a name for a custom style
@@ -904,7 +811,7 @@ class AreaNoticeSubArea(object):
   def __str__(self):
     return self.__unicode__()
 
-# FIX: Warning... there may be an issue with the precision field
+# TODO(schwehr): Tthere may be an issue with the precision field.
 
 
 class AreaNoticeCirclePt(AreaNoticeSubArea):
@@ -949,8 +856,9 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
     return  # Return an empty object
 
   def decode_bits(self, bits):
-    if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
-    if isinstance(bits,str):
+    if len(bits) != SUB_AREA_SIZE:
+      raise AisUnpackingException('bit length', len(bits))
+    if isinstance(bits, str):
       bits = BitVector(bitstring=bits)
     elif isinstance(bits, list) or isinstance(bits, tuple):
       bits = BitVector(bitlist=bits)
@@ -970,18 +878,19 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
     assert (18 == SUB_AREA_SIZE - 69)
 
   def get_bits(self):
-    'Build a BitVector for this area'
-    bvList = []
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
-    bvList.append(
+    """Build a BitVector for this area."""
+    bv_list = []
+    bv_list.append(
+        binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.scale_factor_raw), 2))
-    bvList.append(binary.bvFromSignedInt(int(self.lon * 60000), 25))
-    bvList.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
-    bvList.append(
+    bv_list.append(binary.bvFromSignedInt(int(self.lon * 60000), 25))
+    bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.radius_scaled), 12))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=0), 18))  # spare
-    bv = binary.joinBV(bvList)
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 18))  # spare
+    bv = binary.joinBV(bv_list)
     if SUB_AREA_SIZE != len(bv):
       raise AisPackingException(
           'area not ' + str(SUB_AREA_SIZE) + ' bits', len(bv))
@@ -1014,7 +923,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
   @property
   def __geo_interface__(self):
-    'Provide a Geo Interface for GeoJSON serialization'
+    """Provide a Geo Interface for GeoJSON serialization."""
     # Would be better if there was a GeoJSON Circle type!
 
     if self.radius == 0.:
@@ -1044,10 +953,10 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
     0 is a north-south line @param north_dim: height in meters (this gets
     confusing for larger angles). 0 is an east-west line @param
     orientation_deg: degrees CW
-    @todo: great get/set for dimensions and allow for setting scale factor.
-    @todo: or just over rule the attribute get and sets
-    @todo: allow user to force the scale factor
-    @todo: Should this be raising a ValueError
+    TODO(schwehr): Get/set for dimensions and allow for setting scale factor.
+    TODO(schwehr): Or just over rule the attribute get and sets.
+    TODO(schwehr): Allow user to force the scale factor.
+    TODO(schwehr): Should this be raising a ValueError.
     """
     if lon is not None:
       assert lon >= -180. and lon <= 180.
@@ -1084,8 +993,9 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
       self.decode_bits(bits)
 
   def decode_bits(self, bits):
-    if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
-    if isinstance(bits,str):
+    if len(bits) != SUB_AREA_SIZE:
+      raise AisUnpackingException('bit length', len(bits))
+    if isinstance(bits, str):
       bits = BitVector(bitstring=bits)
     elif isinstance(bits, list) or isinstance(bits, tuple):
       bits = BitVector(bitlist=bits)
@@ -1107,21 +1017,22 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
     self.spare = int(bits[82:])
 
   def get_bits(self):
-    bvList = []
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
-    bvList.append(
+    bv_list = []
+    bv_list.append(
+        binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.scale_factor_raw), 2))
-    bvList.append(binary.bvFromSignedInt(int(self.lon * 60000), 25))
-    bvList.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
-    bvList.append(
+    bv_list.append(binary.bvFromSignedInt(int(self.lon * 60000), 25))
+    bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.e_dim_scaled), 8))
-    bvList.append(
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.n_dim_scaled), 8))
-    bvList.append(
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.orientation_deg), 9))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=0), 5))  # spare
-    bv = binary.joinBV(bvList)
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 5))  # spare
+    bv = binary.joinBV(bv_list)
     assert SUB_AREA_SIZE == len(bv)
     return bv
 
@@ -1130,7 +1041,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         self.lon, self.lat, self.e_dim, self.n_dim, self.orientation_deg)
 
   def geom(self):
-    'return shapely geometry object'
+    """Return shapely geometry object."""
     zone = lon_to_utm_zone(self.lon)
     params = {'proj': 'utm', 'zone': zone}
     proj = Proj(params)
@@ -1149,8 +1060,10 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
   @property
   def __geo_interface__(self):
-    """Provide a Geo Interface for GeoJSON serialization
-    @todo: Write the code to build the polygon with rotation"""
+    """Provide a Geo Interface for GeoJSON serialization.
+
+    TODO(schwehr): Write the code to build the polygon with rotation
+    """
     r = {
         'area_shape': self.area_shape, 'area_shape_name': 'rectangle',
         'orientation': self.orientation_deg,
@@ -1167,7 +1080,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
   def __init__(
       self, lon=None, lat=None, radius=0, left_bound_deg=0,
       right_bound_deg=0, precision=4, bits=None):
-    """A pie slice
+    """A pie slice.
 
     @param lon: WGS84 longitude
     @param lat: WGS84 latitude
@@ -1177,10 +1090,9 @@ class AreaNoticeSector(AreaNoticeSubArea):
     North
     @param precision: useless suggestion for the display.  Leave 4
 
-    @todo: great get/set for dimensions and allow for setting scale factor.
-    @todo: or just over rule the attribute get and sets
-    @todo: allow user to force the scale factor
-    @todo: Should this be raising a ValueError
+    TODO(schwehr): Get/set for dimensions and allow for setting scale factor.
+    TODO(schwehr): Allow user to force the scale factor.
+    TODO(schwehr): Should this be raising a ValueError?
     """
     if lon is not None:
       assert lon >= -180. and lon <= 180.
@@ -1217,8 +1129,9 @@ class AreaNoticeSector(AreaNoticeSubArea):
       self.decode_bits(bits)
 
   def decode_bits(self, bits):
-    if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
-    if isinstance(bits,str):
+    if len(bits) != SUB_AREA_SIZE:
+      raise AisUnpackingException('bit length', len(bits))
+    if isinstance(bits, str):
       bits = BitVector(bitstring=bits)
     elif isinstance(bits, list) or isinstance(bits, tuple):
       bits = BitVector(bitlist=bits)
@@ -1237,23 +1150,24 @@ class AreaNoticeSector(AreaNoticeSubArea):
     self.right_bound_deg = int(bits[78:87])
 
   def get_bits(self):
-    'Build a BitVector for this area'
-    bvList = []
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
-    bvList.append(
+    """Build a BitVector for this area."""
+    bv_list = []
+    bv_list.append(
+        binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.scale_factor_raw), 2))
-    bvList.append(binary.bvFromSignedInt(int(self.lon * 60000), 25))
-    bvList.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
+    bv_list.append(binary.bvFromSignedInt(int(self.lon * 60000), 25))
+    bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
 
-    bvList.append(
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.radius_scaled), 12))
-    bvList.append(
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.left_bound_deg), 9))
-    bvList.append(
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.right_bound_deg), 9))
 
-    bv = binary.joinBV(bvList)
+    bv = binary.joinBV(bv_list)
     assert SUB_AREA_SIZE == len(bv)
     return bv
 
@@ -1263,7 +1177,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
         self.right_bound_deg)
 
   def geom(self):
-    'return shapely geometry object'
+    """Return shapely geometry object."""
     zone = lon_to_utm_zone(self.lon)
     params = {'proj': 'utm', 'zone': zone}
     proj = Proj(params)
@@ -1284,8 +1198,10 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
   @property
   def __geo_interface__(self):
-    """Provide a Geo Interface for GeoJSON serialization
-    @todo: Write the code to build the polygon with rotation"""
+    """Provide a Geo Interface for GeoJSON serialization.
+
+    TODO(schwehr): Write the code to build the polygon with rotation.
+    """
     r = {
         'area_shape': self.area_shape, 'area_shape_name': 'sector',
         'left_bound': self.left_bound_deg,
@@ -1308,7 +1224,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
     If an area, this is the area to the
     left of the line.  The line starts at the prior line.  Must set p1
     or provide bits.  You will not be able to get the geometry if you
-    do not provide a lon,lat for the starting point
+    do not provide a lon, lat for the starting point
 
     The lon, lat point comes before the line.  This makes decoding tricky.
 
@@ -1321,8 +1237,8 @@ class AreaNoticePolyline(AreaNoticeSubArea):
     @param lat: WGS84 longitude of the starting point.  Must match the previous
     point
     @param bits: bits to decode from
-    @todo: FIX: make sure that the AreaNotice decode bits passes the lon, lat
-    @todo: FIX: Handle sectors that cross 0/360
+    TODO(schwehr): Ensure the AreaNotice decode bits passes the lon, lat.
+    TODO(schwehr): Handle sectors that cross 0/360.
     """
 
     if lon is not None:
@@ -1331,7 +1247,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
       assert lat >= -90. and lat <= 90.
       self.lat = lat
 
-    # FIX: check the number of points to make sure we have room
+    # TODO(schwehr): Check the number of points to make sure we have room
     # and generate multiple subareas if need be.
 
     if points:
@@ -1355,10 +1271,11 @@ class AreaNoticePolyline(AreaNoticeSubArea):
       self.decode_bits(bits, lon, lat)
 
   def decode_bits(self, bits, lon, lat):
-    'lon and lat are the starting point for the point'
+    """lon and lat are the starting point for the point."""
 
-    if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
-    if isinstance(bits,str):
+    if len(bits) != SUB_AREA_SIZE:
+      raise AisUnpackingException('bit length', len(bits))
+    if isinstance(bits, str):
       bits = BitVector(bitstring=bits)
     elif isinstance(bits, list) or isinstance(bits, tuple):
       bits = BitVector(bitlist=bits)
@@ -1388,38 +1305,40 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         break
 
   def get_bits(self):
-    'Build a BitVector for this area'
-    bvList = []
+    """Build a BitVector for this area."""
+    bv_list = []
     # area_shape/type = 0
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+    bv_list.append(
+      binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
 
-    bvList.append(
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.scale_factor_raw), 2))
 
-    bvList = []
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
-    bvList.append(
+    bv_list = []
+    bv_list.append(
+        binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.scale_factor_raw), 2))
 
     # Have to emit the starting location as a point
     start_pt_bits = AreaNoticeCirclePt(self.lon, self.lat, radius=0).get_bits()
 
-    # FIX: check range of points
+    # TODO(schwehr): Check range of points.
     for pt in self.points:
       # pt is angle, distance
       # Angle increments of 0.5 degree
-      bvList.append(
+      bv_list.append(
           binary.setBitVectorSize(BitVector(intVal=int(pt[0] * 2)), 10))
 
-      if len(bvList[-1]) != 10:
+      if len(bv_list[-1]) != 10:
         msg = (
             'Angle would not fit: %d -> %d bits != 10' %
-            (pt[0], len(bvList[-1])))
+            (pt[0], len(bv_list[-1])))
         raise AisPackingException(msg)
 
-      # FIX: Is ceil the right thing to do?  e.g. do we always want and area
+      # TODO(schwehr): Is ceil the right thing to do?  Do we always want an area
       # equal to or greater than that requested?
-      bvList.append(
+      bv_list.append(
           binary.setBitVectorSize(
               BitVector(
                   intVal=int(math.ceil(
@@ -1427,21 +1346,21 @@ class AreaNoticePolyline(AreaNoticeSubArea):
                       self.scale_factor))),
               10))
 
-      if len(bvList[-1]) != 10:
+      if len(bv_list[-1]) != 10:
         msg = (
             'Distance would not fit: %d -> %d bits != 10' %
-            (pt[1], len(bvList[-1])))
+            (pt[1], len(bv_list[-1])))
         raise AisPackingException(msg)
 
     for i in range(4 - len(self.points)):
       # The marker for no more points
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=720), 10))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=720), 10))
       # No marker specified.  Use 0 fill
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=0), 10))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 10))
 
-    bvList.append(BitVector(size=2))  # 2 bit 0 values  #intVal=0) )
+    bv_list.append(BitVector(size=2))  # 2 bit 0 values  #intVal=0) )
 
-    bv = binary.joinBV(bvList)
+    bv = binary.joinBV(bv_list)
     if len(bv) != SUB_AREA_SIZE:
       raise AisPackingException(
           'area not ' + str(SUB_AREA_SIZE) + ' bits %d:' % len(bv))
@@ -1456,7 +1375,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
     return self.__unicode__()
 
   def get_points(self):
-    'Convert to list of (lon,lat) tuples'
+    """Convert to list of (lon, lat) tuples."""
     return polyline_to_ll((self.lon, self.lat), self.points)
 
   def geom(self):
@@ -1464,8 +1383,10 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
   @property
   def __geo_interface__(self):
-    """Provide a Geo Interface for GeoJSON serialization
-    @todo: Write the code to build the polygon with rotation"""
+    """Provide a Geo Interface for GeoJSON serialization.
+
+    TODO(schwehr): Write the code to build the polygon with rotation.
+    """
     r = {
         'area_shape': self.area_shape, 'area_shape_name': 'waypoints/polyline',
         'geometry': {'type': 'LineString', 'coordinates': tuple(self.geom().coords)},
@@ -1478,7 +1399,8 @@ class AreaNoticePolygon(AreaNoticePolyline):
   """Polyline that wraps back to the beginning.
 
   For GeoJson, a polygon must have the first and last coordinates
-  FIX: handle multi sub area spanning polygons
+
+  TODO(schwehr): Handle multi sub area spanning polygons.
   """
   area_shape = 4
   area_name = 'polygon'
@@ -1509,8 +1431,10 @@ class AreaNoticePolygon(AreaNoticePolyline):
 
   @property
   def __geo_interface__(self):
-    """Provide a Geo Interface for GeoJSON serialization
-    @todo: Write the code to build the polygon with rotation"""
+    """Provide a Geo Interface for GeoJSON serialization.
+
+    TODO(schwehr): Write the code to build the polygon with rotation.
+    """
     r = {
         'area_shape': self.area_shape, 'area_shape_name': self.area_name,
         'geometry': {'type': 'Polygon', 'coordinates': tuple(self.geom().boundary.coords)},
@@ -1524,37 +1448,40 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
   area_name = 'freetext'
 
   def __init__(self, text=None, bits=None):
-    'text must be 14 characters or less'
+    """Text must be 14 characters or less."""
     if text is not None:
       text = text.upper()
       assert len(text) <= 14
       for c in text:
-        assert c in aisstring.character_dict
+        assert c in ais_string.character_dict
       self.text = text
     elif bits is not None:
       self.decode_bits(bits)
 
   def decode_bits(self, bits):
-    'Removes the "@" padding'
-    if len(bits) != SUB_AREA_SIZE: raise AisUnpackingException('bit length',len(bits))
-    if isinstance(bits,str):
+    """Removes the "@" padding."""
+    if len(bits) != SUB_AREA_SIZE:
+      raise AisUnpackingException('bit length', len(bits))
+    if isinstance(bits, str):
       bits = BitVector(bitstring=bits)
     elif isinstance(bits, list) or isinstance(bits, tuple):
       bits = BitVector(bitlist=bits)
 
     area_shape = int(bits[:3])
     assert self.area_shape == area_shape
-    self.text = aisstring.Decode(bits[3:]).rstrip('@')
+    self.text = ais_string.Decode(bits[3:]).rstrip('@')
 
   def get_bits(self):
+    """Build a BitVector for this area."""
     'Build a BitVector for this area'
-    bvList = []
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+    bv_list = []
+    bv_list.append(
+        binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
     text = self.text.ljust(14, '@')
-    bvList.append(aisstring.Encode(text))
+    bv_list.append(ais_string.Encode(text))
     # No spare
 
-    bv = binary.joinBV(bvList)
+    bv = binary.joinBV(bv_list)
     if SUB_AREA_SIZE != len(bv):
       raise AisPackingException(
           'text subarea not ' + str(SUB_AREA_SIZE) + ' bits: %d' % len(bv))
@@ -1565,14 +1492,14 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
     return 'AreaNoticeFreeText: "%s"' % (self.text,)
 
   def geom(self):
-    # FIX: should this somehow have a position?
+    #TODO(schwehr): Should this somehow have a position?
     return None
 
   @property
   def __geo_interface__(self):
-    'Provide a Geo Interface for GeoJSON serialization'
-    # FIX: should this return geometry?  Probably not as this text gets built
-    # into the message text for other geom
+    """Provide a Geo Interface for GeoJSON serialization."""
+    # TODO(schwehr): Should this return geometry?  Probably not. This text gets
+    # built into the message text for other geom.
     return {'area_shape': self.area_shape,
             'area_shape_name': self.area_name,
             # No geometry... 'geometry': {'type': 'Point', 'coordinates':
@@ -1613,13 +1540,13 @@ class AreaNotice(BBM):
       self.link_id = link_id
 
     else:
-      # FIX: raise an exception for not enough info
+      # TODO(schwehr): Raise an exception for not enough info.
       assert False
 
     self.dac = 1
     self.fi = 22
 
-    # FIX: move to the beginning of this method
+    # TODO(schwehr): Move to the beginning of this method.
     BBM.__init__(self, message_id=8)
 
     self.source_mmsi = source_mmsi
@@ -1641,8 +1568,10 @@ class AreaNotice(BBM):
     return self.__unicode__(verbose)
 
   def html(self, efactory=False):
-    """return an embeddable html representation
-    @param efactory: return lxml E-factory"""
+    """Return an embeddable html representation.
+
+    @param efactory: return lxml E-factory
+    """
     l = E.OL()
     text = self.get_merged_text()
     if text is not None:
@@ -1655,7 +1584,7 @@ class AreaNotice(BBM):
 
   @property
   def __geo_interface__(self):
-    'Return dictionary compatible with GeoJSON-AIVD'
+    """Return dictionary compatible with GeoJSON-AIVD."""
 
     try:
       repeat = self.repeat_indicator
@@ -1694,7 +1623,7 @@ class AreaNotice(BBM):
     return r
 
   def get_merged_text(self):
-    'return the complete text for any free text sub areas'
+    """Return the complete text for any free text sub areas."""
     strings = []
     for a in self.areas:
       if isinstance(a, AreaNoticeFreeText):
@@ -1713,41 +1642,42 @@ class AreaNotice(BBM):
 
   def get_bits(self, include_bin_hdr=False, mmsi=None, include_dac_fi=True):
     """@param include_bin_hdr: If true, include the standard message header with source mmsi"""
-    bvList = []
+    bv_list = []
     if include_bin_hdr:
       # Messages ID
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=8), 6))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=8), 6))
       # Repeat Indicator
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=0), 2))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 2))
       if mmsi is not None:
-        bvList.append(binary.setBitVectorSize(BitVector(intVal=mmsi), 30))
+        bv_list.append(binary.setBitVectorSize(BitVector(intVal=mmsi), 30))
       elif self.source_mmsi is not None:
-        bvList.append(
+        bv_list.append(
             binary.setBitVectorSize(BitVector(intVal=self.source_mmsi), 30))
       else:
-        bvList.append(binary.setBitVectorSize(BitVector(intVal=999999999), 30))
+        bv_list.append(binary.setBitVectorSize(BitVector(intVal=999999999), 30))
 
     if include_bin_hdr or include_dac_fi:
       # Should this be here or in the bin_hdr?
-      bvList.append(BitVector(bitstring='00'))
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=self.dac), 10))
-      bvList.append(binary.setBitVectorSize(BitVector(intVal=self.fi), 6))
+      bv_list.append(BitVector(bitstring='00'))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.dac), 10))
+      bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.fi), 6))
 
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.link_id), 10))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.area_type), 7))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.link_id), 10))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.area_type), 7))
 
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.when.month), 4))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.when.day), 5))
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.when.hour), 5))
-    bvList.append(
+    bv_list.append(
+        binary.setBitVectorSize(BitVector(intVal=self.when.month), 4))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.day), 5))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.hour), 5))
+    bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.when.minute), 6))
 
-    bvList.append(binary.setBitVectorSize(BitVector(intVal=self.duration), 18))
+    bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.duration), 18))
 
     for i, area in enumerate(self.areas):
-      bvList.append(area.get_bits())
+      bv_list.append(area.get_bits())
 
-    bv = binary.joinBV(bvList)
+    bv = binary.joinBV(bv_list)
     if len(bv) > 953:
       raise AisPackingException(
           'message to large.  Need %d bits, but can only use 953' % len(bv))
@@ -1783,7 +1713,7 @@ class AreaNotice(BBM):
     self.decode_bits(bits)
 
   def decode_bits(self, bits):
-    """decode the bits for a message"""
+    """Decode the bits for a message."""
 
     r = {}
     r['message_id'] = int(bits[:6])
@@ -1803,7 +1733,7 @@ class AreaNotice(BBM):
 
     self.area_type = r['area_type']
 
-    # FIX: handle Dec - Jan transition / year roll over
+    # TODO(schwehr): Handle Dec - Jan transition / year roll over.
     now = datetime.datetime.utcnow()
     self.when = datetime.datetime(
         year=now.year, month=r['utc_month'], day=r['utc_day'],
@@ -1832,7 +1762,7 @@ class AreaNotice(BBM):
       self.add_subarea(sa_obj)
 
   def get_shapes(self, sub_areas_bits):
-    'return a list of the sub area types'
+    """Return a list of the sub area types."""
     shapes = []
     for i in range(len(sub_areas_bits) / SUB_AREA_SIZE):
       bits = sub_areas_bits[i * SUB_AREA_SIZE: (i + 1) * SUB_AREA_SIZE]
@@ -1841,7 +1771,7 @@ class AreaNotice(BBM):
     return shapes
 
   def subarea_factory(self, bits):
-    'scary side effects going on in this with Polyline and Polygon'
+    """Scary side effects going on in this with Polyline and Polygon."""
     shape = int(bits[:3])
     if 0 == shape:
       return AreaNoticeCirclePt(bits=bits)
@@ -1886,7 +1816,7 @@ class AreaNotice(BBM):
       assert len(self.areas) > 0
       # As long as we have at least one geom, we are good
       assert not isinstance(self.areas[0], AreaNoticeFreeText)
-      # FIX: can free text come before the geometry?
+      # TODO(schwehr): Can free text come before the geometry?
       return AreaNoticeFreeText(bits=bits)
     else:
       sys.stderr.write('Warning: unknown shape type %d' % shape)
@@ -1914,9 +1844,9 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
                                priority=0,
                                timestamp=None,  # unix UTC seconds timestamp
                                verbose=False):
-  'Take an AreaNotice and produce a Fetcher Formatter CSV'
+  """Take an AreaNotice and produce a Fetcher Formatter CSV."""
   if verbose:
-    print 'message_2_fetcherformatter:', nstr(msg)
+    logging.info('message_2_fetcherformatter: %s', msg)
 
   if timestamp is None:
     timestamp = int(time.time())
@@ -1925,10 +1855,11 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
 
   timestamp += 24 * 3600
   if verbose:
-    print 'Moving time up by 4 hours to deal with Windows time coding issues...'
-    print '\t\tEDT is 4 to 5 hours off utc'
-    print ('\t\t24 hours means this code will work anywhere in the world with '
-           'windows timezone troubles')
+    # EDT is 4 to 5 hours off UTC.
+    # 24 hours means this code will work anywhere in the world with
+    # Windows timezone troubles.
+    logging.info('Moving time up by 4 hours to deal with Windows time coding '
+                 'issues.')
 
   if message_type is None:
     if isinstance(msg, AreaNotice):
@@ -1950,8 +1881,8 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
   dacfi = dac + fi
   bits = msg.get_bits(include_dac_fi=False)
   if verbose:
-    print 'dacfi:', str(dacfi)
-    print 'bits: len=', len(bits), ' ... ', str(bits)
+    logging.info('dacfi: %s', dacfi)
+    logging.info('bits: len=%d %s', len(bits), bits)
 
   line = [magic_number, site_name,
           xmin, ymax, xmax, ymin,
@@ -1961,7 +1892,7 @@ def message_2_fetcherformatter(msg,  # An area notice or any other child of BBM 
 
 
 class NormQueue(Queue.Queue):
-  """Normalized AIS messages that are multiple lines
+  """Normalized AIS messages that are multiple lines.
 
   - works based USCG dict representation of a line that comes back from the
   regex.
@@ -2020,8 +1951,7 @@ class NormQueue(Queue.Queue):
 
 
 def main():
-  from optparse import OptionParser
-  parser = OptionParser(usage='%prog [options]')
+  parser = optparse.OptionParser(usage='%prog [options]')
 
   (options, args) = parser.parse_args()
   norm_queue = NormQueue()
@@ -2044,7 +1974,8 @@ def main():
         try:
           match = ais_nmea_regex.search(line).groupdict()
         except AttributeError:
-          if 'AIVDM' in line: print 'BAD_MATCH:',line
+          if 'AIVDM' in line:
+            logging.error('BAD_MATCH: %s', line)
           continue
 
         norm_queue.put(match)
