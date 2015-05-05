@@ -1,17 +1,18 @@
 #!/usr/bin/env python
-VERSION = open('ais_areanotice/__init__.py').readline().split('\'')[1]
+VERSION = open('ais_area_notice/__init__.py').readline().split('\'')[1]
 
 from setuptools import setup, find_packages, Extension
-# from distutils.core import setup
+
 
 if __name__=='__main__':
-    setup(name='ais-areanotice-py',
+    setup(name='ais-area-notice',
           version=VERSION,
           author='Kurt Schwehr',
           author_email='schwehr@google.com',
           maintainer='Kurt Schwehr',
           maintainer_email='schwehr@gmail.com',
           description='Reference implmentation for zone message',
+          url='https://github.com/schwehr/ais-area-notice',
           long_description=(
               'Create area notice messages, especially whale alert messages.\n'
               'Copyright 2006-2011 by Kurt Schwehr.\n'
@@ -28,9 +29,6 @@ if __name__=='__main__':
             'License :: OSI Approved :: Apache Software License',
             'Topic :: Communications',
             'Topic :: Scientific/Engineering :: Information Analysis',
-            'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
-            'Topic :: Scientific/Engineering :: Visualization',
-            'Topic :: Software Development :: Code Generators',
             'Topic :: Scientific/Engineering :: GIS',
             ],
             packages=find_packages(),
