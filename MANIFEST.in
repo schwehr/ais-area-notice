@@ -11,4 +11,3 @@ include *.txt
 
 recursive-include ais_areanotice *.py
 recursive-include test *.py
-

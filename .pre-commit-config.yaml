@@ -3,9 +3,9 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
-      # - id: check-toml
-      # - id: check-yaml
-      # - id: end-of-file-fixer
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
       # - id: trailing-whitespace
 
   - repo: https://github.com/compilerla/conventional-pre-commit

@@ -42,4 +42,3 @@ samples.txt: build_samples.py imo_001_22_area_notice.py
 samples-upload:
 	scp samples.txt vislab-ccom:www/software/ais-areanotice-py/samples/samples-`date +%Y%m%d`.txt
 	scp samples.kml vislab-ccom:www/software/ais-areanotice-py/samples/samples-`date +%Y%m%d`.kml
-
