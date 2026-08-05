@@ -812,7 +812,7 @@ class AreaNoticeSubArea(object):
   def __str__(self):
     return self.__unicode__()
 
-# TODO(schwehr): Tthere may be an issue with the precision field.
+# TODO(schwehr): There may be an issue with the precision field.
 
 
 class AreaNoticeCirclePt(AreaNoticeSubArea):
@@ -1804,7 +1804,7 @@ class AreaNotice(BBM):
         lat = last_pt[1]
       else:
         raise AisPackingException(
-            'Point or another polyline must preceed a polyline')
+            'Point or another polyline must precede a polyline')
       return AreaNoticePolyline(bits=bits, lon=lon, lat=lat)
 
     elif 4 == shape:

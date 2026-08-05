@@ -41,3 +41,7 @@ Homepage = "https://github.com/schwehr/ais-area-notice"
 dev = [
     "pytest>=8.0.0",
 ]
+
+[tool.codespell]
+skip = "*.pdf"
+ignore-words-list = "anc,pres,tht"

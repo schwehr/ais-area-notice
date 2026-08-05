@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Testing for Area Notice AIS binary mesage.
+"""Testing for Area Notice AIS binary message.
 
 TODO(schwehr): Need to test the year and month roll overs in time.
 """

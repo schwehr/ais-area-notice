@@ -45,7 +45,7 @@ def setBitVectorSize(bv, size=8):
   """Pad a BitVector with 0's on the left until it is the specified size.
 
   Args:
-    bv: BitVector that needs to meet a minimim size.  Defaults to 1 byte.
+    bv: BitVector that needs to meet a minimum size.  Defaults to 1 byte.
     size: Positive integer that is the minimum number of bits to make the
         new BitVector.
 

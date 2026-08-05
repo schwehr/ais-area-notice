@@ -517,7 +517,7 @@ class AreaNotice(BBM):
         lat = last_pt[1]
       else:
         raise AisPackingException(
-            'Point or another polyline must preceed a polyline')
+            'Point or another polyline must precede a polyline')
 
       return AreaNoticePoly(bits=bits, lon=lon, lat=lat)
     elif shape == 5:

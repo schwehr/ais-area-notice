@@ -885,7 +885,7 @@ class SensorReportSeaState(SensorReport):
     self.swell_dir = int(bits[41:50])
     self.sea_state = int(bits[50:54])
     self.swell_data_descr = int(bits[54:57])
-    # TODO(schwehr): Specifiation error.  Not 2's complement.
+    # TODO(schwehr): Specification error.  Not 2's complement.
     self.temp = int(bits[57:67]) / 10. - 10
     self.temp_depth = int(bits[67:74]) / 10.
     self.temp_data_descr = int(bits[74:77])
