@@ -7,7 +7,7 @@ name = "ais-area-notice"
 version = "0.5"
 description = "Reference implementation for zone message"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.14"
 authors = [
     { name = "Kurt Schwehr", email = "schwehr@google.com" },
 ]
