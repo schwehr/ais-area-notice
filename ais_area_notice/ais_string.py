@@ -9,7 +9,7 @@ import logging
 import re
 
 
-import binary
+from . import binary
 from BitVector import BitVector
 
 
@@ -115,7 +115,7 @@ def Decode(bits, drop_after_first_at=False):
   Returns:
     A string with pad spaces or @@@@.
   """
-  numchar = len(bits) / 6
+  numchar = len(bits) // 6
   s = []
   for i in range(numchar):
     start = 6 * i

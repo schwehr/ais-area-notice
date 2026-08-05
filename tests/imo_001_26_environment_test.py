@@ -32,14 +32,15 @@ def random_loc():
   lon = random.randrange(-1800000, 1800000) / 10000.
   lat = random.randrange(-900000, 900000) / 10000.
   alt = random.randrange(0, 2003) / 10.
-  owner = random.choice(env.sensor_owner_lut.keys())
-  timeout = random.choice(env.data_timeout_hrs_lut.keys())
+  owner = random.choice(list(env.sensor_owner_lut.keys()))
+  timeout = random.choice(list(env.data_timeout_hrs_lut.keys()))
   site_id = random.randint(0, 127)
   return env.SensorReportLocation(
       site_id=site_id,
       year=date.year, month=date.month, day=date.day, hour=date.hour,
-      minute=date.minute,
-      lon=lon, lat=lat, alt=alt, owner=owner, timeout=timeout)
+      minute=date.minute, lon=lon, lat=lat, alt=alt, owner=owner,
+      timeout=timeout
+  )
 
 
 def random_id():
@@ -57,18 +58,17 @@ def random_id():
 def random_wind():
   date = random_date()
   site_id = random.randint(0, 127)
-  data_descr = random.choice(env.sensor_type_lut.keys())
+  data_descr = random.choice(list(env.sensor_type_lut.keys()))
   return env.SensorReportWind(
       year=date.year, month=date.month, day=date.day, hour=date.hour,
       minute=date.minute,
       site_id=site_id,
       speed=random.randrange(0, 122), gust=random.randrange(0, 122),
-      dir=random.randrange(0, 360), gust_dir=random.randrange(0, 360),
+      dir=random.randint(0, 360), gust_dir=random.randint(0, 360),
       data_descr=data_descr,
       forecast_speed=random.randrange(0, 122),
       forecast_gust=random.randrange(0, 122),
-      forecast_dir=random.randrange(0, 360),
-      # Forecast date might not necessarily make sense with random generation.
+      forecast_dir=random.randint(0, 360),
       forecast_day=random.randint(0, 31), forecast_hour=random.randint(0, 24),
       forecast_minute=random.randint(0, 59),
       duration_min=random.randint(0, 255),
@@ -78,15 +78,17 @@ def random_wind():
 def random_waterlevel():
   date = random_date()
   site_id = random.randint(0, 127)
+
   wl = random.randrange(-32767, 32767) / 100.
   forecast_wl = random.randrange(-32767, 32767) / 100.
+
   return env.SensorReportWaterLevel(
       year=date.year, month=date.month, day=date.day, hour=date.hour,
       minute=date.minute,
       site_id=site_id,
       wl_type=random.choice((0, 1)), wl=wl, trend=random.randint(0, 3),
       vdatum=random.randint(1, 14),
-      data_descr=random.choice(env.sensor_type_lut.keys()),
+      data_descr=random.choice(list(env.sensor_type_lut.keys())),
       forecast_type=random.choice((0, 1)), forecast_wl=forecast_wl,
       forecast_day=random.randint(0, 31), forecast_hour=random.randint(0, 24),
       forecast_minute=random.randint(0, 59),
@@ -108,7 +110,7 @@ def random_current2d():
       level_2=random.randint(0, 362),
       speed_3=random.randrange(0, 247) / 10., dir_3=random.randint(0, 360),
       level_3=random.randint(0, 362),
-      data_descr=random.choice(env.sensor_type_lut.keys()),
+      data_descr=random.choice(list(env.sensor_type_lut.keys())),
   )
 
 # TODO(schwehr): Level different between 2d and 3d.
@@ -125,7 +127,7 @@ def random_current3d():
       z_1=random.randrange(0, 247) / 10., level_1=random.randint(0, 361),
       n_2=random.randrange(0, 247) / 10., e_2=random.randrange(0, 247) / 10.,
       z_2=random.randrange(0, 247) / 10., level_2=random.randint(0, 361),
-      data_descr=random.choice(env.sensor_type_lut.keys()),
+      data_descr=random.choice(list(env.sensor_type_lut.keys())),
   )
 
 
@@ -154,10 +156,10 @@ def random_seastate():
       site_id=site_id,
       swell_height=random.randrange(0, 247) / 10.,
       swell_period=random.randint(0, 61), swell_dir=random.randint(0, 361),
-      sea_state=random.choice(env.beaufort_scale.keys()),
-      swell_data_descr=random.choice(env.sensor_type_lut.keys()),
+      sea_state=random.choice(list(env.beaufort_scale.keys())),
+      swell_data_descr=random.choice(list(env.sensor_type_lut.keys())),
       temp=50.1, temp_depth=12.2,
-      temp_data_descr=random.choice(env.sensor_type_lut.keys()),
+      temp_data_descr=random.choice(list(env.sensor_type_lut.keys())),
       wave_height=random.randrange(0, 247) / 10.,
       wave_period=random.randint(0, 61), wave_dir=random.randint(0, 361),
       wave_data_descr=0,
@@ -176,7 +178,7 @@ def random_salinity():
       pres=random.randrange(0, 60003) / 10.,
       salinity=random.randrange(0, 503) / 10.,
       salinity_type=random.choice((0, 1, 2)),
-      data_descr=random.choice(env.sensor_type_lut.keys()),)
+      data_descr=random.choice(list(env.sensor_type_lut.keys())),)
 
 
 def random_weather():
@@ -187,13 +189,13 @@ def random_weather():
       minute=date.minute,
       site_id=site_id,
       air_temp=random.randrange(-600, 600) / 10.,
-      air_temp_data_descr=random.choice(env.sensor_type_lut.keys()),
+      air_temp_data_descr=random.choice(list(env.sensor_type_lut.keys())),
       precip=random.choice((0, 1, 2, 3)), vis=random.randrange(0, 243) / 10.,
       dew=random.randrange(-200, 500) / 10.,
-      dew_data_descr=random.choice(env.sensor_type_lut.keys()),
+      dew_data_descr=random.choice(list(env.sensor_type_lut.keys())),
       air_pres=random.randrange(800, 1202),
       air_pres_trend=random.choice((0, 1, 2, 3)),
-      air_pres_data_descr=random.choice(env.sensor_type_lut.keys()),
+      air_pres_data_descr=random.choice(list(env.sensor_type_lut.keys())),
       salinity=random.randrange(0, 503) / 10.
   )
 
@@ -1055,7 +1057,7 @@ class TestEnvironment(unittest.TestCase):
       self.assertEqual(e, e_b)
 
   def test_two(self):
-    for i in range(FUZZ_COUNT / 2):
+    for i in range(FUZZ_COUNT // 2):
       e = env.Environment(source_mmsi=random.randint(100000, 999999999))
       sr1 = random_sensorreport()
       sr2 = random_sensorreport()

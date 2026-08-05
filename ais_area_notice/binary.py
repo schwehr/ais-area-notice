@@ -258,7 +258,7 @@ def bitvectoais6(bv, doPadding=True):
   pad = BITS_PER_VDM_CHARACTER - (len(bv) % BITS_PER_VDM_CHARACTER)
   if pad == BITS_PER_VDM_CHARACTER:
     pad = 0
-  str_len = len(bv) / BITS_PER_VDM_CHARACTER
+  str_len = len(bv) // BITS_PER_VDM_CHARACTER
   if pad > 0:
     str_len += 1
 

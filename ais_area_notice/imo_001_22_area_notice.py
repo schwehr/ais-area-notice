@@ -17,17 +17,18 @@ TODO(schwehr): Handle text that spans adjacent subareas.
 """
 
 import datetime
+from functools import reduce
 import logging
 import math
 import operator
 import optparse
-import Queue
+import queue as Queue
 import re
 import sys
 import time
 
-import ais_string
-import binary
+from . import ais_string
+from . import binary
 from BitVector import BitVector
 import lxml
 from lxml.html import builder as E
@@ -345,7 +346,7 @@ shape_types = {
 
 def _make_short_notice():
   d = {}
-  for k, v in notice_type.iteritems():
+  for k, v in notice_type.items():
     if isinstance(k, str):
       d[v] = k
   return d
@@ -422,7 +423,7 @@ def polyline_to_ll(start, angles_and_offsets):
     pts.append(cur)
 
   pts = [vec_add(p1, pt) for pt in pts]
-  pts = [proj(*pt, inverse=True) for pt in pts]
+  pts = [proj(pt[0], pt[1], inverse=True) for pt in pts]
   return pts
 
 
@@ -440,7 +441,7 @@ def frange(start, stop=None, step=None):
 
 
 def vec_add(a, b):
-  return map(operator.add, a, b)
+  return (a[0] + b[0], a[1] + b[1])
 
 
 def vec_rot(a, theta):
@@ -632,7 +633,7 @@ class AIVDM (object):
     max_payload_char = 60
 
     sentences = []
-    tot_sentences = 1 + len(payload) / max_payload_char
+    tot_sentences = 1 + len(payload) // max_payload_char
     sentence_num = 0
 
     if sequence_num is None:
@@ -681,7 +682,7 @@ class AIVDM (object):
     o = []
     if full:
       o.append(kml_head)
-      o.append(file('areanotice_styles.kml').read())
+      o.append(open('areanotice_styles.kml').read())
     html = self.html()
     for area in self.areas:
       geo_i = area.__geo_interface__
@@ -774,7 +775,7 @@ class BBM (AIVDM):
     payload, pad = binary.bitvectoais6(self.get_bits())
 
     sentences = []
-    tot_sentences = 1 + len(payload) / self.max_payload_char
+    tot_sentences = 1 + len(payload) // self.max_payload_char
     sentence_num = 0
     for i in range(tot_sentences - 1):
       sentence_num = i + 1
@@ -888,7 +889,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
     bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
     bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
     bv_list.append(
-        binary.setBitVectorSize(BitVector(intVal=self.radius_scaled), 12))
+        binary.setBitVectorSize(BitVector(intVal=int(self.radius_scaled)), 12))
     bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 18))  # spare
     bv = binary.joinBV(bv_list)
     if SUB_AREA_SIZE != len(bv):
@@ -967,14 +968,20 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
       assert precision >= 0 and precision <= 4
       self.precision = precision
 
-      assert 0 <= east_dim and east_dim <= 255000  # 25.5 km
-      assert 0 <= north_dim and north_dim <= 255000
 
-      assert 0 <= orientation_deg and orientation_deg < 360
+  def __init__(self, lon=None, lat=None, east_dim=0, north_dim=0,
+               orientation_deg=0, precision=4, bits=None):
+    if lon is not None:
+      self.area_shape = 1
+      self.lon = lon
+      self.lat = lat
+      self.precision = precision
 
-      if east_dim / 100. >= 255 or north_dim / 100. >= 255:
+      if east_dim >= 255000 or north_dim >= 255000:
+        assert False
+      elif east_dim >= 25500 or north_dim >= 25500:
         self.scale_factor_raw = 3
-      elif east_dim / 10. >= 255 or north_dim / 100. >= 255:
+      elif east_dim >= 2550 or north_dim >= 2550:
         self.scale_factor_raw = 2
       elif east_dim >= 255 or north_dim >= 255:
         self.scale_factor_raw = 1
@@ -984,8 +991,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
       self.e_dim = east_dim
       self.n_dim = north_dim
-      self.e_dim_scaled = east_dim / self.scale_factor
-      self.n_dim_scaled = north_dim / self.scale_factor
+      self.e_dim_scaled = int(east_dim / self.scale_factor)
+      self.n_dim_scaled = int(north_dim / self.scale_factor)
 
       self.orientation_deg = orientation_deg
 
@@ -1026,9 +1033,9 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
     bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
     bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
     bv_list.append(
-        binary.setBitVectorSize(BitVector(intVal=self.e_dim_scaled), 8))
+        binary.setBitVectorSize(BitVector(intVal=int(self.e_dim_scaled)), 8))
     bv_list.append(
-        binary.setBitVectorSize(BitVector(intVal=self.n_dim_scaled), 8))
+        binary.setBitVectorSize(BitVector(intVal=int(self.n_dim_scaled)), 8))
     bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.orientation_deg), 9))
     bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 5))  # spare
@@ -1054,7 +1061,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
     pts = [vec_rot(pt, rot) for pt in pts]
 
     pts = [vec_add(p1, pt) for pt in pts]
-    pts = [proj(*pt, inverse=True) for pt in pts]
+    pts = [proj(pt[0], pt[1], inverse=True) for pt in pts]
 
     return shapely.geometry.Polygon(pts)
 
@@ -1161,7 +1168,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
     bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
 
     bv_list.append(
-        binary.setBitVectorSize(BitVector(intVal=self.radius_scaled), 12))
+        binary.setBitVectorSize(BitVector(intVal=int(self.radius_scaled)), 12))
     bv_list.append(
         binary.setBitVectorSize(BitVector(intVal=self.left_bound_deg), 9))
     bv_list.append(
@@ -1192,7 +1199,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
     pts = [vec_add(p1, pt)
            for pt in pts]  # Move to the right place in the world
-    pts = [proj(*pt, inverse=True) for pt in pts]  # Project back to geographic
+    pts = [proj(pt[0], pt[1], inverse=True) for pt in pts]  # Project back to geographic
 
     return shapely.geometry.Polygon(pts)
 
@@ -1426,7 +1433,7 @@ class AreaNoticePolygon(AreaNoticePolyline):
       pts.append(cur)
 
     pts = [vec_add(p1, pt) for pt in pts]
-    pts = [proj(*pt, inverse=True) for pt in pts]
+    pts = [proj(pt[0], pt[1], inverse=True) for pt in pts]
     return shapely.geometry.Polygon(pts)
 
   @property
@@ -1580,7 +1587,7 @@ class AreaNotice(BBM):
       l.append(E.LI(str(area)))
     if efactory:
       return
-    return lxml.html.tostring(E.DIV(E.P(self.__str__()), l))
+    return lxml.html.tostring(E.DIV(E.P(self.__str__()), l), encoding='unicode')
 
   @property
   def __geo_interface__(self):
@@ -1756,7 +1763,7 @@ class AreaNotice(BBM):
     # more
     assert 8 > len(sub_areas_bits) % SUB_AREA_SIZE
 
-    for i in range(len(sub_areas_bits) / SUB_AREA_SIZE):
+    for i in range(len(sub_areas_bits) // SUB_AREA_SIZE):
       bits = sub_areas_bits[i * SUB_AREA_SIZE: (i + 1) * SUB_AREA_SIZE]
       sa_obj = self.subarea_factory(bits=bits)
       self.add_subarea(sa_obj)
@@ -1764,7 +1771,7 @@ class AreaNotice(BBM):
   def get_shapes(self, sub_areas_bits):
     """Return a list of the sub area types."""
     shapes = []
-    for i in range(len(sub_areas_bits) / SUB_AREA_SIZE):
+    for i in range(len(sub_areas_bits) // SUB_AREA_SIZE):
       bits = sub_areas_bits[i * SUB_AREA_SIZE: (i + 1) * SUB_AREA_SIZE]
       shape = int(bits[:3])
       shapes.append((shape, shape_types[shape]))
@@ -1964,7 +1971,7 @@ def main():
     assert False
   if '!AIVDM' in args[0]:
     an = AreaNotice(nmea_strings=args)
-    print 'Area Notice:', str(an)
+    print('Area Notice:', str(an))
   else:
     # Assume these are files
 
@@ -1988,7 +1995,7 @@ def main():
           checksum = nmea_checksum_hex(nmea)
           nmea = nmea.format(checksum=checksum)
           area_notice = AreaNotice(nmea_strings=(nmea,))
-          print 'AreaNotice:', area_notice
+          print('AreaNotice:', area_notice)
           kmlfile.write(
               area_notice.kml(
                   with_style=True, with_time=True,

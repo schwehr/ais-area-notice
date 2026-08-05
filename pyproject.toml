@@ -28,7 +28,16 @@ classifiers = [
 ]
 dependencies = [
     "BitVector",
+    "geojson",
+    "lxml",
+    "pyproj",
+    "shapely",
 ]
 
 [project.urls]
 Homepage = "https://github.com/schwehr/ais-area-notice"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+]

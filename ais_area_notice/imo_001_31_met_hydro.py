@@ -11,13 +11,13 @@ Be aware of:
 import datetime
 import sys
 
-import binary
+from . import binary
 from BitVector import BitVector
-from imo_001_22_area_notice import AisPackingException
-from imo_001_22_area_notice import AisUnpackingException
-from imo_001_22_area_notice import BBM
-from imo_001_26_environment import almost_equal
-from imo_001_26_environment import beaufort_scale
+from .imo_001_22_area_notice import AisPackingException
+from .imo_001_22_area_notice import AisUnpackingException
+from .imo_001_22_area_notice import BBM
+from .imo_001_26_environment import almost_equal
+from .imo_001_26_environment import beaufort_scale
 
 
 MSG_SIZE = 360

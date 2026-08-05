@@ -11,7 +11,7 @@ import unittest
 import datetime
 
 import ais_area_notice.imo_001_31_met_hydro as met_hydro
-from imo_001_26_env_test import random_date
+from .imo_001_26_environment_test import random_date
 
 # Number of loops to do on fuzz testing.
 FUZZ_COUNT = 30
@@ -44,10 +44,10 @@ def random_msg():
       wave_period=random.randint(0, 60), wave_dir=random.randint(0, 360),
       swell_height=random.randint(0, 251) / 10.,
       swell_period=random.randint(0, 60), swell_dir=random.randint(0, 360),
-      sea_state=random.choice(met_hydro.beaufort_scale.keys()),
+      sea_state=random.choice(list(met_hydro.beaufort_scale.keys())),
       water_temp=random.randint(-100, 501) / 10.,
-      precip=random.choice(met_hydro.precip_types.keys()), salinity=50.1,
-      ice=random.choice(0, 1, 3))
+      precip=random.choice(list(met_hydro.precip_types.keys())), salinity=50.1,
+      ice=random.choice((0, 1, 3)))
 # TODO(schwehr): Ohmex extension?
 
 

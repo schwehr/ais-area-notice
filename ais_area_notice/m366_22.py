@@ -7,13 +7,13 @@ http://en.wikipedia.org/wiki/Rhumb_line
 import datetime
 import logging
 
-import an_util
-import binary
-from imo_001_22_area_notice import ais_nmea_regex
-from imo_001_22_area_notice import AisPackingException
-from imo_001_22_area_notice import BBM
-from imo_001_22_area_notice import nmea_checksum_hex
-from imo_001_22_area_notice import notice_type
+from . import an_util
+from . import binary
+from .imo_001_22_area_notice import ais_nmea_regex
+from .imo_001_22_area_notice import AisPackingException
+from .imo_001_22_area_notice import BBM
+from .imo_001_22_area_notice import nmea_checksum_hex
+from .imo_001_22_area_notice import notice_type
 
 DAC = 366
 FI = 22
@@ -55,7 +55,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
       else:
         self.scale_factor = self.getScaleFactor(radius)
       self.radius = radius
-      self.radius_scaled = radius / self.scale_factor
+      self.radius_scaled = int(radius / self.scale_factor)
     elif bits is not None:
       self.DecodeBits(bits)
     else:
@@ -63,61 +63,77 @@ class AreaNoticeCircle(AreaNoticeSubArea):
 
   def DecodeBits(self, bits):
     logging.info('areanotice CIRCLE - decode bits %d %s', len(bits), bits)
-    if len(bits) != SUB_AREA_BIT_SIZE:
-      raise Error('Wrong bit string length.')
     db = an_util.DecodeBits(bits)
     self.area_shape = db.GetInt(3)
-    if self.area_shape != SHAPES['CIRCLE']:
-      raise Error('Trying to decode a circle, but found other shape: %d',
-                  self.area_shape)
     self.scale_factor = self.decodeScaleFactor(db)
     self.lon = db.GetSignedInt(28) / 600000.
-    self.lat = db.GetSignedInt(27) / 600000.
+    lat_raw = db.GetSignedInt(27)
+    self.lat = lat_raw / 600000.
     self.precision = db.GetInt(3)
     self.radius_scaled = db.GetInt(12)
     self.radius = self.radius_scaled * self.scale_factor
-    self.spare = db.GetInt(15)
+    self.spare = db.GetInt(4)
     db.Verify(SUB_AREA_BIT_SIZE)
 
+  def get_bits(self):
+    bb = an_util.BuildBits()
+    bb.AddUInt(SHAPES['CIRCLE'], 3)
+    if 'scale_factor' not in self.__dict__:
+      self.scale_factor = self.getScaleFactor(self.radius)
+    bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+    bb.AddInt(self.lon * 600000, 28)
+    # TODO(schwehr): Do we round all before encoding?
+    bb.AddInt(round(self.lat * 600000), 27)
+    bb.AddUInt(self.precision, 3)
+    bb.AddUInt(int(self.radius / self.scale_factor), 12)
+    bb.AddUInt(0, 4)
+    bb.Verify(SUB_AREA_BIT_SIZE)
+    return bb.GetBits()
 
-class AreaNotice(BBM):
+
+class AreaNotice(object):
+  version = 1
+  max_areas = 9
+  max_bits = 984
+  message_id = 8
+  dac = 366
+  fi = 22
 
   def __init__(self, area_type=None, when=None, duration_min=None, link_id=None,
                mmsi=None, nmea_strings=None):
-    """Setup an AIS AreaNotice instance.
-
-    Passing a list of nmea_strings will create a decoded instance.  Otherwise,
-    it creates the beginning of an instance and you will need to add
-    submessages.
-
-    Args:
-      area_type: int, What will be the meaning of the area.  See notice_type.
-    """
     self.areas = []
     if nmea_strings:
-      self.DecodeNmea(nmea_strings)
+      self.decode_nmea(nmea_strings)
     elif area_type is not None:
       self.area_type = area_type
-      # Leave out seconds
+      # Leave out seconds.
       self.when = datetime.datetime(when.year, when.month, when.day,
                                     when.hour, when.minute)
       self.duration_min = duration_min
       self.link_id = link_id
       self.mmsi = mmsi
+      self.source_mmsi = self.mmsi  # TODO(schwehr): Make all just mmsi.
     else:
       raise Error('Must specify nmea_strings or area_type.')
 
-  def DecodeNmea(self, strings):
-    for line in strings:
-      msg_dict = ais_nmea_regex.search(line).groupdict()
-      if msg_dict['checksum'] != nmea_checksum_hex(line):
-        raise AisUnpackingException('Checksum failed.')
+  def add_subarea(self, area):
+    if not hasattr(self, 'areas'):
+      self.areas = []
+    if len(self.areas) > self.max_areas:
+      raise AisPackingException('Can only have %d sub areas in an Area Notice',
+                                self.max_areas)
+    self.areas.append(area)
 
+  def decode_nmea(self, strings):
+    for msg in strings:
+      msg_dict = ais_nmea_regex.search(msg).groupdict()
+      if msg_dict['checksum'] != nmea_checksum_hex(msg):
+        raise AisUnpackingException('Checksum failed')
     try:
       msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
     except AttributeError:
       raise AisUnpackingException('One or more NMEA lines were malformed (1)')
-    if not all(msgs):
+    if None in msgs:
       raise AisUnpackingException('Failed to parse message.')
 
     bits = []
@@ -154,7 +170,7 @@ class AreaNotice(BBM):
     db.Verify(start_sub_areas)
 
     sub_areas_bits = bits[start_sub_areas:]
-    num_sub_areas = len(sub_areas_bits) / SUB_AREA_BIT_SIZE
+    num_sub_areas = len(sub_areas_bits) // SUB_AREA_BIT_SIZE
     # if len(sub_areas_bits) % SUB_AREA_BIT_SIZE:
     #   raise Error('Partial sub area: %d %% %d -> %d',
     #               len(sub_areas_bits), SUB_AREA_BIT_SIZE,

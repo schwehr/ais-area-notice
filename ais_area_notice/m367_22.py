@@ -8,13 +8,13 @@ http://en.wikipedia.org/wiki/Rhumb_line
 import datetime
 import logging
 
-import ais_string
-import binary
+from . import ais_string
+from . import binary
 from BitVector import BitVector
-from imo_001_22_area_notice import ais_nmea_regex
-from imo_001_22_area_notice import AisPackingException
-from imo_001_22_area_notice import BBM
-from imo_001_22_area_notice import nmea_checksum_hex
+from .imo_001_22_area_notice import ais_nmea_regex
+from .imo_001_22_area_notice import AisPackingException
+from .imo_001_22_area_notice import BBM
+from .imo_001_22_area_notice import nmea_checksum_hex
 
 SUB_AREA_SIZE = 96
 
@@ -85,7 +85,7 @@ class BuildBits(object):
     self.bv_list.append(bits)
 
   def AddText(self, val, num_bits):
-    num_char = num_bits / 6
+    num_char = num_bits // 6
     assert num_bits % 6 == 0
     text = val.ljust(num_char, '@')
     bits = ais_string.Encode(text)
@@ -168,7 +168,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
     bb.AddInt(self.lon * 600000, 28)
     bb.AddInt(self.lat * 600000, 27)
     bb.AddUInt(self.precision, 3)
-    bb.AddUInt(self.radius / self.scale_factor, 12)
+    bb.AddUInt(int(self.radius / self.scale_factor), 12)
     bb.AddUInt(0, 21)  # Spare
     bb.Verify(SUB_AREA_SIZE)
     bits = bb.GetBits()
@@ -189,11 +189,11 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         self.scale_factor = scale_factor
       else:
         self.scale_factor = max(self.getScaleFactor(east_dim),
-                                self.getScaleFactor(north_im))
+                                self.getScaleFactor(north_dim))
       self.e_dim = east_dim
       self.n_dim = north_dim
-      self.e_dim_scaled = east_dim / self.scale_factor
-      self.n_dim_scaled = north_dim / self.scale_factor
+      self.e_dim_scaled = int(east_dim / self.scale_factor)
+      self.n_dim_scaled = int(north_dim / self.scale_factor)
       self.orientation_deg = orientation_deg
     elif bits is not None:
       self.decode_bits(bits)
@@ -217,13 +217,13 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
     bb = BuildBits()
     bb.AddUInt(SHAPES['RECTANGLE'], 3)
     if 'scale_factor' not in self.__dict__:
-      self.scale_factor = self.getScaleFactor(max(self.e_dem, self.n_dim))
+      self.scale_factor = self.getScaleFactor(max(self.e_dim, self.n_dim))
     bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
     bb.AddInt(self.lon * 600000, 28)
     bb.AddInt(self.lat * 600000, 27)
     bb.AddUInt(self.precision, 3)
-    bb.AddUInt(self.e_dim / self.scale_factor, 8)
-    bb.AddUInt(self.n_dim / self.scale_factor, 8)
+    bb.AddUInt(int(self.e_dim / self.scale_factor), 8)
+    bb.AddUInt(int(self.n_dim / self.scale_factor), 8)
     bb.AddUInt(self.orientation_deg, 9)
     bb.AddUInt(0, 8)
     bb.Verify(SUB_AREA_SIZE)
@@ -275,7 +275,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
     # TODO(schwehr): Do we round all before encoding?
     bb.AddInt(round(self.lat * 600000), 27)
     bb.AddUInt(self.precision, 3)
-    bb.AddUInt(self.radius / self.scale_factor, 12)
+    bb.AddUInt(int(self.radius / self.scale_factor), 12)
     bb.AddUInt(self.left_bound_deg, 9)
     bb.AddUInt(self.right_bound_deg, 9)
     bb.AddUInt(0, 3)
@@ -338,7 +338,7 @@ class AreaNoticePoly(AreaNoticeSubArea):
     for i in range(len(self.points)):
       angle, dist = self.points[i]
       bb.AddUInt(int(angle * 2), 10)
-      bb.AddUInt(dist / self.scale_factor, 11)
+      bb.AddUInt(int(dist / self.scale_factor), 11)
     # encode any empty points
     for i in range(len(self.points), 4):
       bb.AddUInt(720, 10)
@@ -487,7 +487,7 @@ class AreaNotice(BBM):
     db.Verify(120)
 
     sub_areas_bits = bits[120:]
-    num_sub_areas = len(sub_areas_bits) / SUB_AREA_SIZE
+    num_sub_areas = len(sub_areas_bits) // SUB_AREA_SIZE
     # TODO(schwehr): change this to raising an error.
     assert len(sub_areas_bits) % SUB_AREA_SIZE == 0
     assert num_sub_areas <= self.max_areas

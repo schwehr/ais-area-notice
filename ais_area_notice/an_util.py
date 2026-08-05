@@ -1,7 +1,7 @@
 """Utilities for Area Notice messages."""
 
-import ais_string
-import binary
+from . import ais_string
+from . import binary
 from BitVector import BitVector
 
 
@@ -30,7 +30,7 @@ class DecodeBits(object):
     return value
 
   def GetText(self, length, strip=True):
-    if not length % 6:
+    if length % 6 != 0:
       raise Error('Bits for text must be six bit aligned.')
     end = self.pos + length
     text = ais_string.Decode(self.bits[self.pos:end])
@@ -66,7 +66,7 @@ class BuildBits(object):
     self.bv_list.append(bits)
 
   def AddText(self, val, num_bits):
-    num_char = num_bits / 6
+    num_char = num_bits // 6
     assert num_bits % 6 == 0
     text = val.ljust(num_char, '@')
     bits = ais_string.Encode(text)

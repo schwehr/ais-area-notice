@@ -15,13 +15,13 @@ through the binary AIS messages.
 import datetime
 import sys
 
-import ais_string
-import binary
+from . import ais_string
+from . import binary
 from BitVector import BitVector
 
-from imo_001_22_area_notice import AisPackingException
-from imo_001_22_area_notice import AisUnpackingException
-from imo_001_22_area_notice import BBM
+from .imo_001_22_area_notice import AisPackingException
+from .imo_001_22_area_notice import AisUnpackingException
+from .imo_001_22_area_notice import BBM
 
 SENSOR_REPORT_HDR_SIZE = 27
 SENSOR_REPORT_SIZE = 112
@@ -1397,7 +1397,7 @@ class Environment(BBM):
       )
       raise AisUnpackingException(msg)
 
-    for i in range(len(sensor_reports_bits) / SENSOR_REPORT_SIZE):
+    for i in range(len(sensor_reports_bits) // SENSOR_REPORT_SIZE):
       rpt_bits = sensor_reports_bits[i * SENSOR_REPORT_SIZE:
                                      (i + 1) * SENSOR_REPORT_SIZE]
       sa_obj = self.sensor_report_factory(bits=rpt_bits)
