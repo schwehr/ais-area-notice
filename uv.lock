@@ -1,0 +1,20 @@
+version = 1
+revision = 3
+requires-python = ">=3.8"
+
+[[package]]
+name = "ais-area-notice"
+version = "0.5"
+source = { editable = "." }
+dependencies = [
+    { name = "bitvector" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "bitvector" }]
+
+[[package]]
+name = "bitvector"
+version = "3.5.0"
+source = { registry = "https://us-python.pkg.dev/artifact-foundry-prod/ah-3p-staging-python/simple/" }
+sdist = { url = "https://us-python.pkg.dev/artifact-foundry-prod/ah-3p-staging-python/bitvector/BitVector-3.5.0.tar.gz", hash = "sha256:cac2fbccf11e325115827ed7be03e5fd62615227b0bbf3fa5a18a842a221839c" }

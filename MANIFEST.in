@@ -3,11 +3,12 @@ include ChangeLog.html
 include LICENSE
 include Makefile
 include MANIFEST.in
+include pyproject.toml
 include README.md
 
 include *.kml
 include *.png
 include *.txt
 
-recursive-include ais_areanotice *.py
+recursive-include ais_area_notice *.py
 recursive-include test *.py

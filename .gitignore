@@ -4,3 +4,7 @@ out.kml
 *.pyc
 *.orig
 *.egg-info
+.venv
+.uv
+build/
+dist/

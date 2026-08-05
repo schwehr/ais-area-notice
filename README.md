@@ -17,3 +17,32 @@ Forks:
 
 https://github.com/schwehr/ais-areanotice-py/tree/uscg8_367_22_area_notice
 https://github.com/rolker/ais-areanotice-py/tree/an367
+
+## Development
+
+This project uses [`uv`](https://github.com/astral-sh/uv) for package and
+dependency management.
+
+### Installation
+
+Install dependencies and create a virtual environment:
+
+```sh
+uv sync
+```
+
+### Running Tests
+
+Run the test suite using `uv`:
+
+```sh
+uv run python -m unittest discover -s test -p "*_test.py"
+```
+
+### Building
+
+Build source and wheel packages:
+
+```sh
+uv build
+```

@@ -16,11 +16,11 @@ default:
 	@echo "  clean  -  Remove temporary files"
 
 sdist: samples.txt clean
-	./setup.py sdist --formats=bztar
+	uv build --sdist
 
 .PHONY: test
 test:
-	python setup.py test
+	uv run python -m unittest discover -s test -p "*_test.py"
 
 clean:
 	rm -f *.pyc
@@ -31,10 +31,10 @@ clean:
 
 real-clean: clean
 	rm -f MANIFEST
-	rm -rf build dist
+	rm -rf build dist .venv .uv
 
-register:
-	./setup.py register
+publish:
+	uv publish
 
 samples.txt: build_samples.py imo_001_22_area_notice.py
 	./ais_areanotice/build_samples.py  > samples.txt
