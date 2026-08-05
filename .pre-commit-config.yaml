@@ -6,7 +6,7 @@ repos:
       - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer
-      # - id: trailing-whitespace
+      - id: trailing-whitespace
 
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.0.0
