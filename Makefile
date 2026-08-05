@@ -20,7 +20,7 @@ sdist: samples.txt clean
 
 .PHONY: test
 test:
-	uv run python -m unittest discover -s test -p "*_test.py"
+	uv run python -m unittest discover -s tests -p "*_test.py"
 
 clean:
 	rm -f *.pyc

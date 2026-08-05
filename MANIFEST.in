@@ -11,4 +11,4 @@ include *.png
 include *.txt
 
 recursive-include ais_area_notice *.py
-recursive-include test *.py
+recursive-include tests *.py
