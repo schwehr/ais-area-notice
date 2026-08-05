@@ -3,7 +3,7 @@ include ChangeLog.html
 include LICENSE
 include Makefile
 include MANIFEST.in
-include README
+include README.md
 
 include *.kml
 include *.png

@@ -1,0 +1,19 @@
+ais-areanotice-py by Kurt Schwehr
+
+This is a reference implementation of the AIS Binary Messages described in the
+IMO Circular 289 specification:
+
+http://vislab-ccom.unh.edu/~schwehr/papers/2010-IMO-SN.1-Circ.289.pdf
+
+IMO, Guidance on the Use of AIS Application-Specific Messages, IMO,
+SN.1/Circ.289, Ref. T2-OSS/2.7.1, 2 June 2010.
+
+This library started for just the area notice (aka Zone) to support the
+Rightwhale AIS Project (RAP). Since then, the project is trying to include the
+other messages defined in that document to help create a free and public test
+set of messages to support other software projects.
+
+Forks:
+
+https://github.com/schwehr/ais-areanotice-py/tree/uscg8_367_22_area_notice
+https://github.com/rolker/ais-areanotice-py/tree/an367
