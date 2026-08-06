@@ -468,14 +468,14 @@ def geom2kml(geom_dict):
   elif geom_type == 'Polygon':
     o = ['<Polygon><outerBoundaryIs><LinearRing><coordinates>']
     for pt in geom_coords:
-      o.append('\t%f,%f,0' % (pt[0], pt[1]))
+      o.append('\t{:f},{:f},0'.format(pt[0], pt[1]))
     o.append('</coordinates></LinearRing></outerBoundaryIs></Polygon>')
     return '\n'.join(o)
 
   elif geom_type == 'LineString':
     o = ['<LineString><coordinates>']
     for pt in geom_coords:
-      o.append('\t%f,%f,0' % (pt[0], pt[1]))
+      o.append('\t{:f},{:f},0'.format(pt[0], pt[1]))
     o.append('</coordinates></LineString>')
     return '\n'.join(o)
 
@@ -517,7 +517,7 @@ def nmea_checksum_hex(sentence):
   return checksum_str
 
 
-class AIVDM (object):
+class AIVDM :
   """AIS VDM Object for AIS top level messages 1 through 64.
 
   Class attribute payload_bits must be set by the child class.
@@ -548,7 +548,7 @@ class AIVDM (object):
       raise AisPackingException('message_id must be valid: %s' % message_id)
     if repeat_indicator is None or repeat_indicator < 0 or repeat_indicator > 3:
       raise AisPackingException(
-          'repeat_indicator must be valid: [%s]' % (repeat_indicator,))
+          'repeat_indicator must be valid: [{}]'.format(repeat_indicator))
 
     bv_list = []
     bv_list.append(binary.setBitVectorSize(BitVector(intVal=message_id), 6))
@@ -699,7 +699,7 @@ class AIVDM (object):
             (short_notice[self.area_type].replace('_', ' '),))
       if with_style:
         if isinstance(with_style, str):
-          o.append('<styleUrl>%s</styleUrl>' % (with_style,))
+          o.append('<styleUrl>{}</styleUrl>'.format(with_style))
         o.append('<styleUrl>#AreaNotice_%d</styleUrl>' % self.area_type)
 
       if with_extended_data:
@@ -709,12 +709,12 @@ class AIVDM (object):
             'message_id', 'source_mmsi', 'dac', 'fi', 'link_id', 'when',
             'duration', 'area_type'):
           o.append(
-              '\t<Data name="{key}"><value>{value}</value></Data>'.format(key=key, value=self.__dict__[key]))
+              f'\t<Data name="{key}"><value>{self.__dict__[key]}</value></Data>')
 
         o.append('</ExtendedData>\n')
 
       o.append('<description>')
-      o.append('<i>AreaNotice - %s</i>' % (notice_type[self.area_type],))
+      o.append('<i>AreaNotice - {}</i>'.format(notice_type[self.area_type]))
       o.append(html)
       o.append('</description>')
 
@@ -807,7 +807,7 @@ class BBM (AIVDM):
     return sentences
 
 
-class AreaNoticeSubArea(object):
+class AreaNoticeSubArea:
 
   def __str__(self):
     return self.__unicode__()
@@ -899,7 +899,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
   def __unicode__(self):
     if self.radius == 0.:
-      return 'AreaNoticeCirclePt: Point at (%.4f,%.4f)' % (self.lon, self.lat)
+      return 'AreaNoticeCirclePt: Point at ({:.4f},{:.4f})'.format(self.lon, self.lat)
     return 'AreaNoticeCirclePt: Circle centered at (%.4f,%.4f) - radius %dm' % (
         self.lon, self.lat, self.radius)
 
@@ -1496,7 +1496,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
     return bv
 
   def __unicode__(self):
-    return 'AreaNoticeFreeText: "%s"' % (self.text,)
+    return 'AreaNoticeFreeText: "{}"'.format(self.text)
 
   def geom(self):
     #TODO(schwehr): Should this somehow have a position?

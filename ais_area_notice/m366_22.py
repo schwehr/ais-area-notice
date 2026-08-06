@@ -34,7 +34,7 @@ class Error(Exception):
   pass
 
 
-class AreaNoticeSubArea(object):
+class AreaNoticeSubArea:
 
   def decodeScaleFactor(self, db):
     scale_factor_raw = db.GetInt(2)
@@ -91,7 +91,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
     return bb.GetBits()
 
 
-class AreaNotice(object):
+class AreaNotice:
   version = 1
   max_areas = 9
   max_bits = 984

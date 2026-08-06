@@ -1,4 +1,4 @@
-"""Implement IMO Circ 289 Msg 8:1:26 environmental report.
+r"""Implement IMO Circ 289 Msg 8:1:26 environmental report.
 
 Issues:
   What does the sensor data description apply to?  e.g. with wind,
@@ -136,7 +136,7 @@ def almost_equal(a, b, epsilon=0.001):
     return True
 
 
-class SensorReport(object):
+class SensorReport:
 
   def __init__(self, report_type=None,
                year=None, month=None,  # Not a part of the message

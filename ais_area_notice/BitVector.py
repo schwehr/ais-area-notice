@@ -39,13 +39,7 @@ def _readblock( blocksize, bitvector ):
             if len(bitstring) < blocksize:
                 bitvector.more_to_read = False
             return bitstring
-        if sys.version_info[0] == 3:
-            hexvalue = '%02x' % byte[0]
-        else:
-            hexvalue = hex( ord( byte ) )
-            hexvalue = hexvalue[2:]
-            if len( hexvalue ) == 1:
-                hexvalue = '0' + hexvalue
+        hexvalue = '%02x' % byte[0]
         bitstring += _hexdict[ hexvalue[0] ]
         bitstring += _hexdict[ hexvalue[1] ]
     file_pos = bitvector.FILEIN.tell()
@@ -62,7 +56,7 @@ def _readblock( blocksize, bitvector ):
 
 #--------------------  BitVector Class Definition   ----------------------
 
-class BitVector( object ):
+class BitVector:
 
     def __init__( self, *args, **kwargs ):
         if args:
@@ -193,11 +187,8 @@ class BitVector( object ):
                                     cannot give values to any other constructor args''')
             import binascii
             hexlist = binascii.hexlify(rawbytes)
-            if sys.version_info[0] == 3:
-                bitlist = list(map(int,list(''.join(map(lambda x: _hexdict[x], \
+            bitlist = list(map(int,list(''.join(map(lambda x: _hexdict[x], \
                                                                 list(map(chr,list(hexlist))))))))
-            else:
-                bitlist = list(map(int,list(''.join(map(lambda x: _hexdict[x], list(hexlist))))))
             self.size = len(bitlist)
         else:
             raise ValueError("wrong arg(s) for constructor")
@@ -383,9 +374,9 @@ class BitVector( object ):
             # For Python 3.x:
             if sys.version_info[0] == 3:
                 if self[bit_index] == 0:
-                    fp.write( str('0') )
+                    fp.write( '0' )
                 else:
-                    fp.write( str('1') )
+                    fp.write( '1' )
             # For Python 2.x:
             else:
                 if self[bit_index] == 0:
@@ -462,10 +453,7 @@ class BitVector( object ):
             value = 0
             for bit in range(8):
                 value += (self._getbit( byte*8+(7 - bit) ) << bit )
-            if sys.version_info[0] == 3:
-                file_out.write( bytes(chr(value), 'utf-8') )
-            else:
-                file_out.write( chr(value) )
+            file_out.write( bytes(chr(value), 'utf-8') )
 
     def close_file_object(self):
         '''

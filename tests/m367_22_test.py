@@ -15,7 +15,7 @@ from ais_area_notice.m367_22 import AreaNoticeText
 from ais_area_notice.m367_22 import SHAPES
 
 
-class DiffAreaNotice(object):
+class DiffAreaNotice:
 
   def __init__(self, an1, an2):
     self.an1 = an1

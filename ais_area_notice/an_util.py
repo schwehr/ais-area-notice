@@ -9,7 +9,7 @@ class Error(Exception):
   pass
 
 
-class DecodeBits(object):
+class DecodeBits:
 
   def __init__(self, bits):
     self.bits = bits
@@ -45,7 +45,7 @@ class DecodeBits(object):
       raise Error('Decode verify failed.  %d != %d' % (self.pos, offset))
 
 
-class BuildBits(object):
+class BuildBits:
 
   def __init__(self):
     self.bv_list = []

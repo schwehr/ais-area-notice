@@ -28,7 +28,7 @@ SHAPES = {
 }
 
 
-class DecodeBits(object):
+class DecodeBits:
 
   def __init__(self, bits):
     self.bits = bits
@@ -64,7 +64,7 @@ class DecodeBits(object):
     assert self.pos == offset
 
 
-class BuildBits(object):
+class BuildBits:
 
   def __init__(self):
     self.bv_list = []
@@ -103,7 +103,7 @@ class BuildBits(object):
 # TODO(schwehr): Should this import from 1:22?
 
 
-class AreaNoticeSubArea(object):
+class AreaNoticeSubArea:
 
   def getScaleFactor(self, value):
     """The scale factor value for the network."""
