@@ -2069,8 +2069,6 @@ class NormQueue(Queue.Queue):
         if sen_num == total:
             msgs = self.stations[station][seq]
             self.stations[station][seq] = []  # FLUSH
-            if len(msgs) != total - 1:
-                return  # INCOMPLETE was missing part - so just drop it
 
             # All parts should have the same metadata.
             # Last line last has the fill bits.
