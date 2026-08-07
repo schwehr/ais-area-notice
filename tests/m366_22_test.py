@@ -126,3 +126,15 @@ def test_subarea_factory_overflow_and_unsupported_shape():
     invalid_shape_bits = header_bits + shape_6_subarea
     with pytest.raises(m366_22.Error, match="Unsupported area shape"):
         an.DecodeBits(invalid_shape_bits)
+
+
+def test_scale_factors_and_del_scale_factor():
+    subarea = m366_22.AreaNoticeSubArea()
+    assert subarea.getScaleFactor(500000) == 1000
+    assert subarea.getScaleFactor(50000) == 100
+    assert subarea.getScaleFactor(5000) == 10
+
+    c = m366_22.AreaNoticeCircle(lon=1.0, lat=2.0, radius=500)
+    del c.scale_factor
+    bits = c.get_bits()
+    assert len(bits) == 93
