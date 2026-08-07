@@ -696,3 +696,87 @@ class TestWhaleNotices:
         data = geojson.loads(json)
         assert data["bbm"]["area_type"] == zone_type
         assert data["bbm"]["area_type_desc"] == area_notice.notice_type[zone_type]
+
+
+def test_ll_to_polyline_and_helpers():
+    ll_points = [(-122.0, 37.0), (-122.1, 37.1), (-122.2, 37.2)]
+    offsets = area_notice.ll_to_polyline(ll_points)
+    assert len(offsets) == 2
+
+
+def test_frange_defaults():
+    r1 = list(area_notice.frange(5))
+    assert r1 == [0.0, 1.0, 2.0, 3.0, 4.0]
+
+
+def test_geom2kml_linestring_and_invalid():
+    ls_geom = {
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [(-122.0, 37.0), (-122.1, 37.1)],
+        }
+    }
+    kml = area_notice.geom2kml(ls_geom)
+    assert "<LineString>" in kml
+
+    invalid_geom = {"geometry": {"type": "Unknown", "coordinates": []}}
+    with pytest.raises(ValueError, match="Not a recognized"):
+        area_notice.geom2kml(invalid_geom)
+
+
+def test_ais_exception_repr():
+    exc = area_notice.AisException("test error")
+    assert repr(exc) == "test error"
+    assert str(exc) == "test error"
+
+
+def test_get_bits_header_errors_and_override(monkeypatch):
+    aivdm = area_notice.AIVDM(message_id=8, repeat_indicator=0, source_mmsi=123456789)
+    bv = aivdm.get_bits_header(source_mmsi=987654321)
+    assert len(bv) == 38
+
+    from BitVector import BitVector
+
+    monkeypatch.setattr(
+        area_notice.binary, "joinBV", lambda bv_list: BitVector(size=30)
+    )
+    with pytest.raises(area_notice.AisPackingException, match="invalid header size 30"):
+        aivdm.get_bits_header()
+
+
+def test_get_aivdm_validation_errors():
+    aivdm = area_notice.AIVDM(message_id=8, repeat_indicator=0, source_mmsi=123456789)
+    with pytest.raises(area_notice.AisPackingException, match="sequence_num 10"):
+        aivdm.get_aivdm(sequence_num=10)
+    with pytest.raises(area_notice.AisPackingException, match="channel C"):
+        aivdm.get_aivdm(channel="C")
+
+    aivdm_no_mmsi = area_notice.AIVDM(message_id=8, repeat_indicator=0)
+    with pytest.raises(area_notice.AisPackingException, match="source_mmsi None"):
+        aivdm_no_mmsi.get_aivdm()
+
+
+def test_get_aivdm_byte_align_and_normal_form_and_sequence_wrap():
+    when = datetime.datetime(2026, 8, 7, 0, 0, 0)
+    an = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    sentences = an.get_aivdm(byte_align=True)
+    assert len(sentences) >= 1
+
+    lines = an.get_aivdm(normal_form=True, sequence_num=1)
+    assert len(lines) == 1
+    assert lines[0].startswith("!AIVDM,1,1,1,A,")
+
+    lines_no_seq = an.get_aivdm(normal_form=True, sequence_num=None)
+    assert len(lines_no_seq) == 1
+    assert lines_no_seq[0].startswith("!AIVDM,1,1,,A,")
+
+    # Add text subareas to generate multi-sentence AIVDM
+    for i in range(8):
+        an.add_subarea(area_notice.AreaNoticeFreeText(text=f"TEXT {i}"))
+
+    area_notice.next_sequence = 9
+    multi = an.get_aivdm(sequence_num=None)
+    assert len(multi) > 1
+    assert area_notice.next_sequence == 1

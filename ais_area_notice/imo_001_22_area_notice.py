@@ -372,7 +372,7 @@ def ll_to_delta_m(lon1, lat1, lon2, lat2):
 
 def dist(p1, p2):
     return math.sqrt(
-        (p1[0] - p2[0]), *(p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1])
+        (p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1])
     )
 
 
@@ -549,6 +549,8 @@ class AIVDM:
             raise AisPackingException(
                 "repeat_indicator must be valid: [{}]".format(repeat_indicator)
             )
+        if source_mmsi is None:
+            raise AisPackingException("source_mmsi must be valid: %s" % source_mmsi)
 
         bv_list = []
         bv_list.append(binary.setBitVectorSize(BitVector(intVal=message_id), 6))
@@ -556,7 +558,7 @@ class AIVDM:
         bv_list.append(binary.setBitVectorSize(BitVector(intVal=source_mmsi), 30))
         bv = binary.joinBV(bv_list)
         if len(bv) != 38:
-            raise AisPackingExpeption("invalid  header size", len(bv))
+            raise AisPackingException("invalid header size %d" % len(bv))
         return bv
 
     def get_aivdm(
@@ -586,19 +588,15 @@ class AIVDM:
         if sequence_num is not None and sequence_num not in range(9):
             raise AisPackingException("sequence_num %d" % sequence_num)
         if channel not in ("A", "B"):
-            raise AisPackingException("channel", channel)
+            raise AisPackingException("channel " + str(channel))
 
         if repeat_indicator is None:
-            try:
-                repeat_indicator = self.repeat_indicator
-            except:
-                repeat_indicator = 0
+            repeat_indicator = getattr(self, "repeat_indicator", 0)
 
         if source_mmsi is None:
-            try:
-                source_mmsi = self.source_mmsi
-            except:
-                raise AisPackingException("source_mmsi", source_mmsi)
+            source_mmsi = getattr(self, "source_mmsi", None)
+            if source_mmsi is None:
+                raise AisPackingException("source_mmsi " + str(source_mmsi))
 
         header = self.get_bits_header(
             repeat_indicator=repeat_indicator, source_mmsi=source_mmsi
