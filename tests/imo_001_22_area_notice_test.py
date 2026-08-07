@@ -1210,6 +1210,16 @@ def test_subarea_factory_and_get_shapes():
     shapes = an.get_shapes(unk_bits)
     assert shapes == [(6, "reserved")]
 
+    an_rect = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    an_rect.add_subarea(area_notice.AreaNoticeRectangle(-122.0, 37.0, east_dim=100))
+    with pytest.raises(
+        area_notice.AisPackingException,
+        match="Point or another polyline must precede a polyline",
+    ):
+        an_rect.subarea_factory(bits=poly_bits)
+
 
 def test_message_2_fetcherformatter_and_normqueue():
     when = datetime.datetime(2026, 8, 7, 0, 0)
@@ -1230,6 +1240,10 @@ def test_message_2_fetcherformatter_and_normqueue():
     with pytest.raises(TypeError, match="Message must be a dictionary"):
         nq.put("not a dict")
 
+    m_single = {"total": 1, "station": "ST0", "body": "BODY_SINGLE"}
+    nq.put(m_single)
+    assert nq.qsize() == 1
+
     m1 = {"total": 2, "station": "ST1", "seq_id": 1, "sen_num": 1, "body": "BODY1"}
     m2 = {
         "total": 2,
@@ -1242,11 +1256,21 @@ def test_message_2_fetcherformatter_and_normqueue():
     }
 
     nq.put(m1)
-    assert nq.qsize() == 0
     nq.put(m2)
-    assert nq.qsize() == 1
+    assert nq.qsize() == 2
+    _ = nq.get()
     assembled = nq.get()
     assert assembled["body"] == "BODY1BODY2"
+
+    m_mid1 = {"total": 3, "station": "ST2", "seq_id": 1, "sen_num": 1, "body": "B1"}
+    m_mid2 = {"total": 3, "station": "ST2", "seq_id": 1, "sen_num": 2, "body": "B2"}
+    nq.put(m_mid1)
+    nq.put(m_mid2)
+
+    m_inc1 = {"total": 4, "station": "ST3", "seq_id": 1, "sen_num": 1, "body": "B1"}
+    m_inc4 = {"total": 4, "station": "ST3", "seq_id": 1, "sen_num": 4, "body": "B4"}
+    nq.put(m_inc1)
+    nq.put(m_inc4)
 
     m_bad = {"total": 3, "station": "ST1", "seq_id": 1, "sen_num": 3, "body": "BODY3"}
     nq.put(m_bad)
@@ -1264,12 +1288,24 @@ def test_main_cli(monkeypatch, tmp_path):
     styles_file.write_text('<Style id="test"></Style>')
     monkeypatch.chdir(tmp_path)
 
+    import runpy
     import sys
 
     monkeypatch.setattr(sys, "argv", ["main", sentence])
     area_notice.main()
-
     assert (tmp_path / "out.kml").exists()
+
+    nmea_file = tmp_path / "test.nmea"
+    non_aivdm = "INVALID LINE AIVDM\n"
+    non_match = "NOT MATCHING LINE\n"
+    non_8_msg = "!AIVDM,1,1,,A,13u?t:?P0000000,0*74\n"
+    nmea_file.write_text(non_aivdm + non_match + non_8_msg + sentence + "\n")
+
+    monkeypatch.setattr(sys, "argv", ["main", str(nmea_file)])
+    area_notice.main()
+
+    monkeypatch.setattr(sys, "argv", ["main", sentence])
+    runpy.run_module("ais_area_notice.imo_001_22_area_notice", run_name="__main__")
 
     monkeypatch.setattr(sys, "argv", ["main"])
     with pytest.raises(AssertionError):

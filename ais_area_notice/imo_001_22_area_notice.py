@@ -1787,6 +1787,7 @@ class AreaNotice(BBM):
 
         The strings will be aggregated into one message
         """
+        msgs = []
         for msg in strings:
             match = ais_nmea_regex.search(msg)
             if match is None:
@@ -1798,12 +1799,7 @@ class AreaNotice(BBM):
             if msg_dict["checksum"] != nmea_checksum_hex(msg):
                 raise AisUnpackingException("Checksum failed")
 
-        try:
-            msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
-        except AttributeError:
-            raise AisUnpackingException("one or more NMEA lines did were malformed (1)")
-        if None in msgs:
-            raise AisUnpackingException("one or more NMEA lines did were malformed")
+            msgs.append(msg_dict)
 
         bits = []
         for msg in msgs:
