@@ -12,6 +12,7 @@ from . import an_util
 from . import binary
 from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
+from .imo_001_22_area_notice import AisUnpackingException
 from .imo_001_22_area_notice import BBM
 from .imo_001_22_area_notice import nmea_checksum_hex
 from .imo_001_22_area_notice import notice_type
@@ -36,6 +37,18 @@ class Error(Exception):
 
 
 class AreaNoticeSubArea:
+    def getScaleFactor(self, value):
+        if value / 100.0 >= 4095:
+            return 1000
+        elif value / 10.0 > 4095:
+            return 100
+        elif value > 4095:
+            return 10
+        return 1
+
+    def getScaleFactorRaw(self, scale_factor):
+        return {1: 0, 10: 1, 100: 2, 1000: 3}[scale_factor]
+
     def decodeScaleFactor(self, db):
         scale_factor_raw = db.GetInt(2)
         return (1, 10, 100, 1000)[scale_factor_raw]
@@ -72,7 +85,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         self.precision = db.GetInt(3)
         self.radius_scaled = db.GetInt(12)
         self.radius = self.radius_scaled * self.scale_factor
-        self.spare = db.GetInt(4)
+        self.spare = db.GetInt(18)
         db.Verify(SUB_AREA_BIT_SIZE)
 
     def get_bits(self):
@@ -86,7 +99,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         bb.AddInt(round(self.lat * 600000), 27)
         bb.AddUInt(self.precision, 3)
         bb.AddUInt(int(self.radius / self.scale_factor), 12)
-        bb.AddUInt(0, 4)
+        bb.AddUInt(0, 18)
         bb.Verify(SUB_AREA_BIT_SIZE)
         return bb.GetBits()
 
@@ -129,16 +142,16 @@ class AreaNotice:
             self.areas = []
         if len(self.areas) > self.max_areas:
             raise AisPackingException(
-                "Can only have %d sub areas in an Area Notice", self.max_areas
+                f"Can only have {self.max_areas} sub areas in an Area Notice"
             )
         self.areas.append(area)
 
     def decode_nmea(self, strings):
-        for msg in strings:
-            msg_dict = ais_nmea_regex.search(msg).groupdict()
-            if msg_dict["checksum"] != nmea_checksum_hex(msg):
-                raise AisUnpackingException("Checksum failed")
         try:
+            for msg in strings:
+                msg_dict = ais_nmea_regex.search(msg).groupdict()
+                if msg_dict["checksum"] != nmea_checksum_hex(msg):
+                    raise AisUnpackingException("Checksum failed")
             msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
         except AttributeError:
             raise AisUnpackingException("One or more NMEA lines were malformed (1)")
@@ -193,7 +206,7 @@ class AreaNotice:
             bits = sub_areas_bits[start:end]
             logging.info("bits for sub area: %d %d %d", len(bits), start, end)
             subarea = self.SubareaFactory(bits)
-            # self.add_subarea(subarea)
+            self.add_subarea(subarea)
 
     def SubareaFactory(self, bits):
         shape = int(bits[:3])

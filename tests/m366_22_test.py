@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-"""Test USCG specific 8:367:22 area notice message Version 23 samples."""
+"""Test USCG specific 8:366:22 area notice message Version 23 samples."""
 
 import datetime
 from ais_area_notice import m366_22
@@ -28,11 +27,102 @@ def test_init_with_area_type():
     assert an.mmsi is None
 
 
-@pytest.mark.skip(reason="TODO(schwehr): Fix this failure.")
 def test_circle():
-    # TODO(grepjohnson): Why are there two messages?
-    aivdm = (
-        "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"
-        #'!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MKFaH;k4>42l0000,2*0E'
+    aivdm = "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"
+    an = m366_22.AreaNotice(nmea_strings=[aivdm])
+    assert len(an.areas) == 1
+    circle = an.areas[0]
+    assert isinstance(circle, m366_22.AreaNoticeCircle)
+    assert circle.radius == 1800
+
+
+def test_area_notice_circle_init_and_get_bits():
+    c1 = m366_22.AreaNoticeCircle(
+        lon=-71.935, lat=41.236666667, radius=1800, precision=4, scale_factor=10
     )
-    m366_22.AreaNotice(nmea_strings=[aivdm])
+    bits = c1.get_bits()
+    assert len(bits) == 93
+
+    c2 = m366_22.AreaNoticeCircle(bits=bits)
+    assert c2.radius == 1800
+
+    # Auto scale factor
+    c3 = m366_22.AreaNoticeCircle(lon=1.0, lat=2.0, radius=50)
+    assert c3.scale_factor == 1
+
+    with pytest.raises(m366_22.Error, match="Must specify bits or parameters."):
+        m366_22.AreaNoticeCircle()
+
+
+def test_add_subarea_no_areas_attr_and_max_areas_exceeded():
+    when = datetime.datetime(2026, 9, 4, 15, 25)
+    an = m366_22.AreaNotice(area_type=1, when=when)
+    del an.areas
+    circle = m366_22.AreaNoticeCircle(lon=1.0, lat=-2.0, radius=4, precision=3)
+    an.add_subarea(circle)
+    assert len(an.areas) == 1
+
+    for _ in range(9):
+        an.add_subarea(circle)
+
+    assert len(an.areas) == 10
+    with pytest.raises(m366_22.AisPackingException, match="Can only have"):
+        an.add_subarea(circle)
+
+
+def test_decode_nmea_errors_and_none_in_msgs(monkeypatch):
+    with pytest.raises(m366_22.AisUnpackingException, match="Checksum failed"):
+        m366_22.AreaNotice(
+            nmea_strings=["!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*00"]
+        )
+
+    with pytest.raises(m366_22.AisUnpackingException, match="One or more NMEA lines"):
+        m366_22.AreaNotice(nmea_strings=["NOT_AN_NMEA_STRING"])
+
+    class FakeMatch1:
+        def groupdict(self):
+            return {"checksum": "7F"}
+
+    class FakeMatch2:
+        def groupdict(self):
+            return None
+
+    class FakeRegex:
+        def __init__(self):
+            self.calls = 0
+
+        def search(self, text):
+            self.calls += 1
+            if self.calls == 1:
+                return FakeMatch1()
+            return FakeMatch2()
+
+    monkeypatch.setattr(m366_22, "ais_nmea_regex", FakeRegex())
+    with pytest.raises(m366_22.AisUnpackingException, match="Failed to parse message."):
+        m366_22.AreaNotice(
+            nmea_strings=["!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"]
+        )
+
+
+def test_subarea_factory_overflow_and_unsupported_shape():
+    aivdm = "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"
+    an = m366_22.AreaNotice(nmea_strings=[aivdm])
+
+    msg_dict = m366_22.ais_nmea_regex.search(aivdm).groupdict()
+    valid_bits = m366_22.binary.ais6tobitvec(msg_dict["body"])[:-2]
+    header_bits = valid_bits[:111]
+    subarea_bits = valid_bits[111:204]
+
+    from ais_area_notice import binary
+    from BitVector import BitVector
+
+    too_many_subareas = binary.joinBV([subarea_bits for _ in range(11)])
+    full_bits = header_bits + too_many_subareas
+    with pytest.raises(m366_22.Error, match="Sub area overflow"):
+        an.DecodeBits(full_bits)
+
+    # Test unsupported area shape (shape 6)
+    shape_6_subarea = BitVector(bitstring="110" + "0" * 90)
+    invalid_shape_bits = header_bits + shape_6_subarea
+    with pytest.raises(m366_22.Error, match="Unsupported area shape"):
+        an.DecodeBits(invalid_shape_bits)
