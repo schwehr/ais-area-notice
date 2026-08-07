@@ -85,3 +85,15 @@ def test_bitvec_to_ais6():
     assert binary.bitvectoais6(
         BitVector.BitVector(bitstring="000110101010010110001010100010")
     ) == ("6bF:R", 0)
+
+
+def test_bv_from_signed_int_no_bitsize():
+    assert str(binary.bvFromSignedInt(5)) == "0101"
+    assert str(binary.bvFromSignedInt(-5)) == "1011"
+
+
+def test_bitvec_to_ais6_no_padding_error():
+    import pytest
+
+    with pytest.raises(ValueError, match="Results would not be 6-bit aligned."):
+        binary.bitvectoais6(BitVector.BitVector(bitstring="101"), doPadding=False)
