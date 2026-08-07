@@ -1749,3 +1749,39 @@ class TestEnvironment:
         u = sr.__unicode__()
         assert "SensorReport Current3d: site_id=1" in u
         assert "n=5.0" in u
+
+    def test_sensor_report_base_and_location_and_id_coverage(self, monkeypatch):
+        sr1 = env.SensorReportLocation(site_id=1, lon=10.0, lat=20.0, alt=30.0)
+        sr2 = env.SensorReportLocation(site_id=1, lon=15.0, lat=20.0, alt=30.0)
+        assert sr1 != sr2
+
+        base_sr = env.SensorReport(report_type=0, day=1, hour=2, minute=3, site_id=4)
+        assert "SensorReport: site_id=4" in base_sr.__unicode__()
+        assert "SensorReport: site_id=4" in str(base_sr)
+
+        from BitVector import BitVector
+
+        loc_sr = env.SensorReportLocation(site_id=1)
+        with pytest.raises(env.AisUnpackingException, match="bit length"):
+            loc_sr.decode_bits(BitVector(size=100))
+
+        u_loc = loc_sr.__unicode__()
+        assert "SensorReport Location: site_id=1" in u_loc
+
+        id_sr = env.SensorReportId(site_id=1, id_str="TEST")
+        with pytest.raises(env.AisUnpackingException, match="bit length"):
+            id_sr.decode_bits(BitVector(size=100))
+
+        orig_joinbv = env.binary.joinBV
+        calls = 0
+
+        def fake_joinbv(bv_list):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                return BitVector(size=100)
+            return orig_joinbv(bv_list)
+
+        monkeypatch.setattr(env.binary, "joinBV", fake_joinbv)
+        with pytest.raises(env.AisPackingException, match="Bit length 100"):
+            id_sr.get_bits()

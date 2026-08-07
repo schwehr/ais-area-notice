@@ -235,7 +235,7 @@ class SensorReport:
             "SensorReport: site_id={site_id} type={report_type} day={day} "
             "hour={hour} min={minute}"
         )
-        return msg_unicode.format(
+        return msg.format(
             # type_str = sensor_report_lut[self.report_type],
             **self.__dict__
         )
@@ -324,7 +324,7 @@ class SensorReportLocation(SensorReport):
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
-            raise AisUnpackingException("bit length", len(bits))
+            raise AisUnpackingException("bit length " + str(len(bits)))
         assert self.report_type == int(bits[:4])
         SensorReport.decode_bits(self, bits)
         self.lon = binary.signedIntFromBV(bits[27:55]) / 600000.0
@@ -396,7 +396,7 @@ class SensorReportId(SensorReport):
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
-            raise AisUnpackingException("bit length", len(bits))
+            raise AisUnpackingException("bit length " + str(len(bits)))
         assert self.report_type == int(bits[:4])
         SensorReport.decode_bits(self, bits)
         self.id_str = ais_string.Decode(bits[27:-1])
@@ -410,7 +410,7 @@ class SensorReportId(SensorReport):
         ]
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
-            msg = "Bit length %d not equal to %d" % ((len(bits), SENSOR_REPORT_SIZE))
+            msg = "Bit length %d not equal to %d" % (len(bits), SENSOR_REPORT_SIZE)
             raise AisPackingException(msg)
         return bits
 
