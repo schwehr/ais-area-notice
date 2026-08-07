@@ -10,14 +10,18 @@ def hex_len2(h):
     """Make sure the hex numbers are len 2."""
     if len(h) == 2:
         return h
-    return '0'+h
+    return "0" + h
+
 
 def rand_hex_color():
-    return ''.join( [ hex_len2(hex(int(random.random()*255)).split('x')[1]) for j in range(3) ])
+    return "".join(
+        [hex_len2(hex(int(random.random() * 255)).split("x")[1]) for j in range(3)]
+    )
+
 
 for i in range(1, 127 + 1):
-
-    print """
+    print(
+        """
         <!-- AreaNotice {number}: {name} -->
         <StyleMap id="AreaNotice_{number}">
                 <Pair><key>normal</key><styleUrl>#AreaNotice_{number}_normal</styleUrl></Pair>
@@ -32,8 +36,12 @@ for i in range(1, 127 + 1):
         <Style id="AreaNotice_{number}_normal">
           <LineStyle><color>{c3}</color><width>8</width></LineStyle>
           <PolyStyle><color>{c4}</color></PolyStyle>
-        </Style>""".format(number=i, name=notice_type[i],
-                           c1=rand_hex_color(),
-                           c2=rand_hex_color(),
-                           c3=rand_hex_color(),
-                           c4=rand_hex_color())
+        </Style>""".format(
+            number=i,
+            name=notice_type[i],
+            c1=rand_hex_color(),
+            c2=rand_hex_color(),
+            c3=rand_hex_color(),
+            c4=rand_hex_color(),
+        )
+    )
