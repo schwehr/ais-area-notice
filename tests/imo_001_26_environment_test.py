@@ -1480,3 +1480,59 @@ class TestEnvironment:
         e = env.Environment(source_mmsi=123456)
         with pytest.raises(NotImplementedError):
             _ = e.__geo_interface__
+
+    def test_air_gap_decode_bits_size_and_get_bits_size(self, monkeypatch):
+        sr = env.SensorReportAirGap(site_id=1, gap=10.0, draft=5.0)
+        from BitVector import BitVector
+
+        with pytest.raises(env.AisUnpackingException, match="bit length"):
+            sr.decode_bits(BitVector(size=100))
+
+        orig_joinbv = env.binary.joinBV
+        calls = 0
+
+        def fake_joinbv(bv_list):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                return BitVector(size=100)
+            return orig_joinbv(bv_list)
+
+        monkeypatch.setattr(env.binary, "joinBV", fake_joinbv)
+        with pytest.raises(env.AisPackingException, match="bit length 100"):
+            sr.get_bits()
+
+    def test_air_gap_unicode(self):
+        sr = env.SensorReportAirGap(
+            site_id=1,
+            draft=10.0,
+            gap=5.0,
+            gap_trend=1,
+            forecast_gap=6.0,
+            forecast_day=1,
+            forecast_hour=2,
+            forecast_minute=3,
+        )
+        u = sr.__unicode__()
+        assert "SensorReport Gap: site_id=1" in u
+        assert "draft=10.0" in u
+        assert "forecast_gap=6.0" in u
+
+    def test_environment_init_nmea_strings_and_verbose_unicode_and_eq_diff_reports_and_html(
+        self, monkeypatch
+    ):
+        monkeypatch.setattr(env.Environment, "decode_nmea", lambda self, strings: None)
+        e = env.Environment(
+            nmea_strings=["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"]
+        )
+        assert e.message_id == 8
+
+        e2 = env.Environment(source_mmsi=123456)
+        e2.add_sensor_report(env.SensorReportId(site_id=1))
+        e3 = env.Environment(source_mmsi=123456)
+
+        assert e2 != e3
+        assert "SensorReport" in e2.__unicode__(verbose=True)
+
+        with pytest.raises(NotImplementedError):
+            e2.html()

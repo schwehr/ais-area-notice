@@ -1591,7 +1591,7 @@ class Environment(BBM):
 
     def html(self, efactory=False):
         """Return an embeddable html representation."""
-        raise NotImplmented
+        raise NotImplementedError
 
     def append(self, report):
         self.add_sensor_report(report)
