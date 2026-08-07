@@ -861,6 +861,10 @@ def test_bbm_errors_and_multisentence():
 
 
 def test_circle_pt_scale_factors_and_decoding():
+    c3 = area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=409500)
+    assert c3.scale_factor_raw == 3
+    assert c3.scale_factor == 1000
+
     c1 = area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=40951)
     assert c1.scale_factor_raw == 2
     assert c1.scale_factor == 100
@@ -924,10 +928,15 @@ def test_rectangle_scale_factors_decoding_unicode():
 
 
 def test_sector_scale_factors_decoding_unicode():
-    sec2 = area_notice.AreaNoticeSector(
-        -122.0, 37.0, radius=25500, left_bound_deg=0, right_bound_deg=90
+    sec3 = area_notice.AreaNoticeSector(
+        -122.0, 37.0, radius=409500, left_bound_deg=0, right_bound_deg=90
     )
-    assert sec2.scale_factor_raw == 1
+    assert sec3.scale_factor_raw == 3
+
+    sec2 = area_notice.AreaNoticeSector(
+        -122.0, 37.0, radius=40951, left_bound_deg=0, right_bound_deg=90
+    )
+    assert sec2.scale_factor_raw == 2
 
     sec1 = area_notice.AreaNoticeSector(
         -122.0, 37.0, radius=5000, left_bound_deg=0, right_bound_deg=90
@@ -977,14 +986,18 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
     with pytest.raises(area_notice.AisPackingException, match="Distance would not fit"):
         p_bad_dist.get_bits()
 
-    def mock_join_short(bv_list):
+    orig_join = area_notice.binary.joinBV
+
+    def mock_join_short_poly(bv_list):
         from BitVector import BitVector
 
-        return BitVector(size=50)
+        if len(bv_list) == 11:
+            return BitVector(size=50)
+        return orig_join(bv_list)
 
     with pytest.raises(area_notice.AisPackingException, match="area not 87 bits"):
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(area_notice.binary, "joinBV", mock_join_short)
+            mp.setattr(area_notice.binary, "joinBV", mock_join_short_poly)
             p0.get_bits()
 
     bv = p0.get_bits()
@@ -1086,12 +1099,35 @@ def test_area_notice_init_and_methods_and_errors():
     html_str = an.html(efactory=False)
     assert "AreaNotice" in html_str
 
+    an_freetext = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    an_freetext.add_subarea(area_notice.AreaNoticeFreeText(text="TEST"))
+    assert "FreeText: TEST" in an_freetext.html()
+
     an_no_attrs = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )
     geo = an_no_attrs.__geo_interface__
     assert geo["repeat"] == 0
     assert geo["mmsi"] == 123456789
+
+    an_none_rep = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    an_none_rep.repeat_indicator = None
+    assert an_none_rep.__geo_interface__["repeat"] == 0
+
+    an_no_mmsi_attr = area_notice.AreaNotice(area_type=1, when=when, duration=60)
+    del an_no_mmsi_attr.source_mmsi
+    assert an_no_mmsi_attr.__geo_interface__["mmsi"] == 0
+
+    an_no_areas = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    del an_no_areas.areas
+    an_no_areas.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
+    assert len(an_no_areas.areas) == 1
 
     an_max = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789

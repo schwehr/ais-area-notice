@@ -857,7 +857,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
             assert precision >= 0 and precision <= 4
             self.precision = precision
 
-            assert radius >= 0 and radius < 409500
+            assert radius >= 0 and radius <= 409500
             self.radius = radius
 
             if radius / 100.0 >= 4095:
@@ -1157,7 +1157,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
             assert precision >= 0 and precision <= 4
             self.precision = precision
 
-            assert 0 <= radius and radius <= 25500
+            assert 0 <= radius and radius <= 409500
 
             assert 0 <= left_bound_deg and left_bound_deg < 360
             assert 0 <= right_bound_deg and right_bound_deg < 360
