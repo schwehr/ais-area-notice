@@ -184,6 +184,14 @@ def test_init_nmea_strings():
         )
 
 
+def test_init_nmea_strings_return(monkeypatch):
+    monkeypatch.setattr(met_hydro.MetHydro31, "decode_nmea", lambda self, strings: None)
+    mh = met_hydro.MetHydro31(
+        nmea_strings=["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"]
+    )
+    assert mh.message_id == 8
+
+
 def test_init_none_day_hour_minute():
     mh = met_hydro.MetHydro31(source_mmsi=123456789, day=None, hour=None, minute=None)
     assert mh.day is not None
