@@ -138,3 +138,49 @@ def test_scale_factors_and_del_scale_factor():
     del c.scale_factor
     bits = c.get_bits()
     assert len(bits) == 93
+
+
+def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch):
+    aivdm = "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"
+    an = m366_22.AreaNotice(nmea_strings=[aivdm])
+
+    from BitVector import BitVector
+
+    # Shape 1 (Rectangle)
+    with pytest.raises(NameError, match="name 'AreaNoticeRectangle' is not defined"):
+        an.SubareaFactory(BitVector(bitstring="001" + "0" * 90))
+
+    # Shape 2 (Sector)
+    with pytest.raises(NameError, match="name 'AreaNoticeSector' is not defined"):
+        an.SubareaFactory(BitVector(bitstring="010" + "0" * 90))
+
+    # Shape 3 (Polyline with no preceding circle/poly)
+    an.areas = []
+    with pytest.raises(
+        m366_22.AisPackingException,
+        match="Point or another polyline must precede a polyline",
+    ):
+        an.SubareaFactory(BitVector(bitstring="011" + "0" * 90))
+
+    # Shape 3 (Polyline with preceding circle)
+    an.areas = [m366_22.AreaNoticeCircle(lon=1.0, lat=2.0, radius=50)]
+    with pytest.raises(NameError, match="name 'AreaNoticePoly' is not defined"):
+        an.SubareaFactory(BitVector(bitstring="011" + "0" * 90))
+
+    # Shape 3 (Polyline with preceding polyline mock)
+    class FakePoly:
+        def __init__(self, bits=None, lon=0, lat=0):
+            self.points = [(10.0, 20.0)]
+            self.bits = bits
+            self.lon = lon
+            self.lat = lat
+
+    monkeypatch.setattr(m366_22, "AreaNoticePoly", FakePoly, raising=False)
+    an.areas = [FakePoly()]
+    res = an.SubareaFactory(BitVector(bitstring="011" + "0" * 90))
+    assert res.lon == 10.0
+    assert res.lat == 20.0
+
+    # Shape 5 (Text)
+    with pytest.raises(NameError, match="name 'AreaNoticeText' is not defined"):
+        an.SubareaFactory(BitVector(bitstring="101" + "0" * 90))

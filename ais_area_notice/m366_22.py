@@ -217,11 +217,11 @@ class AreaNotice:
         elif shape == 2:
             return AreaNoticeSector(bits=bits)
         elif shape in (3, 4):
-            if isinstance(self.areas[-1], AreaNoticeCircle):
+            if self.areas and isinstance(self.areas[-1], AreaNoticeCircle):
                 lon = self.areas[-1].lon
                 lat = self.areas[-1].lat
                 self.areas.pop()
-            elif isinstance(self.areas[-1], AreaNoticePoly):
+            elif self.areas and isinstance(self.areas[-1], AreaNoticePoly):
                 last_pt = self.areas[-1].points[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
