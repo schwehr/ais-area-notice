@@ -1469,7 +1469,7 @@ class TestEnvironment:
         e = env.Environment(source_mmsi=123456)
         from BitVector import BitVector
 
-        reserved_bits = BitVector(bitstring="1011" + "0" * 108)
+        reserved_bits = BitVector.from_bitstring("1011" + "0" * 108)
         with pytest.raises(
             env.AisUnpackingException,
             match="Reports 11-15 reserved for future use",

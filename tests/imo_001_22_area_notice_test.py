@@ -1027,15 +1027,15 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
     from BitVector import BitVector
 
     bad_poly_bits = (
-        BitVector(bitstring="01100")
-        + BitVector(intVal=90, size=10)
-        + BitVector(intVal=100, size=10)
-        + BitVector(intVal=720, size=10)
-        + BitVector(intVal=0, size=10)
-        + BitVector(intVal=90, size=10)
-        + BitVector(intVal=0, size=10)
-        + BitVector(intVal=720, size=10)
-        + BitVector(intVal=0, size=10)
+        BitVector.from_bitstring("01100")
+        + BitVector.from_int(90, size=10)
+        + BitVector.from_int(100, size=10)
+        + BitVector.from_int(720, size=10)
+        + BitVector.from_int(0, size=10)
+        + BitVector.from_int(90, size=10)
+        + BitVector.from_int(0, size=10)
+        + BitVector.from_int(720, size=10)
+        + BitVector.from_int(0, size=10)
         + BitVector(size=2)
     )
     p_bad = area_notice.AreaNoticePolyline(bits=bad_poly_bits, lon=-122.0, lat=37.0)
@@ -1043,15 +1043,15 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
     assert "ERROR: bad polyline" in captured.err
 
     dist720_bits = (
-        BitVector(bitstring="01100")
-        + BitVector(intVal=90, size=10)
-        + BitVector(intVal=720, size=10)
-        + BitVector(intVal=720, size=10)
-        + BitVector(intVal=0, size=10)
-        + BitVector(intVal=720, size=10)
-        + BitVector(intVal=0, size=10)
-        + BitVector(intVal=720, size=10)
-        + BitVector(intVal=0, size=10)
+        BitVector.from_bitstring("01100")
+        + BitVector.from_int(90, size=10)
+        + BitVector.from_int(720, size=10)
+        + BitVector.from_int(720, size=10)
+        + BitVector.from_int(0, size=10)
+        + BitVector.from_int(720, size=10)
+        + BitVector.from_int(0, size=10)
+        + BitVector.from_int(720, size=10)
+        + BitVector.from_int(0, size=10)
         + BitVector(size=2)
     )
     p_dist720 = area_notice.AreaNoticePolyline(bits=dist720_bits, lon=-122.0, lat=37.0)
@@ -1218,7 +1218,7 @@ def test_subarea_factory_and_get_shapes():
 
     from BitVector import BitVector
 
-    unk_bits = BitVector(intVal=6, size=3) + BitVector(size=87)
+    unk_bits = BitVector.from_int(6, size=3) + BitVector(size=87)
     assert an.subarea_factory(bits=unk_bits) is None
 
     shapes = an.get_shapes(unk_bits)

@@ -71,7 +71,7 @@ class BuildBits:
 
     def AddUInt(self, val, num_bits):
         """Add an unsigned integer."""
-        bits = binary.setBitVectorSize(BitVector(intVal=val), num_bits)
+        bits = binary.setBitVectorSize(BitVector.from_int(val), num_bits)
         assert num_bits == len(bits)
         self.bits_expected += num_bits
         self.bv_list.append(bits)
@@ -440,27 +440,29 @@ class AreaNotice(BBM):
         bv_list = []
         if include_bin_hdr:
             # Messages ID
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=8), 6))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(8), 6))
             # Repeat Indicator
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 2))
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.mmsi), 30))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(0), 2))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.mmsi), 30))
 
         if include_bin_hdr or include_dac_fi:
-            bv_list.append(BitVector(bitstring="00"))
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.dac), 10))
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.fi), 6))
+            bv_list.append(BitVector.from_bitstring("00"))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.dac), 10))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.fi), 6))
 
         version = 1
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=version), 6))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.link_id), 10))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.area_type), 7))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(version), 6))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.link_id), 10))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.area_type), 7))
 
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.month), 4))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.day), 5))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.hour), 5))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.minute), 6))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.duration_min), 18))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 3))  # spare
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.when.month), 4))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.when.day), 5))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.when.hour), 5))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.when.minute), 6))
+        bv_list.append(
+            binary.setBitVectorSize(BitVector.from_int(self.duration_min), 18)
+        )
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(0), 3))  # spare
 
         for i, area in enumerate(self.areas):
             bv_list.append(area.get_bits())

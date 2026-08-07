@@ -6,5 +6,7 @@ out.kml
 *.egg-info
 .venv
 .uv
+.coverage
+.pytest_cache/
 build/
 dist/

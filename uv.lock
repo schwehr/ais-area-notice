@@ -7,7 +7,7 @@ name = "ais-area-notice"
 version = "0.5"
 source = { editable = "." }
 dependencies = [
-    { name = "bitvector" },
+    { name = "bitvector-modern" },
     { name = "geojson" },
     { name = "lxml" },
     { name = "pre-commit" },
@@ -23,7 +23,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "bitvector" },
+    { name = "bitvector-modern", specifier = ">=0.0.7" },
     { name = "geojson" },
     { name = "lxml" },
     { name = "pre-commit", specifier = ">=4.6.1" },
@@ -38,10 +38,13 @@ dev = [
 ]
 
 [[package]]
-name = "bitvector"
-version = "3.5.0"
+name = "bitvector-modern"
+version = "0.0.7"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/46/1c/69678b05bcfbafa18d8166aa8ad89d0a57e9b348ac58a7586edc3424b33e/BitVector-3.5.0.tar.gz", hash = "sha256:cac2fbccf11e325115827ed7be03e5fd62615227b0bbf3fa5a18a842a221839c", size = 161704, upload-time = "2021-05-30T16:06:46.914Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/84/92c46c3c31b882b1b701380f218ad8dac34f521fd75981e3a11eab6f1177/bitvector_modern-0.0.7.tar.gz", hash = "sha256:636d61ee7b4ef847fc6cf6a6fcf8540f9e58437d0deb3ffdb26c787ac2f5a7c9", size = 171452, upload-time = "2026-07-31T17:05:43.453Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/13/9c/a56f3cdab75c366400d1806dbadc7d6a4d1e135ce6308d2dac0396a485ea/bitvector_modern-0.0.7-py3-none-any.whl", hash = "sha256:8cc6b8970c58a47a570f4d7e17e2a3286baa09b7753ba0b5972462a66e93c8ae", size = 20413, upload-time = "2026-07-31T17:05:42.261Z" },
+]
 
 [[package]]
 name = "certifi"
