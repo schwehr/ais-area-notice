@@ -108,7 +108,9 @@ def test_subarea_factory_overflow_and_unsupported_shape():
     aivdm = "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"
     an = m366_22.AreaNotice(nmea_strings=[aivdm])
 
-    msg_dict = m366_22.ais_nmea_regex.search(aivdm).groupdict()
+    match = m366_22.ais_nmea_regex.search(aivdm)
+    assert match is not None
+    msg_dict = match.groupdict()
     valid_bits = m366_22.binary.ais6tobitvec(msg_dict["body"])[:-2]
     header_bits = valid_bits[:111]
     subarea_bits = valid_bits[111:204]

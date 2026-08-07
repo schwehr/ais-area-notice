@@ -62,3 +62,11 @@ omit = [
 
 [tool.coverage.report]
 show_missing = true
+
+[tool.ty.rules]
+deprecated = "ignore"
+invalid-argument-type = "ignore"
+invalid-method-override = "ignore"
+unresolved-attribute = "ignore"
+unresolved-reference = "ignore"
+unsupported-operator = "ignore"

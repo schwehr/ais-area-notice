@@ -243,7 +243,7 @@ class SensorReport:
     def __str__(self):
         return self.__unicode__()
 
-    def decode_bits(self, bits, year=None, month=None):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         assert len(bits) >= SENSOR_REPORT_HDR_SIZE
         assert len(bits) <= SENSOR_REPORT_SIZE
 
@@ -1337,11 +1337,11 @@ class SensorReportWeather(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month)
 
         self.air_temp = binary.signedIntFromBV(bits[27:38]) / 10.0
         self.air_temp_data_descr = int(bits[38:41])
@@ -1469,11 +1469,11 @@ class SensorReportAirGap(SensorReport):
         )
         # TODO(schwehr): No sensor data description like other reports?
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month)
 
         # TODO(schwehr): Spec of 0.1m steps for draft and gap?
         self.draft = int(bits[27:40]) / 100.0
@@ -1550,7 +1550,7 @@ class Environment(BBM):
             self.decode_bits(bits)
             return
 
-        assert source_mmsi > 0 and source_mmsi <= 999999999
+        assert source_mmsi is not None and 0 < source_mmsi <= 999999999
 
         self.source_mmsi = source_mmsi
         self.sensor_reports = []
@@ -1642,16 +1642,19 @@ class Environment(BBM):
         """Unpack nmea instrings into objects."""
 
         try:
+            msgs = []
             for msg in strings:
-                msg_dict = ais_nmea_regex.search(msg).groupdict()
+                match = ais_nmea_regex.search(msg)
+                if match is None:
+                    raise AisUnpackingException("NMEA line malformed: %s " % strings)
+                msg_dict = match.groupdict()
+                if msg_dict is None or "body" not in msg_dict:
+                    raise AisUnpackingException("Nothing decoded from: %s" % strings)
                 if msg_dict["checksum"] != nmea_checksum_hex(msg):
                     raise AisUnpackingException("Checksum failed")
-            msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
-        except AttributeError:
+                msgs.append(msg_dict)
+        except (AttributeError, TypeError):
             raise AisUnpackingException("NMEA line malformed: %s " % strings)
-
-        if not all(msgs):
-            raise AisUnpackingException("Nothing decoded from: %s" % strings)
 
     def decode_bits(self, bits, year=None):
         """Decode the bits for a message."""

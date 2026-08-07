@@ -163,6 +163,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         if "scale_factor" not in self.__dict__:
             self.scale_factor = self.getScaleFactor(self.radius)
         bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+        assert self.lon is not None and self.lat is not None
         bb.AddInt(self.lon * 600000, 28)
         bb.AddInt(self.lat * 600000, 27)
         bb.AddUInt(self.precision, 3)
@@ -226,6 +227,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         if "scale_factor" not in self.__dict__:
             self.scale_factor = self.getScaleFactor(max(self.e_dim, self.n_dim))
         bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+        assert self.lon is not None and self.lat is not None
         bb.AddInt(self.lon * 600000, 28)
         bb.AddInt(self.lat * 600000, 27)
         bb.AddUInt(self.precision, 3)
@@ -286,6 +288,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
         if "scale_factor" not in self.__dict__:
             self.scale_factor = self.getScaleFactor(self.radius)
         bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+        assert self.lon is not None and self.lat is not None
         bb.AddInt(self.lon * 600000, 28)
         # TODO(schwehr): Do we round all before encoding?
         bb.AddInt(round(self.lat * 600000), 27)
@@ -414,6 +417,7 @@ class AreaNotice(BBM):
             self.decode_nmea(nmea_strings)
         elif area_type is not None:
             self.area_type = area_type
+            assert when is not None
             # Leave out seconds.
             self.when = datetime.datetime(
                 when.year, when.month, when.day, when.hour, when.minute
@@ -469,15 +473,21 @@ class AreaNotice(BBM):
 
     def decode_nmea(self, strings):
         try:
+            msgs = []
             for msg in strings:
-                msg_dict = ais_nmea_regex.search(msg).groupdict()
+                match = ais_nmea_regex.search(msg)
+                if match is None:
+                    raise AisUnpackingException(
+                        "One or more NMEA lines were malformed (1)"
+                    )
+                msg_dict = match.groupdict()
+                if msg_dict is None or "body" not in msg_dict:
+                    raise AisUnpackingException("Failed to parse message.")
                 if msg_dict["checksum"] != nmea_checksum_hex(msg):
                     raise AisUnpackingException("Checksum failed")
-            msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
-        except AttributeError:
+                msgs.append(msg_dict)
+        except (AttributeError, TypeError):
             raise AisUnpackingException("One or more NMEA lines were malformed (1)")
-        if None in msgs:
-            raise AisUnpackingException("Failed to parse message.")
 
         bits = []
         for msg in msgs:

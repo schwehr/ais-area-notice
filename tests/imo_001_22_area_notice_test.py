@@ -67,7 +67,9 @@ def assert_almost_equal_geojson(g1, g2, delta=1e-4, verbose=False):
 class TestRegex:
     def testWithoutMetadata(self):
         msg_str = "!AIVDM,1,1,,A,E>b6Kpiacg`0aagRW:JJropqKLpLkD6D8AB;000000VP20,4*4C"
-        result = area_notice.ais_nmea_regex.search(msg_str).groupdict()
+        match = area_notice.ais_nmea_regex.search(msg_str)
+        assert match is not None
+        result = match.groupdict()
         assert result["talker"] == "AI"
         assert result["string_type"] == "VDM"
         assert result["total"] == "1"
@@ -83,7 +85,9 @@ class TestRegex:
         msg_str = (
             "!AIVDM,1,1,,B,15N8ac?P00ISgOBA4VU:lOv028Rq,0*4A,b003669953,1297555217"
         )
-        result = area_notice.ais_nmea_regex.search(msg_str).groupdict()
+        match = area_notice.ais_nmea_regex.search(msg_str)
+        assert match is not None
+        result = match.groupdict()
         assert result["talker"] == "AI"
         assert result["string_type"] == "VDM"
         assert result["total"] == "1"
@@ -103,7 +107,9 @@ class TestRegex:
             "!AIVDM,1,1,,A,15Muq2PP00J64Bf?ktmFpwvl0L0P,0*3F,d-091,S0977,t080226.00,T26.05630183,r07RCED1,1297584148"
         )
 
-        result = area_notice.ais_nmea_regex.search(msg_str).groupdict()
+        match = area_notice.ais_nmea_regex.search(msg_str)
+        assert match is not None
+        result = match.groupdict()
         assert result["talker"] == "AI"
         assert result["string_type"] == "VDM"
         assert result["total"] == "1"
@@ -126,7 +132,9 @@ class TestRegex:
             # pylint: disable=line-too-long
             "!AIVDM,1,1,,B,3018lEU000rA?L@>sp;8L5<>0000,0*26,x367022,s32171,d-079,T08.48347459,r003669976,1166058609"
         )
-        result = area_notice.ais_nmea_regex.search(msg_str).groupdict()
+        match = area_notice.ais_nmea_regex.search(msg_str)
+        assert match is not None
+        result = match.groupdict()
         assert result["talker"] == "AI"
         assert result["string_type"] == "VDM"
         assert result["total"] == "1"
@@ -149,7 +157,9 @@ class TestRegex:
             # pylint: disable=line-too-long
             "!AIVDM,2,1,6,B,54eGK=h00000<O;C?H104<THT>10ThuB1ALt00000000040000000000,0*58,b003669705,1297584166"
         )
-        result = area_notice.ais_nmea_regex.search(msg_str).groupdict()
+        match = area_notice.ais_nmea_regex.search(msg_str)
+        assert match is not None
+        result = match.groupdict()
         assert result["talker"] == "AI"
         assert result["string_type"] == "VDM"
         assert result["total"] == "2"
@@ -160,7 +170,9 @@ class TestRegex:
 
     def testMultiLine2(self):
         msg_str = "!AIVDM,2,2,6,B,000000000000000,2*21,b003669705,1297584166"
-        result = area_notice.ais_nmea_regex.search(msg_str).groupdict()
+        match = area_notice.ais_nmea_regex.search(msg_str)
+        assert match is not None
+        result = match.groupdict()
         assert result["talker"] == "AI"
         assert result["string_type"] == "VDM"
         assert result["total"] == "2"
@@ -170,7 +182,9 @@ class TestRegex:
 
     def testOwnShip(self):
         msg_str = "!AIVDO,1,1,,,13tfD@?P7BJsWhhHb5eBtwwL0000,0*05,rnhjel,1297555200.32"
-        result = area_notice.ais_nmea_regex.search(msg_str).groupdict()
+        match = area_notice.ais_nmea_regex.search(msg_str)
+        assert match is not None
+        result = match.groupdict()
         assert result["talker"] == "AI"
         assert result["string_type"] == "VDO"
         assert result["total"] == "1"

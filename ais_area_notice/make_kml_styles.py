@@ -3,7 +3,7 @@
 # Generate random colors and styles for all the areas
 
 import random
-from imo_001_22_area_notice import notice_type
+from ais_area_notice.imo_001_22_area_notice import notice_type
 
 
 def hex_len2(h):

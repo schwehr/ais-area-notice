@@ -148,16 +148,16 @@ def test_eq_branches():
     mh2 = met_hydro.MetHydro31(source_mmsi=123456789)
 
     # Line 215: len(self.__dict__) != len(other.__dict__)
-    mh2.extra_attr = 123
+    setattr(mh2, "extra_attr", 123)
     assert mh1 != mh2
-    del mh2.extra_attr
+    delattr(mh2, "extra_attr")
 
     # Line 220: key not in other.__dict__
-    mh1.attr_a = 1
-    mh2.attr_b = 1
+    setattr(mh1, "attr_a", 1)
+    setattr(mh2, "attr_b", 1)
     assert mh1 != mh2
-    del mh1.attr_a
-    del mh2.attr_b
+    delattr(mh1, "attr_a")
+    delattr(mh2, "attr_b")
 
     # Line 223: float not almost_equal
     mh1_float = met_hydro.MetHydro31(source_mmsi=123456789, air_temp=10.0)

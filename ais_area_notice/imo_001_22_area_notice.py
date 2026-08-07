@@ -32,6 +32,7 @@ from . import ais_string
 from . import binary
 from BitVector import BitVector
 import lxml
+import lxml.html
 from lxml.html import builder as E
 from pyproj import Proj
 import shapely.geometry
@@ -552,6 +553,7 @@ class AIVDM:
             )
         if source_mmsi is None:
             raise AisPackingException("source_mmsi must be valid: %s" % source_mmsi)
+        assert source_mmsi is not None
 
         bv_list = []
         bv_list.append(binary.setBitVectorSize(BitVector(intVal=message_id), 6))
@@ -1787,19 +1789,22 @@ class AreaNotice(BBM):
 
         The strings will be aggregated into one message
         """
-        msgs = []
-        for msg in strings:
-            match = ais_nmea_regex.search(msg)
-            if match is None:
-                raise AisUnpackingException(
-                    "one or more NMEA lines did were malformed (1)"
-                )
-            msg_dict = match.groupdict()
-
-            if msg_dict["checksum"] != nmea_checksum_hex(msg):
-                raise AisUnpackingException("Checksum failed")
-
-            msgs.append(msg_dict)
+        try:
+            msgs = []
+            for msg in strings:
+                match = ais_nmea_regex.search(msg)
+                if match is None:
+                    raise AisUnpackingException(
+                        "one or more NMEA lines did were malformed (1)"
+                    )
+                msg_dict = match.groupdict()
+                if msg_dict is None or "body" not in msg_dict:
+                    raise AisUnpackingException("Failed to parse message.")
+                if msg_dict["checksum"] != nmea_checksum_hex(msg):
+                    raise AisUnpackingException("Checksum failed")
+                msgs.append(msg_dict)
+        except (AttributeError, TypeError):
+            raise AisUnpackingException("one or more NMEA lines did were malformed (1)")
 
         bits = []
         for msg in msgs:
@@ -2030,7 +2035,8 @@ class NormQueue(Queue.Queue):
 
         Queue.Queue.__init__(self, maxsize)
 
-    def put(self, msg):
+    def put(self, item, block=True, timeout=None):
+        msg = item
         if not isinstance(msg, dict):
             raise TypeError("Message must be a dictionary")
 
@@ -2051,7 +2057,7 @@ class NormQueue(Queue.Queue):
             }
 
         if total == 1:
-            Queue.Queue.put(self, msg)  # EASY case
+            Queue.Queue.put(self, msg, block=block, timeout=timeout)  # EASY case
             return
 
         seq = int(msg["seq_id"])
@@ -2074,7 +2080,7 @@ class NormQueue(Queue.Queue):
             # Last line last has the fill bits.
             msg["body"] = "".join(msgs) + msg["body"]
             msg["total"] = msg["seq_num"] = 1
-            Queue.Queue.put(self, msg)
+            Queue.Queue.put(self, msg, block=block, timeout=timeout)
             return
 
         self.stations[station][seq].append(msg["body"])  # not first, not last
@@ -2100,14 +2106,14 @@ def main():
 
         for filename in args:
             for line in open(filename):
-                try:
-                    match = ais_nmea_regex.search(line).groupdict()
-                except AttributeError:
+                match = ais_nmea_regex.search(line)
+                if match is None:
                     if "AIVDM" in line:
                         logging.error("BAD_MATCH: %s", line)
                     continue
+                match_dict = match.groupdict()
 
-                norm_queue.put(match)
+                norm_queue.put(match_dict)
                 if norm_queue.qsize() > 0:
                     msg = norm_queue.get(False)
                     if msg["body"][0] != "8":

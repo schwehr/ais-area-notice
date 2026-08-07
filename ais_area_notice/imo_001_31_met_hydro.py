@@ -115,7 +115,7 @@ class MetHydro31(BBM):
             if minute is None:
                 minute = now.minute
 
-        assert source_mmsi >= 100000 and source_mmsi <= 999999999
+        assert source_mmsi is not None and 100000 <= source_mmsi <= 999999999
         assert (lon >= -180.0 and lon <= 180.0) or lon == 181
         assert (lat >= -90.0 and lat <= 90.0) or lat == 91
         assert day >= 0 and day <= 31
@@ -318,15 +318,23 @@ class MetHydro31(BBM):
         """Unpack nmea instrings into objects."""
 
         try:
+            msgs = []
             for msg in strings:
-                msg_dict = ais_nmea_regex.search(msg).groupdict()
+                match = ais_nmea_regex.search(msg)
+                if match is None:
+                    raise AisUnpackingException(
+                        "one or more NMEA lines did were malformed (1)"
+                    )
+                msg_dict = match.groupdict()
+                if msg_dict is None or "body" not in msg_dict:
+                    raise AisUnpackingException(
+                        "one or more NMEA lines did were malformed"
+                    )
                 if msg_dict["checksum"] != nmea_checksum_hex(msg):
                     raise AisUnpackingException("Checksum failed")
-            msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
-        except AttributeError:
+                msgs.append(msg_dict)
+        except (AttributeError, TypeError):
             raise AisUnpackingException("one or more NMEA lines did were malformed (1)")
-        if None in msgs:
-            raise AisUnpackingException("one or more NMEA lines did were malformed")
 
         # TODO(schwehr): Decode the NMEA.
         raise NotImplementedError
