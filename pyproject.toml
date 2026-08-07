@@ -40,6 +40,7 @@ Homepage = "https://github.com/schwehr/ais-area-notice"
 [dependency-groups]
 dev = [
     "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
 ]
 
 [[tool.uv.index]]
@@ -50,3 +51,13 @@ default = true
 [tool.codespell]
 skip = "*.pdf"
 ignore-words-list = "anc,pres,tht"
+
+[tool.coverage.run]
+omit = [
+    "ais_area_notice/BitVector.py",
+    "ais_area_notice/build_samples.py",
+    "ais_area_notice/make_kml_styles.py",
+]
+
+[tool.coverage.report]
+show_missing = true
