@@ -30,6 +30,7 @@ dependencies = [
     "BitVector",
     "geojson",
     "lxml",
+    "pre-commit>=4.6.1",
     "pyproj",
     "shapely",
 ]
