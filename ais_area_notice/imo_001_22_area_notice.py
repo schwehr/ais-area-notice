@@ -16,6 +16,7 @@ TODO(schwehr): Handle polyline and polygons that span multiple subareas.
 TODO(schwehr): Handle text that spans adjacent subareas.
 """
 
+import calendar
 import datetime
 from functools import reduce
 import logging
@@ -781,11 +782,11 @@ class BBM(AIVDM):
         3 - both
         """
         if not isinstance(talker, str) or len(talker) != 2:
-            AisPackingException("talker", talker)
+            raise AisPackingException("talker " + str(talker))
         if sequence_num is not None and (sequence_num <= 0 or sequence_num >= 9):
-            raise AisPackingException("sequence_num", sequence_num)
+            raise AisPackingException("sequence_num " + str(sequence_num))
         if channel not in (0, 1, 2, 3):
-            raise AisPackingException("channel", channel)
+            raise AisPackingException("channel " + str(channel))
 
         if sequence_num is None:
             sequence_num = 3
@@ -880,7 +881,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
     def decode_bits(self, bits):
         if len(bits) != SUB_AREA_SIZE:
-            raise AisUnpackingException("bit length", len(bits))
+            raise AisUnpackingException("bit length %d" % len(bits))
         if isinstance(bits, str):
             bits = BitVector(bitstring=bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
@@ -916,9 +917,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 18))  # spare
         bv = binary.joinBV(bv_list)
         if SUB_AREA_SIZE != len(bv):
-            raise AisPackingException(
-                "area not " + str(SUB_AREA_SIZE) + " bits", len(bv)
-            )
+            raise AisPackingException("area not %d bits: %d" % (SUB_AREA_SIZE, len(bv)))
         return bv
 
     def __unicode__(self):
@@ -995,10 +994,6 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         0 is a north-south line @param north_dim: height in meters (this gets
         confusing for larger angles). 0 is an east-west line @param
         orientation_deg: degrees CW
-        TODO(schwehr): Get/set for dimensions and allow for setting scale factor.
-        TODO(schwehr): Or just over rule the attribute get and sets.
-        TODO(schwehr): Allow user to force the scale factor.
-        TODO(schwehr): Should this be raising a ValueError.
         """
         if lon is not None:
             assert lon >= -180.0 and lon <= 180.0
@@ -1007,22 +1002,6 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             self.lat = lat
 
             assert precision >= 0 and precision <= 4
-            self.precision = precision
-
-    def __init__(
-        self,
-        lon=None,
-        lat=None,
-        east_dim=0,
-        north_dim=0,
-        orientation_deg=0,
-        precision=4,
-        bits=None,
-    ):
-        if lon is not None:
-            self.area_shape = 1
-            self.lon = lon
-            self.lat = lat
             self.precision = precision
 
             if east_dim >= 255000 or north_dim >= 255000:
@@ -1049,7 +1028,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
     def decode_bits(self, bits):
         if len(bits) != SUB_AREA_SIZE:
-            raise AisUnpackingException("bit length", len(bits))
+            raise AisUnpackingException("bit length %d" % len(bits))
         if isinstance(bits, str):
             bits = BitVector(bitstring=bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
@@ -1205,7 +1184,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
     def decode_bits(self, bits):
         if len(bits) != SUB_AREA_SIZE:
-            raise AisUnpackingException("bit length", len(bits))
+            raise AisUnpackingException("bit length %d" % len(bits))
         if isinstance(bits, str):
             bits = BitVector(bitstring=bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
@@ -1359,7 +1338,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         """lon and lat are the starting point for the point."""
 
         if len(bits) != SUB_AREA_SIZE:
-            raise AisUnpackingException("bit length", len(bits))
+            raise AisUnpackingException("bit length %d" % len(bits))
         if isinstance(bits, str):
             bits = BitVector(bitstring=bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
@@ -1449,9 +1428,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
         bv = binary.joinBV(bv_list)
         if len(bv) != SUB_AREA_SIZE:
-            raise AisPackingException(
-                "area not " + str(SUB_AREA_SIZE) + " bits %d:" % len(bv)
-            )
+            raise AisPackingException("area not %d bits: %d" % (SUB_AREA_SIZE, len(bv)))
 
         return start_pt_bits + bv
 
@@ -1564,7 +1541,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
     def decode_bits(self, bits):
         """Removes the "@" padding."""
         if len(bits) != SUB_AREA_SIZE:
-            raise AisUnpackingException("bit length", len(bits))
+            raise AisUnpackingException("bit length %d" % len(bits))
         if isinstance(bits, str):
             bits = BitVector(bitstring=bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
@@ -1679,7 +1656,7 @@ class AreaNotice(BBM):
         if verbose:
             results = [result]
             for item in self.areas:
-                results.append("\t" + unicode(item))
+                results.append("\t" + str(item))
         return "\n".join(results)
 
     def __str__(self, verbose=False):
@@ -1811,7 +1788,12 @@ class AreaNotice(BBM):
         The strings will be aggregated into one message
         """
         for msg in strings:
-            msg_dict = ais_nmea_regex.search(msg).groupdict()
+            match = ais_nmea_regex.search(msg)
+            if match is None:
+                raise AisUnpackingException(
+                    "one or more NMEA lines did were malformed (1)"
+                )
+            msg_dict = match.groupdict()
 
             if msg_dict["checksum"] != nmea_checksum_hex(msg):
                 raise AisUnpackingException("Checksum failed")
@@ -1917,7 +1899,7 @@ class AreaNotice(BBM):
                 lat = self.areas[-1].lat
                 self.areas.pop()
             elif isinstance(self.areas[-1], AreaNoticePolyline):
-                last_pt = self.areas[-1].get_points[-1]
+                last_pt = self.areas[-1].get_points()[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
             else:
@@ -1934,7 +1916,7 @@ class AreaNotice(BBM):
                 lat = self.areas[-1].lat
                 self.areas.pop()
             elif isinstance(self.areas[-1], AreaNoticePolyline):
-                last_pt = self.areas[-1].get_points[-1]
+                last_pt = self.areas[-1].get_points()[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
             return AreaNoticePolygon(bits=bits, lon=lon, lat=lat)
@@ -1997,7 +1979,7 @@ def message_2_fetcherformatter(
         if isinstance(msg, AreaNotice):
             message_type = msg.area_type
         else:
-            raise NotImplmented
+            raise NotImplementedError
 
     if isinstance(msg, AreaNotice):
         if message_type < 1000:
@@ -2112,7 +2094,7 @@ def main():
 
     kmlfile = open("out.kml", "w")
     kmlfile.write(kml_head)
-    kmlfile.write(file("areanotice_styles.kml").read())
+    kmlfile.write(open("areanotice_styles.kml").read())
 
     if 0 == len(args):
         assert False

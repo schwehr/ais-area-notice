@@ -780,3 +780,461 @@ def test_get_aivdm_byte_align_and_normal_form_and_sequence_wrap():
     multi = an.get_aivdm(sequence_num=None)
     assert len(multi) > 1
     assert area_notice.next_sequence == 1
+
+
+def test_aivdm_header_none_mmsi():
+    aivdm = area_notice.AIVDM(message_id=8, repeat_indicator=0)
+    with pytest.raises(
+        area_notice.AisPackingException, match="source_mmsi must be valid"
+    ):
+        aivdm.get_bits_header(source_mmsi=None)
+
+
+def test_aivdm_get_aivdm_byte_aligned_okay(capsys):
+    class MockAIVDM(area_notice.AIVDM):
+        def get_bits(self):
+            from BitVector import BitVector
+
+            return BitVector(size=74)
+
+    m = MockAIVDM(message_id=8, repeat_indicator=0, source_mmsi=123456789)
+    m.get_aivdm(byte_align=True)
+    captured = capsys.readouterr()
+    assert "byte-aligned okay" in captured.err
+
+
+def test_area_notice_kml_options(monkeypatch, tmp_path):
+    when = datetime.datetime(2026, 8, 7, 0, 0)
+    an = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    an.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
+
+    kml_str = an.kml(
+        with_style="MyCustomStyle", with_extended_data=True, with_time=True
+    )
+    assert "<styleUrl>MyCustomStyle</styleUrl>" in kml_str
+    assert "<ExtendedData>" in kml_str
+    assert "<TimeSpan>" in kml_str
+
+    styles_file = tmp_path / "areanotice_styles.kml"
+    styles_file.write_text('<Style id="test"></Style>')
+    monkeypatch.chdir(tmp_path)
+
+    full_kml = an.kml(full=True)
+    assert '<Style id="test"></Style>' in full_kml
+    assert "</kml>" in full_kml
+
+    class NoGeomSubArea(area_notice.AreaNoticeSubArea):
+        def __unicode__(self):
+            return "NoGeomSubArea"
+
+        @property
+        def __geo_interface__(self):
+            return {"area_shape": 99}
+
+    an_nogeom = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    an_nogeom.add_subarea(NoGeomSubArea())
+    assert an_nogeom.kml() == ""
+
+
+def test_bbm_errors_and_multisentence():
+    bbm = area_notice.BBM(message_id=8)
+    with pytest.raises(area_notice.AisPackingException, match="talker"):
+        bbm.get_bbm(talker="INVALID")
+    with pytest.raises(area_notice.AisPackingException, match="sequence_num"):
+        bbm.get_bbm(sequence_num=10)
+    with pytest.raises(area_notice.AisPackingException, match="channel"):
+        bbm.get_bbm(channel=9)
+
+    class LongBBM(area_notice.BBM):
+        def get_bits(self):
+            from BitVector import BitVector
+
+            return BitVector(size=300)
+
+    lbbm = LongBBM(message_id=8)
+    sentences = lbbm.get_bbm()
+    assert len(sentences) > 1
+
+
+def test_circle_pt_scale_factors_and_decoding():
+    c1 = area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=40951)
+    assert c1.scale_factor_raw == 2
+    assert c1.scale_factor == 100
+
+    c2 = area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=5000)
+    assert c2.scale_factor_raw == 1
+    assert c2.scale_factor == 10
+
+    c_empty = area_notice.AreaNoticeCirclePt()
+    assert not hasattr(c_empty, "lon")
+
+    with pytest.raises(area_notice.AisUnpackingException, match="bit length"):
+        c1.decode_bits("0" * 50)
+
+    bits_bv = c1.get_bits()
+    bits_str = str(bits_bv)
+    bits_list = [int(x) for x in bits_str]
+    bits_tuple = tuple(bits_list)
+
+    cd_str = area_notice.AreaNoticeCirclePt(bits=bits_str)
+    assert cd_str.radius == pytest.approx(c1.radius, abs=1000)
+
+    cd_tuple = area_notice.AreaNoticeCirclePt(bits=bits_tuple)
+    assert cd_tuple.radius == pytest.approx(c1.radius, abs=1000)
+
+    def mock_join_short(bv_list):
+        from BitVector import BitVector
+
+        return BitVector(size=50)
+
+    with pytest.raises(area_notice.AisPackingException, match="area not 87 bits"):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(area_notice.binary, "joinBV", mock_join_short)
+            c1.get_bits()
+
+
+def test_rectangle_scale_factors_decoding_unicode():
+    with pytest.raises(AssertionError):
+        area_notice.AreaNoticeRectangle(-122.0, 37.0, east_dim=255000)
+
+    r3 = area_notice.AreaNoticeRectangle(-122.0, 37.0, east_dim=25500)
+    assert r3.scale_factor_raw == 3
+
+    r0 = area_notice.AreaNoticeRectangle(-122.0, 37.0, east_dim=100)
+    assert r0.scale_factor_raw == 0
+
+    assert "AreaNoticeRectangle" in str(r0)
+
+    with pytest.raises(area_notice.AisUnpackingException, match="bit length"):
+        r0.decode_bits("0" * 50)
+
+    bv = r0.get_bits()
+    bv_str = str(bv)
+    bv_tuple = tuple(int(x) for x in bv_str)
+
+    r_str = area_notice.AreaNoticeRectangle(bits=bv_str)
+    assert r_str.e_dim == 100
+
+    r_tup = area_notice.AreaNoticeRectangle(bits=bv_tuple)
+    assert r_tup.e_dim == 100
+
+
+def test_sector_scale_factors_decoding_unicode():
+    sec2 = area_notice.AreaNoticeSector(
+        -122.0, 37.0, radius=25500, left_bound_deg=0, right_bound_deg=90
+    )
+    assert sec2.scale_factor_raw == 1
+
+    sec1 = area_notice.AreaNoticeSector(
+        -122.0, 37.0, radius=5000, left_bound_deg=0, right_bound_deg=90
+    )
+    assert sec1.scale_factor_raw == 1
+
+    assert "AreaNoticeSector" in str(sec1)
+
+    with pytest.raises(area_notice.AisUnpackingException, match="bit length"):
+        sec1.decode_bits("0" * 50)
+
+    bv = sec1.get_bits()
+    bv_str = str(bv)
+    bv_tuple = tuple(int(x) for x in bv_str)
+
+    s_str = area_notice.AreaNoticeSector(bits=bv_str)
+    assert s_str.radius == 5000
+
+    s_tup = area_notice.AreaNoticeSector(bits=bv_tuple)
+    assert s_tup.radius == 5000
+
+
+def test_polyline_scale_factors_decoding_errors_unicode(capsys):
+    p2 = area_notice.AreaNoticePolyline(lon=-122.0, lat=37.0, points=[(45, 20000)])
+    assert p2.scale_factor_raw == 2
+
+    p1 = area_notice.AreaNoticePolyline(lon=-122.0, lat=37.0, points=[(45, 2000)])
+    assert p1.scale_factor_raw == 1
+
+    p0 = area_notice.AreaNoticePolyline(lon=-122.0, lat=37.0, points=[(45, 500)])
+    assert p0.scale_factor_raw == 0
+
+    assert "AreaNoticePolyline" in str(p0)
+
+    with pytest.raises(area_notice.AisUnpackingException, match="bit length"):
+        p0.decode_bits("0" * 50, -122.0, 37.0)
+
+    p_bad_angle = area_notice.AreaNoticePolyline(
+        lon=-122.0, lat=37.0, points=[(512, 100)]
+    )
+    with pytest.raises(area_notice.AisPackingException, match="Angle would not fit"):
+        p_bad_angle.get_bits()
+
+    p_bad_dist = area_notice.AreaNoticePolyline(
+        lon=-122.0, lat=37.0, points=[(45, 2000000)]
+    )
+    with pytest.raises(area_notice.AisPackingException, match="Distance would not fit"):
+        p_bad_dist.get_bits()
+
+    def mock_join_short(bv_list):
+        from BitVector import BitVector
+
+        return BitVector(size=50)
+
+    with pytest.raises(area_notice.AisPackingException, match="area not 87 bits"):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(area_notice.binary, "joinBV", mock_join_short)
+            p0.get_bits()
+
+    bv = p0.get_bits()
+    bits_str = str(bv[87:])
+    bits_tuple = tuple(int(x) for x in bits_str)
+
+    p_dec_str = area_notice.AreaNoticePolyline(bits=bits_str, lon=-122.0, lat=37.0)
+    assert len(p_dec_str.points) == 1
+
+    p_dec_tup = area_notice.AreaNoticePolyline(bits=bits_tuple, lon=-122.0, lat=37.0)
+    assert len(p_dec_tup.points) == 1
+
+    from BitVector import BitVector
+
+    bad_poly_bits = (
+        BitVector(bitstring="01100")
+        + BitVector(intVal=90, size=10)
+        + BitVector(intVal=100, size=10)
+        + BitVector(intVal=720, size=10)
+        + BitVector(intVal=0, size=10)
+        + BitVector(intVal=90, size=10)
+        + BitVector(intVal=0, size=10)
+        + BitVector(intVal=720, size=10)
+        + BitVector(intVal=0, size=10)
+        + BitVector(size=2)
+    )
+    p_bad = area_notice.AreaNoticePolyline(bits=bad_poly_bits, lon=-122.0, lat=37.0)
+    captured = capsys.readouterr()
+    assert "ERROR: bad polyline" in captured.err
+
+    dist720_bits = (
+        BitVector(bitstring="01100")
+        + BitVector(intVal=90, size=10)
+        + BitVector(intVal=720, size=10)
+        + BitVector(intVal=720, size=10)
+        + BitVector(intVal=0, size=10)
+        + BitVector(intVal=720, size=10)
+        + BitVector(intVal=0, size=10)
+        + BitVector(intVal=720, size=10)
+        + BitVector(intVal=0, size=10)
+        + BitVector(size=2)
+    )
+    p_dist720 = area_notice.AreaNoticePolyline(bits=dist720_bits, lon=-122.0, lat=37.0)
+    assert len(p_dist720.points) == 1
+
+
+def test_polygon_unicode_and_freetext_methods():
+    poly = area_notice.AreaNoticePolygon(
+        lon=-122.0, lat=37.0, points=[(45, 100), (90, 100)]
+    )
+    assert "AreaNoticePolygon" in str(poly)
+
+    ft = area_notice.AreaNoticeFreeText(text="TEST")
+    assert "AreaNoticeFreeText" in str(ft)
+    assert ft.geom() is None
+
+    with pytest.raises(area_notice.AisUnpackingException, match="bit length"):
+        ft.decode_bits("0" * 50)
+
+    bv = ft.get_bits()
+    bv_str = str(bv)
+    bv_tup = tuple(int(x) for x in bv_str)
+
+    ft_str = area_notice.AreaNoticeFreeText(bits=bv_str)
+    assert ft_str.text == "TEST"
+
+    ft_tup = area_notice.AreaNoticeFreeText(bits=bv_tup)
+    assert ft_tup.text == "TEST"
+
+    def mock_join_short(bv_list):
+        from BitVector import BitVector
+
+        return BitVector(size=50)
+
+    with pytest.raises(
+        area_notice.AisPackingException, match="text subarea not 87 bits"
+    ):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(area_notice.binary, "joinBV", mock_join_short)
+            ft.get_bits()
+
+
+def test_area_notice_init_and_methods_and_errors():
+    with pytest.raises(AssertionError):
+        area_notice.AreaNotice()
+
+    when = datetime.datetime(2026, 8, 7, 0, 0)
+    an = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    an.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
+
+    assert "AreaNotice: type=1" in str(an)
+    assert "AreaNoticeCirclePt" in an.__unicode__(verbose=True)
+
+    html_factory = an.html(efactory=True)
+    assert html_factory is None
+
+    html_str = an.html(efactory=False)
+    assert "AreaNotice" in html_str
+
+    an_no_attrs = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    geo = an_no_attrs.__geo_interface__
+    assert geo["repeat"] == 0
+    assert geo["mmsi"] == 123456789
+
+    an_max = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    for i in range(9):
+        an_max.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
+
+    with pytest.raises(
+        area_notice.AisPackingException, match="Can only have 9 sub areas"
+    ):
+        an_max.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
+
+    bits_hdr1 = an.get_bits(include_bin_hdr=True, mmsi=None)
+    assert len(bits_hdr1) > 0
+
+    an_no_mmsi = area_notice.AreaNotice(area_type=1, when=when, duration=60)
+    bits_hdr2 = an_no_mmsi.get_bits(include_bin_hdr=True, mmsi=None)
+    assert len(bits_hdr2) > 0
+
+    orig_join = area_notice.binary.joinBV
+
+    def mock_join_large(bv_list):
+        from BitVector import BitVector
+
+        if len(bv_list) >= 9:
+            return BitVector(size=1000)
+        return orig_join(bv_list)
+
+    with pytest.raises(area_notice.AisPackingException, match="message to large"):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(area_notice.binary, "joinBV", mock_join_large)
+            an.get_bits()
+
+
+def test_area_notice_decode_nmea_errors():
+    when = datetime.datetime(2026, 8, 7, 0, 0)
+    an = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    sentence = an.get_aivdm()[0]
+
+    bad_cksum = sentence[:-2] + "00"
+    with pytest.raises(area_notice.AisUnpackingException, match="Checksum failed"):
+        area_notice.AreaNotice(nmea_strings=[bad_cksum])
+
+    with pytest.raises(
+        area_notice.AisUnpackingException, match="one or more NMEA lines"
+    ):
+        area_notice.AreaNotice(nmea_strings=["NOT_A_VALID_NMEA_STRING"])
+
+
+def test_subarea_factory_and_get_shapes():
+    when = datetime.datetime(2026, 8, 7, 0, 0)
+    an = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    p0 = area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=0)
+    poly1 = area_notice.AreaNoticePolyline(lon=-122.0, lat=37.0, points=[(45, 100)])
+    an.add_subarea(p0)
+    an.add_subarea(poly1)
+
+    poly_bits = area_notice.AreaNoticePolyline(
+        lon=-122.0, lat=37.0, points=[(90, 100)]
+    ).get_bits()[87:]
+    sa_poly = an.subarea_factory(bits=poly_bits)
+    assert isinstance(sa_poly, area_notice.AreaNoticePolyline)
+
+    polygon_bits = area_notice.AreaNoticePolygon(
+        lon=-122.0, lat=37.0, points=[(90, 100)]
+    ).get_bits()[87:]
+    an.add_subarea(sa_poly)
+    sa_polygon = an.subarea_factory(bits=polygon_bits)
+    assert isinstance(sa_polygon, area_notice.AreaNoticePolygon)
+
+    from BitVector import BitVector
+
+    unk_bits = BitVector(intVal=6, size=3) + BitVector(size=87)
+    assert an.subarea_factory(bits=unk_bits) is None
+
+    shapes = an.get_shapes(unk_bits)
+    assert shapes == [(6, "reserved")]
+
+
+def test_message_2_fetcherformatter_and_normqueue():
+    when = datetime.datetime(2026, 8, 7, 0, 0)
+    an = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    an.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
+
+    csv_line = area_notice.message_2_fetcherformatter(
+        an, timestamp=when, message_type=None, verbose=True
+    )
+    assert "BMS,SBNMS" in csv_line
+
+    with pytest.raises(NotImplementedError):
+        area_notice.message_2_fetcherformatter("NOT_AN_AREA_NOTICE")
+
+    nq = area_notice.NormQueue()
+    with pytest.raises(TypeError, match="Message must be a dictionary"):
+        nq.put("not a dict")
+
+    m1 = {"total": 2, "station": "ST1", "seq_id": 1, "sen_num": 1, "body": "BODY1"}
+    m2 = {
+        "total": 2,
+        "station": "ST1",
+        "seq_id": 1,
+        "sen_num": 2,
+        "body": "BODY2",
+        "seq_num": 1,
+        "fill_bits": 0,
+    }
+
+    nq.put(m1)
+    assert nq.qsize() == 0
+    nq.put(m2)
+    assert nq.qsize() == 1
+    assembled = nq.get()
+    assert assembled["body"] == "BODY1BODY2"
+
+    m_bad = {"total": 3, "station": "ST1", "seq_id": 1, "sen_num": 3, "body": "BODY3"}
+    nq.put(m_bad)
+
+
+def test_main_cli(monkeypatch, tmp_path):
+    when = datetime.datetime(2026, 8, 7, 0, 0)
+    an = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    an.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
+    sentence = an.get_aivdm()[0]
+
+    styles_file = tmp_path / "areanotice_styles.kml"
+    styles_file.write_text('<Style id="test"></Style>')
+    monkeypatch.chdir(tmp_path)
+
+    import sys
+
+    monkeypatch.setattr(sys, "argv", ["main", sentence])
+    area_notice.main()
+
+    assert (tmp_path / "out.kml").exists()
+
+    monkeypatch.setattr(sys, "argv", ["main"])
+    with pytest.raises(AssertionError):
+        area_notice.main()
