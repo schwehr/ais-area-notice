@@ -13,6 +13,7 @@ from . import binary
 from BitVector import BitVector
 from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
+from .imo_001_22_area_notice import AisUnpackingException
 from .imo_001_22_area_notice import BBM
 from .imo_001_22_area_notice import nmea_checksum_hex
 
@@ -427,7 +428,7 @@ class AreaNotice(BBM):
             self.areas = []
         if len(self.areas) > self.max_areas:
             raise AisPackingException(
-                "Can only have %d sub areas in an Area Notice", self.max_areas
+                f"Can only have {self.max_areas} sub areas in an Area Notice"
             )
         self.areas.append(area)
 
@@ -467,11 +468,11 @@ class AreaNotice(BBM):
         return bv
 
     def decode_nmea(self, strings):
-        for msg in strings:
-            msg_dict = ais_nmea_regex.search(msg).groupdict()
-            if msg_dict["checksum"] != nmea_checksum_hex(msg):
-                raise AisUnpackingException("Checksum failed")
         try:
+            for msg in strings:
+                msg_dict = ais_nmea_regex.search(msg).groupdict()
+                if msg_dict["checksum"] != nmea_checksum_hex(msg):
+                    raise AisUnpackingException("Checksum failed")
             msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
         except AttributeError:
             raise AisUnpackingException("One or more NMEA lines were malformed (1)")

@@ -472,8 +472,94 @@ class TestAreaNotice:
         sa1 = AreaNoticeText(bits=sa1_bits)
         text = "TEST LINE 1"
         self.checkText(sa1, text)
-
         sa2 = AreaNoticeText(text)
         self.checkText(sa2, text)
         sa2_bits = sa2.get_bits()
         assert sa1_bits == sa2_bits
+
+    def test_poly_empty_points_padding(self):
+        poly = AreaNoticePoly(SHAPES["POLYLINE"], [(10.0, 100)], scale_factor=1)
+        bits = poly.get_bits()
+        assert len(bits) == 96
+
+    def test_add_subarea_no_areas_attr_and_max_areas_exceeded(self):
+        from ais_area_notice.imo_001_22_area_notice import AisPackingException
+
+        when = datetime.datetime(2026, 9, 4, 15, 25)
+        an = AreaNotice(
+            area_type=13, when=when, duration_min=60, link_id=1, mmsi=366123456
+        )
+        del an.areas
+        circle = AreaNoticeCircle(lon=1.0, lat=-2.0, radius=4, precision=3)
+        an.add_subarea(circle)
+        assert len(an.areas) == 1
+
+        # Fill up to max_areas + 1 (10)
+        for _ in range(9):
+            an.add_subarea(circle)
+
+        assert len(an.areas) == 10
+        with pytest.raises(AisPackingException, match="Can only have"):
+            an.add_subarea(circle)
+
+    def test_get_bits_include_bin_hdr_and_too_large_error(self):
+        from ais_area_notice.imo_001_22_area_notice import AisPackingException
+
+        when = datetime.datetime(2026, 9, 4, 15, 25)
+        an = AreaNotice(
+            area_type=13, when=when, duration_min=60, link_id=1, mmsi=366123456
+        )
+        text_subarea = AreaNoticeText("A" * 15)
+        for _ in range(9):
+            an.add_subarea(text_subarea)
+
+        bits = an.get_bits(include_bin_hdr=True)
+        assert len(bits) > 0
+
+        # Add a 10th subarea directly to bypass add_subarea check and trigger message size error
+        an.areas.append(text_subarea)
+        with pytest.raises(AisPackingException, match="Message to large"):
+            an.get_bits()
+
+    def test_decode_nmea_errors_and_fill_bits(self):
+        from ais_area_notice.imo_001_22_area_notice import AisUnpackingException
+
+        with pytest.raises(AisUnpackingException, match="Checksum failed"):
+            AreaNotice(
+                nmea_strings=[
+                    "!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*99"
+                ]
+            )
+
+        with pytest.raises(
+            AisUnpackingException, match="One or more NMEA lines were malformed"
+        ):
+            AreaNotice(nmea_strings=["NOT_AN_NMEA_STRING"])
+
+        # Sentence with fill bits = 6
+        msg_fill = "!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP0000,6*2F"
+        an_fill = AreaNotice(nmea_strings=[msg_fill])
+        assert len(an_fill.areas) == 1
+
+    def test_subarea_factory_invalid_preceding_shape(self):
+        from ais_area_notice.imo_001_22_area_notice import AisPackingException
+
+        when = datetime.datetime(2026, 9, 4, 15, 25)
+        an = AreaNotice(
+            area_type=13, when=when, duration_min=60, link_id=1, mmsi=366123456
+        )
+        # AreaNoticeText shape is 5
+        an.add_subarea(AreaNoticeText("TEST"))
+        bits = an.get_bits(include_bin_hdr=True)
+
+        # Shape 3 (polyline) following Text shape 5 should raise AisPackingException
+        poly_bits = AreaNoticePoly(
+            SHAPES["POLYLINE"], [(10.0, 100)], scale_factor=1
+        ).get_bits()
+        invalid_bits = bits + poly_bits
+
+        with pytest.raises(
+            AisPackingException,
+            match="Point or another polyline must precede a polyline",
+        ):
+            AreaNotice(nmea_strings=None).decode_bits(invalid_bits)
