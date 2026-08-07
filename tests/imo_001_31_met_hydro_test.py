@@ -133,3 +133,59 @@ def test_decode_nmea_none_in_msgs(monkeypatch):
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
     with pytest.raises(met_hydro.AisUnpackingException, match="one or more NMEA lines"):
         mh.decode_nmea(["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"])
+
+
+def test_unicode_and_str():
+    mh = met_hydro.MetHydro31(source_mmsi=123456789)
+    assert mh.__unicode__() == "MetHydro31: "
+    assert "MetHydro31: " in mh.__unicode__(verbose=True)
+    assert str(mh) == "MetHydro31: "
+    assert "MetHydro31: " in mh.__str__(verbose=True)
+
+
+def test_eq_branches():
+    mh1 = met_hydro.MetHydro31(source_mmsi=123456789)
+    mh2 = met_hydro.MetHydro31(source_mmsi=123456789)
+
+    # Line 215: len(self.__dict__) != len(other.__dict__)
+    mh2.extra_attr = 123
+    assert mh1 != mh2
+    del mh2.extra_attr
+
+    # Line 220: key not in other.__dict__
+    mh1.attr_a = 1
+    mh2.attr_b = 1
+    assert mh1 != mh2
+    del mh1.attr_a
+    del mh2.attr_b
+
+    # Line 223: float not almost_equal
+    mh1_float = met_hydro.MetHydro31(source_mmsi=123456789, air_temp=10.0)
+    mh2_float = met_hydro.MetHydro31(source_mmsi=123456789, air_temp=20.0)
+    assert mh1_float != mh2_float
+
+    # Line 225: non-float != other
+    mh1_int = met_hydro.MetHydro31(source_mmsi=123456789, day=5)
+    mh2_int = met_hydro.MetHydro31(source_mmsi=123456789, day=10)
+    assert mh1_int != mh2_int
+
+
+def test_get_bits_no_mmsi_error():
+    mh = met_hydro.MetHydro31(source_mmsi=123456789)
+    mh.source_mmsi = None
+    with pytest.raises(met_hydro.AisPackingException, match="No mmsi specified"):
+        mh.get_bits(include_bin_hdr=True, mmsi=None)
+
+
+def test_init_nmea_strings():
+    with pytest.raises(NotImplementedError):
+        met_hydro.MetHydro31(
+            nmea_strings=["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"]
+        )
+
+
+def test_init_none_day_hour_minute():
+    mh = met_hydro.MetHydro31(source_mmsi=123456789, day=None, hour=None, minute=None)
+    assert mh.day is not None
+    assert mh.hour is not None
+    assert mh.minute is not None
