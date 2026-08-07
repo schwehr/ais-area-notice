@@ -92,6 +92,13 @@ def test_bv_from_signed_int_no_bitsize():
     assert str(binary.bvFromSignedInt(-5)) == "1011"
 
 
+def test_bv_from_signed_int_invalid_bitsize():
+    import pytest
+
+    with pytest.raises(ValueError, match="incorrect bit size"):
+        binary.bvFromSignedInt(251, bitSize=8)
+
+
 def test_bitvec_to_ais6_no_padding_error():
     import pytest
 

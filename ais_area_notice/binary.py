@@ -179,7 +179,9 @@ def bvFromSignedInt(intVal, bitSize=None):
         bv = BitVector(intVal=abs(intVal))
     else:
         bv = setBitVectorSize(BitVector(intVal=abs(intVal)), bitSize - 1)
-        if bitSize - 1 != len(bv) and bv[0] != 1 and bv[-1] != 0:
+        if bitSize - 1 != len(bv) and not (
+            len(bv) == bitSize and bv[0] == 1 and bv[-1] == 0
+        ):
             raise ValueError("incorrect bit size")
         if len(bv) == bitSize and bv[0] == 1:
             return bv
