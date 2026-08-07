@@ -30,3 +30,21 @@ def test_round_trip():
     for string in strings:
         encoded = ais_string.Encode(string)
         assert ais_string.Decode(encoded) == string
+
+
+def test_decode_drop_after_first_at():
+    encoded = ais_string.Encode("A@A")
+    assert ais_string.Decode(encoded, drop_after_first_at=True) == "A"
+
+
+def test_encode_bit_size_padding():
+    encoded = ais_string.Encode("A", bit_size=12)
+    assert len(encoded) == 12
+    assert str(encoded) == "000001000000"
+
+
+def test_encode_bit_size_too_small():
+    import pytest
+
+    with pytest.raises(AssertionError):
+        ais_string.Encode("AB", bit_size=6)
