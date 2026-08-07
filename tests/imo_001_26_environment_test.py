@@ -1390,3 +1390,93 @@ class TestEnvironment:
             assert value == pytest.approx(sb_b.wl)
             assert sr.wl == pytest.approx(sb_b.wl)
             assert sr == sb_b
+
+    def test_add_sensor_report_no_attr_and_too_many(self):
+        e = env.Environment(source_mmsi=123456)
+        del e.sensor_reports
+        sr = env.SensorReportId(site_id=1)
+        e.add_sensor_report(sr)
+        assert hasattr(e, "sensor_reports")
+        assert len(e.sensor_reports) == 1
+
+        for _ in range(9):
+            e.sensor_reports.append(sr)
+
+        assert len(e.sensor_reports) == 10
+        with pytest.raises(env.AisPackingException, match="Too many sensor reports"):
+            e.add_sensor_report(sr)
+
+    def test_get_report_types(self):
+        e = env.Environment(source_mmsi=123456)
+        e.add_sensor_report(env.SensorReportLocation(site_id=1))
+        e.add_sensor_report(env.SensorReportWind(site_id=2))
+        assert e.get_report_types() == [0, 2]
+
+    def test_get_bits_no_mmsi_and_too_large(self):
+        e = env.Environment(source_mmsi=123456)
+        e.source_mmsi = None
+        with pytest.raises(env.AisPackingException, match="No mmsi specified."):
+            e.get_bits(include_bin_hdr=True, mmsi=None)
+
+        e2 = env.Environment(source_mmsi=123456)
+        sr = env.SensorReportId(site_id=1)
+        for _ in range(10):
+            e2.sensor_reports.append(sr)
+        with pytest.raises(env.AisPackingException, match="Too large"):
+            e2.get_bits()
+
+    def test_decode_nmea_errors(self, monkeypatch):
+        e = env.Environment(source_mmsi=123456)
+        with pytest.raises(env.AisUnpackingException, match="Checksum failed"):
+            e.decode_nmea(["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*99"])
+
+        with pytest.raises(env.AisUnpackingException, match="NMEA line malformed"):
+            e.decode_nmea(["NOT_AN_NMEA_STRING"])
+
+        class FakeMatch1:
+            def groupdict(self):
+                return {"checksum": "19"}
+
+        class FakeMatch2:
+            def groupdict(self):
+                return None
+
+        class FakeRegex:
+            def __init__(self):
+                self.calls = 0
+
+            def search(self, text):
+                self.calls += 1
+                if self.calls == 1:
+                    return FakeMatch1()
+                return FakeMatch2()
+
+        monkeypatch.setattr(env, "ais_nmea_regex", FakeRegex())
+        with pytest.raises(env.AisUnpackingException, match="Nothing decoded from"):
+            e.decode_nmea(["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"])
+
+    def test_decode_bits_fill_bits_trouble(self):
+        e = env.Environment(source_mmsi=123456)
+        from BitVector import BitVector
+
+        invalid_bits = BitVector(size=56 + 112 + 10)
+        with pytest.raises(
+            env.AisUnpackingException, match="Environment\\(BBM\\) trouble"
+        ):
+            e.decode_bits(invalid_bits)
+
+    def test_sensor_report_factory_reserved_type(self):
+        e = env.Environment(source_mmsi=123456)
+        from BitVector import BitVector
+
+        reserved_bits = BitVector(bitstring="1011" + "0" * 108)
+        with pytest.raises(
+            env.AisUnpackingException,
+            match="Reports 11-15 reserved for future use",
+        ):
+            e.sensor_report_factory(reserved_bits)
+
+    def test_geo_interface(self):
+        e = env.Environment(source_mmsi=123456)
+        with pytest.raises(NotImplementedError):
+            _ = e.__geo_interface__

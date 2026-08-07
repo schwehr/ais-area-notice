@@ -20,9 +20,11 @@ from . import ais_string
 from . import binary
 from BitVector import BitVector
 
+from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
 from .imo_001_22_area_notice import AisUnpackingException
 from .imo_001_22_area_notice import BBM
+from .imo_001_22_area_notice import nmea_checksum_hex
 
 SENSOR_REPORT_HDR_SIZE = 27
 SENSOR_REPORT_SIZE = 112
@@ -1597,7 +1599,7 @@ class Environment(BBM):
     def add_sensor_report(self, report):
         """Add another sensor report onto the message."""
         if not hasattr(self, "sensor_reports"):
-            self.areas = [report]
+            self.sensor_reports = [report]
             return
         if len(self.sensor_reports) > 9:
             raise AisPackingException("Too many sensor reports (8 max).")
@@ -1639,12 +1641,11 @@ class Environment(BBM):
     def decode_nmea(self, strings):
         """Unpack nmea instrings into objects."""
 
-        for msg in strings:
-            msg_dict = ais_nmea_regex.search(msg).groupdict()
-            if msg_dict["checksum"] != nmea_checksum_hex(msg):
-                raise AisUnpackingException("Checksum failed")
-
         try:
+            for msg in strings:
+                msg_dict = ais_nmea_regex.search(msg).groupdict()
+                if msg_dict["checksum"] != nmea_checksum_hex(msg):
+                    raise AisUnpackingException("Checksum failed")
             msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
         except AttributeError:
             raise AisUnpackingException("NMEA line malformed: %s " % strings)
@@ -1726,7 +1727,7 @@ class Environment(BBM):
     @property
     def __geo_interface__(self):
         """Provide a Geo Interface for GeoJSON serialization."""
-        raise NotImplmented
+        raise NotImplementedError
 
 
 sensor_report_classes = [
