@@ -490,7 +490,7 @@ class SensorReportWind(SensorReport):
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
-            raise AisUnpackingException("bit length", len(bits))
+            raise AisUnpackingException("bit length " + str(len(bits)))
         assert self.report_type == int(bits[:4])
         SensorReport.decode_bits(self, bits)
         self.speed = int(bits[27:34])
@@ -632,7 +632,7 @@ class SensorReportWaterLevel(SensorReport):
 
     def decode_bits(self, bits):
         if len(bits) != SENSOR_REPORT_SIZE:
-            raise AisUnpackingException("bit length", len(bits))
+            raise AisUnpackingException("bit length " + str(len(bits)))
 
         assert self.report_type == int(bits[:4])
 

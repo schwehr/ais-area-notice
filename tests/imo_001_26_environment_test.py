@@ -1636,3 +1636,116 @@ class TestEnvironment:
         monkeypatch.undo()
         u = sr.__unicode__()
         assert "SensorReport Wx: site_id=1" in u
+
+    def test_wind_coverage(self, monkeypatch):
+        sr = env.SensorReportWind(
+            site_id=1,
+            speed=10,
+            gust=15,
+            dir=180,
+            forecast_speed=12,
+            forecast_dir=190,
+        )
+        from BitVector import BitVector
+
+        with pytest.raises(env.AisUnpackingException, match="bit length"):
+            sr.decode_bits(BitVector(size=100))
+
+        orig_joinbv = env.binary.joinBV
+        calls = 0
+
+        def fake_joinbv(bv_list):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                return BitVector(size=100)
+            return orig_joinbv(bv_list)
+
+        monkeypatch.setattr(env.binary, "joinBV", fake_joinbv)
+        with pytest.raises(env.AisPackingException, match="bit length"):
+            sr.get_bits()
+
+        monkeypatch.undo()
+        u = sr.__unicode__()
+        assert "SensorReport Wind: site_id=1" in u
+        assert "speed=10" in u
+        assert "forecast: speed=12" in u
+
+    def test_water_level_coverage(self, monkeypatch):
+        sr = env.SensorReportWaterLevel(site_id=1, wl=1.5, forecast_wl=2.0)
+        from BitVector import BitVector
+
+        with pytest.raises(env.AisUnpackingException, match="bit length"):
+            sr.decode_bits(BitVector(size=100))
+
+        orig_joinbv = env.binary.joinBV
+        calls = 0
+
+        def fake_joinbv(bv_list):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                return BitVector(size=100)
+            return orig_joinbv(bv_list)
+
+        monkeypatch.setattr(env.binary, "joinBV", fake_joinbv)
+        with pytest.raises(env.AisPackingException, match="bit length"):
+            sr.get_bits()
+
+        monkeypatch.undo()
+        u = sr.__unicode__()
+        assert "SensorReport WaterLevel: site_id=1" in u
+        assert "wl=1.5" in u
+        assert "forecast: wl=2.0" in u
+
+    def test_current_2d_coverage(self, monkeypatch):
+        sr = env.SensorReportCurrent2d(site_id=1, speed_1=5.0)
+        from BitVector import BitVector
+
+        with pytest.raises(env.AisUnpackingException, match="bit length"):
+            sr.decode_bits(BitVector(size=100))
+
+        orig_joinbv = env.binary.joinBV
+        calls = 0
+
+        def fake_joinbv(bv_list):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                return BitVector(size=100)
+            return orig_joinbv(bv_list)
+
+        monkeypatch.setattr(env.binary, "joinBV", fake_joinbv)
+        with pytest.raises(env.AisPackingException, match="bit length"):
+            sr.get_bits()
+
+        monkeypatch.undo()
+        u = sr.__unicode__()
+        assert "SensorReport Current2d: site_id=1" in u
+        assert "speed=5.0" in u
+
+    def test_current_3d_coverage(self, monkeypatch):
+        sr = env.SensorReportCurrent3d(site_id=1, n_1=5.0, level_1=10)
+        from BitVector import BitVector
+
+        with pytest.raises(env.AisUnpackingException, match="bit length"):
+            sr.decode_bits(BitVector(size=100))
+
+        orig_joinbv = env.binary.joinBV
+        calls = 0
+
+        def fake_joinbv(bv_list):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                return BitVector(size=100)
+            return orig_joinbv(bv_list)
+
+        monkeypatch.setattr(env.binary, "joinBV", fake_joinbv)
+        with pytest.raises(env.AisPackingException, match="bit length"):
+            sr.get_bits()
+
+        monkeypatch.undo()
+        u = sr.__unicode__()
+        assert "SensorReport Current3d: site_id=1" in u
+        assert "n=5.0" in u
