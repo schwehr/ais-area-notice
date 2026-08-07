@@ -563,3 +563,72 @@ class TestAreaNotice:
             match="Point or another polyline must precede a polyline",
         ):
             AreaNotice(nmea_strings=None).decode_bits(invalid_bits)
+
+    def test_decode_bits_verify_log(self):
+        from ais_area_notice.m367_22 import DecodeBits
+        from BitVector import BitVector
+
+        db = DecodeBits(BitVector(bitstring="0000"))
+        with pytest.raises(AssertionError):
+            db.Verify(10)
+
+    def test_scale_factors_and_defaults(self):
+        subarea = AreaNoticeCircle(lon=1.0, lat=2.0, radius=500000, scale_factor=None)
+        assert subarea.getScaleFactor(500000) == 1000
+        assert subarea.getScaleFactor(50000) == 100
+        assert subarea.getScaleFactor(5000) == 10
+
+        # Line 164
+        c = AreaNoticeCircle(lon=1.0, lat=2.0, radius=500)
+        del c.scale_factor
+        assert len(c.get_bits()) == 96
+
+        # Line 197 & 227
+        rect = AreaNoticeRectangle(
+            lon=1.0, lat=2.0, east_dim=50, north_dim=50, scale_factor=None
+        )
+        assert rect.scale_factor == 1
+        del rect.scale_factor
+        assert len(rect.get_bits()) == 96
+
+        # Line 260 & 287
+        sec = AreaNoticeSector(lon=1.0, lat=2.0, radius=50, scale_factor=None)
+        assert sec.scale_factor == 1
+        del sec.scale_factor
+        assert len(sec.get_bits()) == 96
+
+        # Line 322 & 339 & 356-357
+        poly = AreaNoticePoly(area_shape=3, points=[(10.0, 50)], scale_factor=None)
+        assert poly.scale_factor == 1
+        poly_bits = poly.get_bits()
+        poly_decoded = AreaNoticePoly(bits=poly_bits)
+        assert len(poly_decoded.points) == 1
+        del poly.scale_factor
+        assert len(poly.get_bits()) == 96
+
+    def test_decode_nmea_none_in_msgs(self, monkeypatch):
+        from ais_area_notice import m367_22
+        from ais_area_notice.imo_001_22_area_notice import AisUnpackingException
+
+        class FakeMatch1:
+            def groupdict(self):
+                return {"checksum": "06"}
+
+        class FakeMatch2:
+            def groupdict(self):
+                return None
+
+        class FakeRegex:
+            def __init__(self):
+                self.calls = 0
+
+            def search(self, text):
+                self.calls += 1
+                if self.calls == 1:
+                    return FakeMatch1()
+                return FakeMatch2()
+
+        monkeypatch.setattr(m367_22, "ais_nmea_regex", FakeRegex())
+
+        with pytest.raises(AisUnpackingException, match="Failed to parse message."):
+            AreaNotice(nmea_strings=["!AIVDM,1,1,0,A,body,0*06"])

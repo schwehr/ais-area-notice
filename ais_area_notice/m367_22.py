@@ -161,7 +161,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         bb = BuildBits()
         bb.AddUInt(SHAPES["CIRCLE"], 3)  # Area shape
         if "scale_factor" not in self.__dict__:
-            scale_factor = self.getScaleFactor(self.radius)
+            self.scale_factor = self.getScaleFactor(self.radius)
         bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
         bb.AddInt(self.lon * 600000, 28)
         bb.AddInt(self.lat * 600000, 27)
