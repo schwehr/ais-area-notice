@@ -73,3 +73,63 @@ def test_random():
         assert mh == mh
         mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
         assert mh == mh_b
+
+
+import pytest
+
+
+def test_ne_and_html_and_geo_interface():
+    mh1 = met_hydro.MetHydro31(source_mmsi=123456789)
+    mh2 = met_hydro.MetHydro31(source_mmsi=987654321)
+    assert mh1 != mh2
+    with pytest.raises(NotImplementedError):
+        mh1.html()
+    with pytest.raises(NotImplementedError):
+        _ = mh1.__geo_interface__
+
+
+def test_get_bits_wrong_size_error(monkeypatch):
+    mh = met_hydro.MetHydro31(source_mmsi=123456789)
+    from BitVector import BitVector
+
+    monkeypatch.setattr(met_hydro.binary, "joinBV", lambda bv_list: BitVector(size=100))
+    with pytest.raises(met_hydro.AisPackingException, match="message wrong size"):
+        mh.get_bits()
+
+
+def test_decode_nmea_errors():
+    mh = met_hydro.MetHydro31(source_mmsi=123456789)
+    with pytest.raises(met_hydro.AisUnpackingException, match="Checksum failed"):
+        mh.decode_nmea(["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*99"])
+
+    with pytest.raises(met_hydro.AisUnpackingException, match="one or more NMEA lines"):
+        mh.decode_nmea(["NOT_AN_NMEA_STRING"])
+
+    with pytest.raises(NotImplementedError):
+        mh.decode_nmea(["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"])
+
+
+def test_decode_nmea_none_in_msgs(monkeypatch):
+    class FakeMatch1:
+        def groupdict(self):
+            return {"checksum": "19"}
+
+    class FakeMatch2:
+        def groupdict(self):
+            return None
+
+    class FakeRegex:
+        def __init__(self):
+            self.calls = 0
+
+        def search(self, text):
+            self.calls += 1
+            if self.calls == 1:
+                return FakeMatch1()
+            return FakeMatch2()
+
+    monkeypatch.setattr(met_hydro, "ais_nmea_regex", FakeRegex())
+
+    mh = met_hydro.MetHydro31(source_mmsi=123456789)
+    with pytest.raises(met_hydro.AisUnpackingException, match="one or more NMEA lines"):
+        mh.decode_nmea(["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"])

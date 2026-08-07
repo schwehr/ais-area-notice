@@ -13,9 +13,11 @@ import sys
 
 from . import binary
 from BitVector import BitVector
+from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
 from .imo_001_22_area_notice import AisUnpackingException
 from .imo_001_22_area_notice import BBM
+from .imo_001_22_area_notice import nmea_checksum_hex
 from .imo_001_26_environment import almost_equal
 from .imo_001_26_environment import beaufort_scale
 
@@ -228,7 +230,7 @@ class MetHydro31(BBM):
 
     def html(self, efactory=False):
         """Return an embeddable html representation."""
-        raise NotImplmentedError
+        raise NotImplementedError
 
     def get_bits(self, include_bin_hdr=True, mmsi=None, include_dac_fi=True):
         """Child classes must implement this."""
@@ -315,26 +317,11 @@ class MetHydro31(BBM):
     def decode_nmea(self, strings):
         """Unpack nmea instrings into objects."""
 
-        for msg in strings:
-            msg_dict = ais_nmea_regex.search(msg).groupdict()
-
-            if msg_dict["checksum"] != nmea_checksum_hex(msg):
-                raise AisUnpackingException("Checksum failed")
-
         try:
-            msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
-        except AttributeError:
-            raise AisUnpackingException("one or more NMEA lines did were malformed (1)")
-        if None in msgs:
-            raise AisUnpackingException("one or more NMEA lines did were malformed")
-
-        for msg in strings:
-            msg_dict = ais_nmea_regex.search(msg).groupdict()
-
-            if msg_dict["checksum"] != nmea_checksum_hex(msg):
-                raise AisUnpackingException("Checksum failed")
-
-        try:
+            for msg in strings:
+                msg_dict = ais_nmea_regex.search(msg).groupdict()
+                if msg_dict["checksum"] != nmea_checksum_hex(msg):
+                    raise AisUnpackingException("Checksum failed")
             msgs = [ais_nmea_regex.search(line).groupdict() for line in strings]
         except AttributeError:
             raise AisUnpackingException("one or more NMEA lines did were malformed (1)")
