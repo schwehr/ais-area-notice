@@ -28,6 +28,7 @@ classifiers = [
 ]
 dependencies = [
     "BitVector",
+    "bitvector-modern>=0.0.7",
     "geojson",
     "lxml",
     "pre-commit>=4.6.1",

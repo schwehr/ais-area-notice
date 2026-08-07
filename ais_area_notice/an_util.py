@@ -51,7 +51,7 @@ class BuildBits:
 
     def AddUInt(self, val, num_bits):
         """Add an unsigned integer."""
-        bits = binary.setBitVectorSize(BitVector(intVal=val), num_bits)
+        bits = binary.setBitVectorSize(BitVector.from_int(val), num_bits)
         assert num_bits == len(bits)
         self.bits_expected += num_bits
         self.bv_list.append(bits)

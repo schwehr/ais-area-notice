@@ -568,7 +568,7 @@ class TestAreaNotice:
         from ais_area_notice.m367_22 import DecodeBits
         from BitVector import BitVector
 
-        db = DecodeBits(BitVector(bitstring="0000"))
+        db = DecodeBits(BitVector.from_bitstring("0000"))
         with pytest.raises(AssertionError):
             db.Verify(10)
 

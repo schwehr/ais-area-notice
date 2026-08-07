@@ -51,9 +51,8 @@ def setBitVectorSize(bv, size=8):
     Returns:
       BitVector that is size bits or larger.
     """
-    pad = BitVector(bitlist=[0])
-    while len(bv) < size:
-        bv = pad + bv
+    if len(bv) < size:
+        bv.pad_from_left(size - len(bv))
     return bv
 
 
@@ -76,7 +75,7 @@ def _Ais6ToBitvecSlow(str6):
         if val == 0:
             bv = BitVector(size=BITS_PER_VDM_CHARACTER)
         else:
-            bv = setBitVectorSize(BitVector(intVal=val), BITS_PER_VDM_CHARACTER)
+            bv = setBitVectorSize(BitVector.from_int(val), BITS_PER_VDM_CHARACTER)
 
         bvtotal += bv
     return bvtotal
@@ -176,9 +175,9 @@ def bvFromSignedInt(intVal, bitSize=None):
     """
     bv = None
     if not bitSize:
-        bv = BitVector(intVal=abs(intVal))
+        bv = BitVector.from_int(abs(intVal))
     else:
-        bv = setBitVectorSize(BitVector(intVal=abs(intVal)), bitSize - 1)
+        bv = setBitVectorSize(BitVector.from_int(abs(intVal)), bitSize - 1)
         if bitSize - 1 != len(bv) and not (
             len(bv) == bitSize and bv[0] == 1 and bv[-1] == 0
         ):
@@ -186,11 +185,11 @@ def bvFromSignedInt(intVal, bitSize=None):
         if len(bv) == bitSize and bv[0] == 1:
             return bv
     if intVal >= 0:
-        bv = BitVector(intVal=0) + bv
+        bv = BitVector.from_int(0, size=1) + bv
     else:
         bv = SubOne(bv)
         bv = ~bv
-        bv = BitVector(intVal=1) + bv
+        bv = BitVector.from_int(1, size=1) + bv
     return bv
 
 

@@ -556,9 +556,9 @@ class AIVDM:
         assert source_mmsi is not None
 
         bv_list = []
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=message_id), 6))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=repeat_indicator), 2))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=source_mmsi), 30))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(message_id), 6))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(repeat_indicator), 2))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(source_mmsi), 30))
         bv = binary.joinBV(bv_list)
         if len(bv) != 38:
             raise AisPackingException("invalid header size %d" % len(bv))
@@ -885,7 +885,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         if len(bits) != SUB_AREA_SIZE:
             raise AisUnpackingException("bit length %d" % len(bits))
         if isinstance(bits, str):
-            bits = BitVector(bitstring=bits)
+            bits = BitVector.from_bitstring(bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
             bits = BitVector(bitlist=bits)
 
@@ -906,17 +906,17 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
     def get_bits(self):
         """Build a BitVector for this area."""
         bv_list = []
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.area_shape), 3))
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=self.scale_factor_raw), 2)
+            binary.setBitVectorSize(BitVector.from_int(self.scale_factor_raw), 2)
         )
         bv_list.append(binary.bvFromSignedInt(int(self.lon * 60000), 25))
         bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.precision), 3))
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=int(self.radius_scaled)), 12)
+            binary.setBitVectorSize(BitVector.from_int(int(self.radius_scaled)), 12)
         )
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 18))  # spare
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(0), 18))  # spare
         bv = binary.joinBV(bv_list)
         if SUB_AREA_SIZE != len(bv):
             raise AisPackingException("area not %d bits: %d" % (SUB_AREA_SIZE, len(bv)))
@@ -1032,7 +1032,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         if len(bits) != SUB_AREA_SIZE:
             raise AisUnpackingException("bit length %d" % len(bits))
         if isinstance(bits, str):
-            bits = BitVector(bitstring=bits)
+            bits = BitVector.from_bitstring(bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
             bits = BitVector(bitlist=bits)
 
@@ -1054,23 +1054,23 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
     def get_bits(self):
         bv_list = []
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.area_shape), 3))
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=self.scale_factor_raw), 2)
+            binary.setBitVectorSize(BitVector.from_int(self.scale_factor_raw), 2)
         )
         bv_list.append(binary.bvFromSignedInt(int(self.lon * 60000), 25))
         bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.precision), 3))
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=int(self.e_dim_scaled)), 8)
+            binary.setBitVectorSize(BitVector.from_int(int(self.e_dim_scaled)), 8)
         )
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=int(self.n_dim_scaled)), 8)
+            binary.setBitVectorSize(BitVector.from_int(int(self.n_dim_scaled)), 8)
         )
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=self.orientation_deg), 9)
+            binary.setBitVectorSize(BitVector.from_int(self.orientation_deg), 9)
         )
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 5))  # spare
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(0), 5))  # spare
         bv = binary.joinBV(bv_list)
         assert SUB_AREA_SIZE == len(bv)
         return bv
@@ -1188,7 +1188,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
         if len(bits) != SUB_AREA_SIZE:
             raise AisUnpackingException("bit length %d" % len(bits))
         if isinstance(bits, str):
-            bits = BitVector(bitstring=bits)
+            bits = BitVector.from_bitstring(bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
             bits = BitVector(bitlist=bits)
 
@@ -1208,22 +1208,22 @@ class AreaNoticeSector(AreaNoticeSubArea):
     def get_bits(self):
         """Build a BitVector for this area."""
         bv_list = []
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.area_shape), 3))
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=self.scale_factor_raw), 2)
+            binary.setBitVectorSize(BitVector.from_int(self.scale_factor_raw), 2)
         )
         bv_list.append(binary.bvFromSignedInt(int(self.lon * 60000), 25))
         bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.precision), 3))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.precision), 3))
 
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=int(self.radius_scaled)), 12)
+            binary.setBitVectorSize(BitVector.from_int(int(self.radius_scaled)), 12)
         )
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=self.left_bound_deg), 9)
+            binary.setBitVectorSize(BitVector.from_int(self.left_bound_deg), 9)
         )
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=self.right_bound_deg), 9)
+            binary.setBitVectorSize(BitVector.from_int(self.right_bound_deg), 9)
         )
 
         bv = binary.joinBV(bv_list)
@@ -1342,7 +1342,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         if len(bits) != SUB_AREA_SIZE:
             raise AisUnpackingException("bit length %d" % len(bits))
         if isinstance(bits, str):
-            bits = BitVector(bitstring=bits)
+            bits = BitVector.from_bitstring(bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
             bits = BitVector(bitlist=bits)
 
@@ -1375,16 +1375,16 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         """Build a BitVector for this area."""
         bv_list = []
         # area_shape/type = 0
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.area_shape), 3))
 
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=self.scale_factor_raw), 2)
+            binary.setBitVectorSize(BitVector.from_int(self.scale_factor_raw), 2)
         )
 
         bv_list = []
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.area_shape), 3))
         bv_list.append(
-            binary.setBitVectorSize(BitVector(intVal=self.scale_factor_raw), 2)
+            binary.setBitVectorSize(BitVector.from_int(self.scale_factor_raw), 2)
         )
 
         # Have to emit the starting location as a point
@@ -1395,7 +1395,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             # pt is angle, distance
             # Angle increments of 0.5 degree
             bv_list.append(
-                binary.setBitVectorSize(BitVector(intVal=int(pt[0] * 2)), 10)
+                binary.setBitVectorSize(BitVector.from_int(int(pt[0] * 2)), 10)
             )
 
             if len(bv_list[-1]) != 10:
@@ -1409,7 +1409,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             # equal to or greater than that requested?
             bv_list.append(
                 binary.setBitVectorSize(
-                    BitVector(intVal=int(math.ceil(pt[1] / self.scale_factor))), 10
+                    BitVector.from_int(int(math.ceil(pt[1] / self.scale_factor))), 10
                 )
             )
 
@@ -1422,9 +1422,9 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
         for i in range(4 - len(self.points)):
             # The marker for no more points
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=720), 10))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(720), 10))
             # No marker specified.  Use 0 fill
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 10))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(0), 10))
 
         bv_list.append(BitVector(size=2))  # 2 bit 0 values  #intVal=0) )
 
@@ -1545,7 +1545,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
         if len(bits) != SUB_AREA_SIZE:
             raise AisUnpackingException("bit length %d" % len(bits))
         if isinstance(bits, str):
-            bits = BitVector(bitstring=bits)
+            bits = BitVector.from_bitstring(bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
             bits = BitVector(bitlist=bits)
 
@@ -1557,7 +1557,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
         """Build a BitVector for this area."""
         "Build a BitVector for this area"
         bv_list = []
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.area_shape), 3))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.area_shape), 3))
         text = self.text.ljust(14, "@")
         bv_list.append(ais_string.Encode(text))
         # No spare
@@ -1746,33 +1746,35 @@ class AreaNotice(BBM):
         bv_list = []
         if include_bin_hdr:
             # Messages ID
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=8), 6))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(8), 6))
             # Repeat Indicator
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=0), 2))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(0), 2))
             if mmsi is not None:
-                bv_list.append(binary.setBitVectorSize(BitVector(intVal=mmsi), 30))
+                bv_list.append(binary.setBitVectorSize(BitVector.from_int(mmsi), 30))
             elif self.source_mmsi is not None:
                 bv_list.append(
-                    binary.setBitVectorSize(BitVector(intVal=self.source_mmsi), 30)
+                    binary.setBitVectorSize(BitVector.from_int(self.source_mmsi), 30)
                 )
             else:
-                bv_list.append(binary.setBitVectorSize(BitVector(intVal=999999999), 30))
+                bv_list.append(
+                    binary.setBitVectorSize(BitVector.from_int(999999999), 30)
+                )
 
         if include_bin_hdr or include_dac_fi:
             # Should this be here or in the bin_hdr?
-            bv_list.append(BitVector(bitstring="00"))
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.dac), 10))
-            bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.fi), 6))
+            bv_list.append(BitVector.from_bitstring("00"))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.dac), 10))
+            bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.fi), 6))
 
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.link_id), 10))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.area_type), 7))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.link_id), 10))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.area_type), 7))
 
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.month), 4))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.day), 5))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.hour), 5))
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.when.minute), 6))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.when.month), 4))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.when.day), 5))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.when.hour), 5))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.when.minute), 6))
 
-        bv_list.append(binary.setBitVectorSize(BitVector(intVal=self.duration), 18))
+        bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.duration), 18))
 
         for i, area in enumerate(self.areas):
             bv_list.append(area.get_bits())
@@ -1990,8 +1992,8 @@ def message_2_fetcherformatter(
     if link_id == None:
         link_id = msg.link_id
 
-    dac = BitVector(intVal=msg.dac, size=10)
-    fi = BitVector(intVal=msg.fi, size=6)
+    dac = BitVector.from_int(msg.dac, size=10)
+    fi = BitVector.from_int(msg.fi, size=6)
 
     dacfi = dac + fi
     bits = msg.get_bits(include_dac_fi=False)

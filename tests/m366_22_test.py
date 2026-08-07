@@ -124,7 +124,7 @@ def test_subarea_factory_overflow_and_unsupported_shape():
         an.DecodeBits(full_bits)
 
     # Test unsupported area shape (shape 6)
-    shape_6_subarea = BitVector(bitstring="110" + "0" * 90)
+    shape_6_subarea = BitVector.from_bitstring("110" + "0" * 90)
     invalid_shape_bits = header_bits + shape_6_subarea
     with pytest.raises(m366_22.Error, match="Unsupported area shape"):
         an.DecodeBits(invalid_shape_bits)
@@ -150,11 +150,11 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch):
 
     # Shape 1 (Rectangle)
     with pytest.raises(NameError, match="name 'AreaNoticeRectangle' is not defined"):
-        an.SubareaFactory(BitVector(bitstring="001" + "0" * 90))
+        an.SubareaFactory(BitVector.from_bitstring("001" + "0" * 90))
 
     # Shape 2 (Sector)
     with pytest.raises(NameError, match="name 'AreaNoticeSector' is not defined"):
-        an.SubareaFactory(BitVector(bitstring="010" + "0" * 90))
+        an.SubareaFactory(BitVector.from_bitstring("010" + "0" * 90))
 
     # Shape 3 (Polyline with no preceding circle/poly)
     an.areas = []
@@ -162,12 +162,12 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch):
         m366_22.AisPackingException,
         match="Point or another polyline must precede a polyline",
     ):
-        an.SubareaFactory(BitVector(bitstring="011" + "0" * 90))
+        an.SubareaFactory(BitVector.from_bitstring("011" + "0" * 90))
 
     # Shape 3 (Polyline with preceding circle)
     an.areas = [m366_22.AreaNoticeCircle(lon=1.0, lat=2.0, radius=50)]
     with pytest.raises(NameError, match="name 'AreaNoticePoly' is not defined"):
-        an.SubareaFactory(BitVector(bitstring="011" + "0" * 90))
+        an.SubareaFactory(BitVector.from_bitstring("011" + "0" * 90))
 
     # Shape 3 (Polyline with preceding polyline mock)
     class FakePoly:
@@ -179,10 +179,10 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch):
 
     monkeypatch.setattr(m366_22, "AreaNoticePoly", FakePoly, raising=False)
     an.areas = [FakePoly()]
-    res = an.SubareaFactory(BitVector(bitstring="011" + "0" * 90))
+    res = an.SubareaFactory(BitVector.from_bitstring("011" + "0" * 90))
     assert res.lon == 10.0
     assert res.lat == 20.0
 
     # Shape 5 (Text)
     with pytest.raises(NameError, match="name 'AreaNoticeText' is not defined"):
-        an.SubareaFactory(BitVector(bitstring="101" + "0" * 90))
+        an.SubareaFactory(BitVector.from_bitstring("101" + "0" * 90))

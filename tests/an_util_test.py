@@ -6,7 +6,7 @@ import pytest
 
 
 def test_decode_bits_get_int():
-    bv = BitVector(bitstring="00010100")
+    bv = BitVector.from_bitstring("00010100")
     db = an_util.DecodeBits(bv)
     assert db.GetInt(4) == 1
     assert db.GetInt(4) == 4
@@ -14,7 +14,7 @@ def test_decode_bits_get_int():
 
 
 def test_decode_bits_get_signed_int():
-    bv = BitVector(bitstring="00101110")
+    bv = BitVector.from_bitstring("00101110")
     db = an_util.DecodeBits(bv)
     assert db.GetSignedInt(4) == 2
     assert db.GetSignedInt(4) == -2
@@ -22,41 +22,41 @@ def test_decode_bits_get_signed_int():
 
 
 def test_decode_bits_get_text_strip():
-    bv = BitVector(bitstring="000001000000000010")
+    bv = BitVector.from_bitstring("000001000000000010")
     db = an_util.DecodeBits(bv)
     assert db.GetText(18, strip=True) == "A"
     assert db.pos == 18
 
 
 def test_decode_bits_get_text_no_strip():
-    bv = BitVector(bitstring="000001000000000010")
+    bv = BitVector.from_bitstring("000001000000000010")
     db = an_util.DecodeBits(bv)
     assert db.GetText(18, strip=False) == "A@B"
     assert db.pos == 18
 
 
 def test_decode_bits_get_text_no_at():
-    bv = BitVector(bitstring="000001000010")
+    bv = BitVector.from_bitstring("000001000010")
     db = an_util.DecodeBits(bv)
     assert db.GetText(12, strip=True) == "AB"
 
 
 def test_decode_bits_get_text_unaligned_error():
-    bv = BitVector(bitstring="00000")
+    bv = BitVector.from_bitstring("00000")
     db = an_util.DecodeBits(bv)
     with pytest.raises(an_util.Error, match="Bits for text must be six bit aligned."):
         db.GetText(5)
 
 
 def test_decode_bits_verify_success():
-    bv = BitVector(bitstring="00000000")
+    bv = BitVector.from_bitstring("00000000")
     db = an_util.DecodeBits(bv)
     db.GetInt(8)
     db.Verify(8)
 
 
 def test_decode_bits_verify_error():
-    bv = BitVector(bitstring="00000000")
+    bv = BitVector.from_bitstring("00000000")
     db = an_util.DecodeBits(bv)
     db.GetInt(4)
     with pytest.raises(an_util.Error, match="Decode verify failed.  4 != 8"):

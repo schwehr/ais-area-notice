@@ -3,21 +3,21 @@
 """Tests for ais_area_notice.binary."""
 
 from ais_area_notice import binary
-import BitVector
+from BitVector import BitVector
 
 # TODO(schwehr): Test joinBV.
 # TODO(schwehr): Test setBitVectorSize.
 
 
 def test_add_one():
-    assert str(binary.AddOne(BitVector.BitVector(bitstring="1100"))) == "1101"
-    assert str(binary.AddOne(BitVector.BitVector(bitstring="1111"))) == "0000"
+    assert str(binary.AddOne(BitVector.from_bitstring("1100"))) == "1101"
+    assert str(binary.AddOne(BitVector.from_bitstring("1111"))) == "0000"
 
 
 def test_sub_one():
-    assert str(binary.SubOne(BitVector.BitVector(bitstring="1111"))) == "1110"
-    assert str(binary.SubOne(BitVector.BitVector(bitstring="0010"))) == "0001"
-    assert str(binary.SubOne(BitVector.BitVector(bitstring="0000"))) == "1111"
+    assert str(binary.SubOne(BitVector.from_bitstring("1111"))) == "1110"
+    assert str(binary.SubOne(BitVector.from_bitstring("0010"))) == "0001"
+    assert str(binary.SubOne(BitVector.from_bitstring("0000"))) == "1111"
 
 
 def test_bv_from_signed_int():
@@ -38,21 +38,20 @@ def test_bv_from_signed_int():
 
 
 def test_signed_int_from_bv():
-    assert binary.signedIntFromBV(BitVector.BitVector(bitstring="0000")) == 0
-    assert binary.signedIntFromBV(BitVector.BitVector(bitstring="0101")) == 5
+    assert binary.signedIntFromBV(BitVector.from_bitstring("0000")) == 0
+    assert binary.signedIntFromBV(BitVector.from_bitstring("0101")) == 5
 
     # Negative integer examples:
-    assert binary.signedIntFromBV(BitVector.BitVector(bitstring="1111")) == -1
-    assert binary.signedIntFromBV(BitVector.BitVector(bitstring="1110")) == -2
-    assert binary.signedIntFromBV(BitVector.BitVector(bitstring="1010")) == -6
-    assert binary.signedIntFromBV(BitVector.BitVector(bitstring="1001")) == -7
-    assert binary.signedIntFromBV(BitVector.BitVector(bitstring="1000")) == -8
+    assert binary.signedIntFromBV(BitVector.from_bitstring("1111")) == -1
+    assert binary.signedIntFromBV(BitVector.from_bitstring("1110")) == -2
+    assert binary.signedIntFromBV(BitVector.from_bitstring("1010")) == -6
+    assert binary.signedIntFromBV(BitVector.from_bitstring("1001")) == -7
+    assert binary.signedIntFromBV(BitVector.from_bitstring("1000")) == -8
 
-    assert binary.signedIntFromBV(BitVector.BitVector(bitstring="10")) == -2
+    assert binary.signedIntFromBV(BitVector.from_bitstring("10")) == -2
 
     assert (
-        binary.signedIntFromBV(BitVector.BitVector(bitstring="1000000000000000"))
-        == -32768
+        binary.signedIntFromBV(BitVector.from_bitstring("1000000000000000")) == -32768
     )
 
 
@@ -83,7 +82,7 @@ def test_ais6_to_bitvec():
 
 def test_bitvec_to_ais6():
     assert binary.bitvectoais6(
-        BitVector.BitVector(bitstring="000110101010010110001010100010")
+        BitVector.from_bitstring("000110101010010110001010100010")
     ) == ("6bF:R", 0)
 
 
@@ -103,4 +102,4 @@ def test_bitvec_to_ais6_no_padding_error():
     import pytest
 
     with pytest.raises(ValueError, match="Results would not be 6-bit aligned."):
-        binary.bitvectoais6(BitVector.BitVector(bitstring="101"), doPadding=False)
+        binary.bitvectoais6(BitVector.from_bitstring("101"), doPadding=False)

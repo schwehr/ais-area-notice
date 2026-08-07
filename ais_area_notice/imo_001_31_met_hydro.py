@@ -236,70 +236,72 @@ class MetHydro31(BBM):
         """Child classes must implement this."""
         bv_list = []
         if include_bin_hdr:
-            bv_list.append(BitVector(intVal=8, size=6))  # Message ID.
+            bv_list.append(BitVector.from_int(8, size=6))  # Message ID.
             bv_list.append(BitVector(size=2))  # Repeat Indicator.
             if mmsi is None and self.source_mmsi is None:
                 raise AisPackingException("No mmsi specified")
             if mmsi is None:
                 mmsi = self.source_mmsi
-            bv_list.append(BitVector(intVal=mmsi, size=30))
+            bv_list.append(BitVector.from_int(mmsi, size=30))
 
         if include_bin_hdr or include_dac_fi:
             bv_list.append(BitVector(size=2))  # Should this be here or in the bin_hdr?
-            bv_list.append(BitVector(intVal=self.dac, size=10))
-            bv_list.append(BitVector(intVal=self.fi, size=6))
+            bv_list.append(BitVector.from_int(self.dac, size=10))
+            bv_list.append(BitVector.from_int(self.fi, size=6))
 
         (bv_list.append(binary.bvFromSignedInt(int(self.lon * 60000), 25)),)
         (bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24)),)
-        bv_list.append(BitVector(intVal=self.pos_acc, size=1))
+        bv_list.append(BitVector.from_int(self.pos_acc, size=1))
 
-        bv_list.append(BitVector(intVal=self.day, size=5))
-        bv_list.append(BitVector(intVal=self.hour, size=5))
-        bv_list.append(BitVector(intVal=self.minute, size=6))
+        bv_list.append(BitVector.from_int(self.day, size=5))
+        bv_list.append(BitVector.from_int(self.hour, size=5))
+        bv_list.append(BitVector.from_int(self.minute, size=6))
 
-        bv_list.append(BitVector(intVal=self.wind, size=7))
-        bv_list.append(BitVector(intVal=self.gust, size=7))
-        bv_list.append(BitVector(intVal=self.wind_dir, size=9))
-        bv_list.append(BitVector(intVal=self.gust_dir, size=9))
+        bv_list.append(BitVector.from_int(self.wind, size=7))
+        bv_list.append(BitVector.from_int(self.gust, size=7))
+        bv_list.append(BitVector.from_int(self.wind_dir, size=9))
+        bv_list.append(BitVector.from_int(self.gust_dir, size=9))
 
         (bv_list.append(binary.bvFromSignedInt(int(round(self.air_temp * 10)), 11)),)
-        bv_list.append(BitVector(intVal=self.humid, size=7))
+        bv_list.append(BitVector.from_int(self.humid, size=7))
         (bv_list.append(binary.bvFromSignedInt(int(round(self.dew * 10)), 10)),)
-        bv_list.append(BitVector(intVal=self.air_pres - 799, size=9))
-        bv_list.append(BitVector(intVal=self.air_pres_trend, size=2))
+        bv_list.append(BitVector.from_int(self.air_pres - 799, size=9))
+        bv_list.append(BitVector.from_int(self.air_pres_trend, size=2))
 
-        bv_list.append(BitVector(intVal=int(round(self.vis * 10)), size=8))
+        bv_list.append(BitVector.from_int(int(round(self.vis * 10)), size=8))
 
         # TODO(schwehr): Double check water level.
-        bv_list.append(BitVector(intVal=int(round((self.wl + 10) * 100)), size=12))
-        bv_list.append(BitVector(intVal=self.wl_trend, size=2))
+        bv_list.append(BitVector.from_int(int(round((self.wl + 10) * 100)), size=12))
+        bv_list.append(BitVector.from_int(self.wl_trend, size=2))
 
-        bv_list.append(BitVector(intVal=int(round(self.cur[0]["speed"] * 10)), size=8))
-        bv_list.append(BitVector(intVal=self.cur[0]["dir"], size=9))
+        bv_list.append(
+            BitVector.from_int(int(round(self.cur[0]["speed"] * 10)), size=8)
+        )
+        bv_list.append(BitVector.from_int(self.cur[0]["dir"], size=9))
 
         for i in (1, 2):
             bv_list.append(
-                BitVector(intVal=int(round(self.cur[i]["speed"] * 10)), size=8)
+                BitVector.from_int(int(round(self.cur[i]["speed"] * 10)), size=8)
             )
-            bv_list.append(BitVector(intVal=self.cur[i]["dir"], size=9))
-            bv_list.append(BitVector(intVal=self.cur[i]["level"], size=5))
+            bv_list.append(BitVector.from_int(self.cur[i]["dir"], size=9))
+            bv_list.append(BitVector.from_int(self.cur[i]["level"], size=5))
 
-        bv_list.append(BitVector(intVal=int(round(self.wave_height * 10)), size=8))
-        bv_list.append(BitVector(intVal=self.wave_period, size=6))
-        bv_list.append(BitVector(intVal=self.wave_dir, size=9))
+        bv_list.append(BitVector.from_int(int(round(self.wave_height * 10)), size=8))
+        bv_list.append(BitVector.from_int(self.wave_period, size=6))
+        bv_list.append(BitVector.from_int(self.wave_dir, size=9))
 
-        bv_list.append(BitVector(intVal=int(round(self.swell_height * 10)), size=8))
-        bv_list.append(BitVector(intVal=self.swell_period, size=6))
-        bv_list.append(BitVector(intVal=self.swell_dir, size=9))
+        bv_list.append(BitVector.from_int(int(round(self.swell_height * 10)), size=8))
+        bv_list.append(BitVector.from_int(self.swell_period, size=6))
+        bv_list.append(BitVector.from_int(self.swell_dir, size=9))
 
-        bv_list.append(BitVector(intVal=self.sea_state, size=4))
+        bv_list.append(BitVector.from_int(self.sea_state, size=4))
 
         (bv_list.append(binary.bvFromSignedInt(int(round(self.water_temp * 10)), 10)),)
-        bv_list.append(BitVector(intVal=self.precip, size=3))
+        bv_list.append(BitVector.from_int(self.precip, size=3))
 
-        bv_list.append(BitVector(intVal=int(round(self.salinity * 10)), size=9))
+        bv_list.append(BitVector.from_int(int(round(self.salinity * 10)), size=9))
 
-        bv_list.append(BitVector(intVal=self.ice, size=2))
+        bv_list.append(BitVector.from_int(self.ice, size=2))
 
         bv_list.append(BitVector(size=10))
 

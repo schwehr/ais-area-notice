@@ -265,11 +265,11 @@ class SensorReport:
 
     def get_bits(self):
         bv_list = []
-        bv_list.append(BitVector(intVal=self.report_type, size=4))
-        bv_list.append(BitVector(intVal=self.day, size=5))
-        bv_list.append(BitVector(intVal=self.hour, size=5))
-        bv_list.append(BitVector(intVal=self.minute, size=6))
-        bv_list.append(BitVector(intVal=self.site_id, size=7))
+        bv_list.append(BitVector.from_int(self.report_type, size=4))
+        bv_list.append(BitVector.from_int(self.day, size=5))
+        bv_list.append(BitVector.from_int(self.hour, size=5))
+        bv_list.append(BitVector.from_int(self.minute, size=6))
+        bv_list.append(BitVector.from_int(self.site_id, size=7))
         bv = binary.joinBV(bv_list)
         assert len(bv) == 4 + 5 + 5 + 6 + 7
         assert SENSOR_REPORT_HDR_SIZE == len(bv)
@@ -339,9 +339,9 @@ class SensorReportLocation(SensorReport):
             SensorReport.get_bits(self),
             binary.bvFromSignedInt(int(self.lon * 600000), 28),
             binary.bvFromSignedInt(int(self.lat * 600000), 27),
-            BitVector(intVal=int(self.alt * 10), size=11),
-            BitVector(intVal=self.owner, size=4),
-            BitVector(intVal=self.timeout, size=3),
+            BitVector.from_int(int(self.alt * 10), size=11),
+            BitVector.from_int(self.owner, size=4),
+            BitVector.from_int(self.timeout, size=3),
             BitVector(size=12),
         ]
         bits = binary.joinBV(bv_list)
@@ -512,18 +512,18 @@ class SensorReportWind(SensorReport):
     def get_bits(self):
         bv_list = [
             SensorReport.get_bits(self),
-            BitVector(intVal=self.speed, size=7),
-            BitVector(intVal=self.gust, size=7),
-            BitVector(intVal=self.dir, size=9),
-            BitVector(intVal=self.gust_dir, size=9),
-            BitVector(intVal=self.data_descr, size=3),
-            BitVector(intVal=self.forecast_speed, size=7),
-            BitVector(intVal=self.forecast_gust, size=7),
-            BitVector(intVal=self.forecast_dir, size=9),
-            BitVector(intVal=self.forecast_day, size=5),
-            BitVector(intVal=self.forecast_hour, size=5),
-            BitVector(intVal=self.forecast_minute, size=6),
-            BitVector(intVal=self.duration_min, size=8),
+            BitVector.from_int(self.speed, size=7),
+            BitVector.from_int(self.gust, size=7),
+            BitVector.from_int(self.dir, size=9),
+            BitVector.from_int(self.gust_dir, size=9),
+            BitVector.from_int(self.data_descr, size=3),
+            BitVector.from_int(self.forecast_speed, size=7),
+            BitVector.from_int(self.forecast_gust, size=7),
+            BitVector.from_int(self.forecast_dir, size=9),
+            BitVector.from_int(self.forecast_day, size=5),
+            BitVector.from_int(self.forecast_hour, size=5),
+            BitVector.from_int(self.forecast_minute, size=6),
+            BitVector.from_int(self.duration_min, size=8),
             BitVector(size=3),  # Spare bits.
         ]
         bits = binary.joinBV(bv_list)
@@ -654,18 +654,18 @@ class SensorReportWaterLevel(SensorReport):
     def get_bits(self):
         bv_list = [
             SensorReport.get_bits(self),
-            BitVector(intVal=self.wl_type, size=1),
+            BitVector.from_int(self.wl_type, size=1),
             # TODO(schwehr): Check this is the right encoding.
             binary.bvFromSignedInt(int(round(self.wl * 100)), 16),
-            BitVector(intVal=self.trend, size=2),
-            BitVector(intVal=self.vdatum, size=5),
-            BitVector(intVal=self.data_descr, size=3),
-            BitVector(intVal=self.forecast_type, size=1),
+            BitVector.from_int(self.trend, size=2),
+            BitVector.from_int(self.vdatum, size=5),
+            BitVector.from_int(self.data_descr, size=3),
+            BitVector.from_int(self.forecast_type, size=1),
             binary.bvFromSignedInt(int(round(self.forecast_wl * 100)), 16),
-            BitVector(intVal=self.forecast_day, size=5),
-            BitVector(intVal=self.forecast_hour, size=5),
-            BitVector(intVal=self.forecast_minute, size=6),
-            BitVector(intVal=self.duration_min, size=8),
+            BitVector.from_int(self.forecast_day, size=5),
+            BitVector.from_int(self.forecast_hour, size=5),
+            BitVector.from_int(self.forecast_minute, size=6),
+            BitVector.from_int(self.duration_min, size=8),
             BitVector(size=17),  # spare
         ]
         bits = binary.joinBV(bv_list)
@@ -780,10 +780,10 @@ class SensorReportCurrent2d(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self)]
         for c in self.cur:
-            bv_list.append(BitVector(intVal=(int(c["speed"] * 10)), size=8))
-            bv_list.append(BitVector(intVal=c["dir"], size=9))
-            bv_list.append(BitVector(intVal=c["level"], size=9))
-        bv_list.append(BitVector(intVal=self.data_descr, size=3))
+            bv_list.append(BitVector.from_int((int(c["speed"] * 10)), size=8))
+            bv_list.append(BitVector.from_int(c["dir"], size=9))
+            bv_list.append(BitVector.from_int(c["level"], size=9))
+        bv_list.append(BitVector.from_int(self.data_descr, size=3))
         bv_list.append(BitVector(size=4))  # spare
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
@@ -880,11 +880,11 @@ class SensorReportCurrent3d(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self)]
         for c in self.cur:
-            bv_list.append(BitVector(intVal=(int(c["n"] * 10)), size=8))
-            bv_list.append(BitVector(intVal=(int(c["e"] * 10)), size=8))
-            bv_list.append(BitVector(intVal=(int(c["z"] * 10)), size=8))
-            bv_list.append(BitVector(intVal=c["level"], size=9))
-        bv_list.append(BitVector(intVal=self.data_descr, size=3))
+            bv_list.append(BitVector.from_int((int(c["n"] * 10)), size=8))
+            bv_list.append(BitVector.from_int((int(c["e"] * 10)), size=8))
+            bv_list.append(BitVector.from_int((int(c["z"] * 10)), size=8))
+            bv_list.append(BitVector.from_int(c["level"], size=9))
+        bv_list.append(BitVector.from_int(self.data_descr, size=3))
         bv_list.append(BitVector(size=16))  # Spare bits.
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
@@ -992,11 +992,11 @@ class SensorReportCurrentHorz(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self)]
         for c in self.cur:
-            bv_list.append(BitVector(intVal=(int(c["bearing"])), size=9))
-            bv_list.append(BitVector(intVal=(int(c["dist"])), size=7))
-            bv_list.append(BitVector(intVal=(int(c["speed"] * 10)), size=8))
-            bv_list.append(BitVector(intVal=(int(c["dir"])), size=9))
-            bv_list.append(BitVector(intVal=(int(c["level"])), size=9))
+            bv_list.append(BitVector.from_int((int(c["bearing"])), size=9))
+            bv_list.append(BitVector.from_int((int(c["dist"])), size=7))
+            bv_list.append(BitVector.from_int((int(c["speed"] * 10)), size=8))
+            bv_list.append(BitVector.from_int((int(c["dir"])), size=9))
+            bv_list.append(BitVector.from_int((int(c["level"])), size=9))
 
         bv_list.append(BitVector(size=1))  # Spare bit.
         bits = binary.joinBV(bv_list)
@@ -1113,19 +1113,19 @@ class SensorReportSeaState(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self)]
 
-        bv_list.append(BitVector(intVal=int(round(self.swell_height * 10)), size=8))
-        bv_list.append(BitVector(intVal=self.swell_period, size=6))
-        bv_list.append(BitVector(intVal=self.swell_dir, size=9))
-        bv_list.append(BitVector(intVal=self.sea_state, size=4))
-        bv_list.append(BitVector(intVal=self.swell_data_descr, size=3))
-        bv_list.append(BitVector(intVal=int(round((self.temp + 10) * 10)), size=10))
-        bv_list.append(BitVector(intVal=int(round(self.temp_depth * 10)), size=7))
-        bv_list.append(BitVector(intVal=self.temp_data_descr, size=3))
-        bv_list.append(BitVector(intVal=int(round(self.wave_height * 10)), size=8))
-        bv_list.append(BitVector(intVal=self.wave_period, size=6))
-        bv_list.append(BitVector(intVal=self.wave_dir, size=9))
-        bv_list.append(BitVector(intVal=self.wave_data_descr, size=3))
-        bv_list.append(BitVector(intVal=int(round(self.salinity * 10)), size=9))
+        bv_list.append(BitVector.from_int(int(round(self.swell_height * 10)), size=8))
+        bv_list.append(BitVector.from_int(self.swell_period, size=6))
+        bv_list.append(BitVector.from_int(self.swell_dir, size=9))
+        bv_list.append(BitVector.from_int(self.sea_state, size=4))
+        bv_list.append(BitVector.from_int(self.swell_data_descr, size=3))
+        bv_list.append(BitVector.from_int(int(round((self.temp + 10) * 10)), size=10))
+        bv_list.append(BitVector.from_int(int(round(self.temp_depth * 10)), size=7))
+        bv_list.append(BitVector.from_int(self.temp_data_descr, size=3))
+        bv_list.append(BitVector.from_int(int(round(self.wave_height * 10)), size=8))
+        bv_list.append(BitVector.from_int(self.wave_period, size=6))
+        bv_list.append(BitVector.from_int(self.wave_dir, size=9))
+        bv_list.append(BitVector.from_int(self.wave_data_descr, size=3))
+        bv_list.append(BitVector.from_int(int(round(self.salinity * 10)), size=9))
 
         # bv_list.append(BitVector(size=0)) # no spare
         bits = binary.joinBV(bv_list)
@@ -1238,13 +1238,13 @@ class SensorReportSalinity(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self)]
 
-        bv_list.append(BitVector(intVal=int(round((self.temp + 10) * 10)), size=10))
+        bv_list.append(BitVector.from_int(int(round((self.temp + 10) * 10)), size=10))
         # int(206.999999) == 206, but int(round(2.07 * 100)) == 207.
-        bv_list.append(BitVector(intVal=int(round(self.cond * 100)), size=10))
-        bv_list.append(BitVector(intVal=int(round(self.pres * 10)), size=16))
-        bv_list.append(BitVector(intVal=int(round(self.salinity * 10)), size=9))
-        bv_list.append(BitVector(intVal=self.salinity_type, size=2))
-        bv_list.append(BitVector(intVal=self.data_descr, size=3))
+        bv_list.append(BitVector.from_int(int(round(self.cond * 100)), size=10))
+        bv_list.append(BitVector.from_int(int(round(self.pres * 10)), size=16))
+        bv_list.append(BitVector.from_int(int(round(self.salinity * 10)), size=9))
+        bv_list.append(BitVector.from_int(self.salinity_type, size=2))
+        bv_list.append(BitVector.from_int(self.data_descr, size=3))
         bv_list.append(BitVector(size=35))  # Spare bits.
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
@@ -1362,17 +1362,17 @@ class SensorReportWeather(SensorReport):
             SensorReport.get_bits(self),
             # TODO(schwehr): Is this really signed?
             binary.bvFromSignedInt(int(self.air_temp * 10), 11),
-            BitVector(intVal=self.air_temp_data_descr, size=3),
-            BitVector(intVal=self.precip, size=2),
-            BitVector(intVal=int(self.vis * 10), size=8),
+            BitVector.from_int(self.air_temp_data_descr, size=3),
+            BitVector.from_int(self.precip, size=2),
+            BitVector.from_int(int(self.vis * 10), size=8),
             # TODO(schwehr): Is this really signed?
             binary.bvFromSignedInt(int(self.dew * 10), 10),
-            BitVector(intVal=self.dew_data_descr, size=3),
+            BitVector.from_int(self.dew_data_descr, size=3),
             # TODO(schwehr): Two possible values of 800 hPa?
-            BitVector(intVal=self.air_pres - 799, size=9),
-            BitVector(intVal=self.air_pres_trend, size=2),
-            BitVector(intVal=self.air_pres_data_descr, size=3),
-            BitVector(intVal=int(self.salinity * 10), size=9),
+            BitVector.from_int(self.air_pres - 799, size=9),
+            BitVector.from_int(self.air_pres_trend, size=2),
+            BitVector.from_int(self.air_pres_data_descr, size=3),
+            BitVector.from_int(int(self.salinity * 10), size=9),
             BitVector(size=25),  # spare
         ]
         bits = binary.joinBV(bv_list)
@@ -1488,13 +1488,13 @@ class SensorReportAirGap(SensorReport):
     def get_bits(self):
         bv_list = [SensorReport.get_bits(self)]
 
-        bv_list.append(BitVector(intVal=int(round(self.draft * 100)), size=13))
-        bv_list.append(BitVector(intVal=int(round(self.gap * 100)), size=13))
-        bv_list.append(BitVector(intVal=self.gap_trend, size=2))
-        bv_list.append(BitVector(intVal=int(round(self.forecast_gap * 100)), size=13))
-        bv_list.append(BitVector(intVal=self.forecast_day, size=5))
-        bv_list.append(BitVector(intVal=self.forecast_hour, size=5))
-        bv_list.append(BitVector(intVal=self.forecast_minute, size=6))
+        bv_list.append(BitVector.from_int(int(round(self.draft * 100)), size=13))
+        bv_list.append(BitVector.from_int(int(round(self.gap * 100)), size=13))
+        bv_list.append(BitVector.from_int(self.gap_trend, size=2))
+        bv_list.append(BitVector.from_int(int(round(self.forecast_gap * 100)), size=13))
+        bv_list.append(BitVector.from_int(self.forecast_day, size=5))
+        bv_list.append(BitVector.from_int(self.forecast_hour, size=5))
+        bv_list.append(BitVector.from_int(self.forecast_minute, size=6))
 
         bv_list.append(BitVector(size=28))  # Spare bits.
         bits = binary.joinBV(bv_list)
@@ -1616,17 +1616,17 @@ class Environment(BBM):
         # TODO(schwehr): include_bin_hdr appears to double the binary header.
         bv_list = []
         if include_bin_hdr:
-            bv_list.append(BitVector(intVal=8, size=6))  # Messages ID.
+            bv_list.append(BitVector.from_int(8, size=6))  # Messages ID.
             bv_list.append(BitVector(size=2))  # Repeat Indicator of 0.
             mmsi = mmsi or self.source_mmsi
             if not mmsi:
                 raise AisPackingException("No mmsi specified.")
-            bv_list.append(BitVector(intVal=mmsi, size=30))
+            bv_list.append(BitVector.from_int(mmsi, size=30))
 
         if include_bin_hdr or include_dac_fi:
             bv_list.append(BitVector(size=2))
-            bv_list.append(BitVector(intVal=self.dac, size=10))
-            bv_list.append(BitVector(intVal=self.fi, size=6))
+            bv_list.append(BitVector.from_int(self.dac, size=10))
+            bv_list.append(BitVector.from_int(self.fi, size=6))
 
         for report in self.sensor_reports:
             bv_list.append(report.get_bits())
