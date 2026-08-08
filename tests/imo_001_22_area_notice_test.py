@@ -6,6 +6,7 @@ TODO(schwehr): Need to test the year and month roll overs in time.
 
 import datetime
 import math
+import runpy
 import sys
 
 import ais_area_notice.imo_001_22_area_notice as area_notice
@@ -1302,9 +1303,6 @@ def test_main_cli(monkeypatch, tmp_path):
     styles_file = tmp_path / "areanotice_styles.kml"
     styles_file.write_text('<Style id="test"></Style>')
     monkeypatch.chdir(tmp_path)
-
-    import runpy
-    import sys
 
     monkeypatch.setattr(sys, "argv", ["main", sentence])
     area_notice.main()
