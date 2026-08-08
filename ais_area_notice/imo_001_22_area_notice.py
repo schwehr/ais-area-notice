@@ -41,14 +41,15 @@ from . import ais_string
 from . import binary
 
 # Track the next value to use for multiline nmea messages.
-next_sequence: int = 1
+NEXT_SEQUENCE: int = 1
+next_sequence: int = NEXT_SEQUENCE  # pylint: disable=invalid-name
 
 # 87 Bits for IMO Circ 289 rather than the 90 for USCG and Nav 55 version.
 SUB_AREA_SIZE: int = 87
 
 # With USCG metadata
 # msg_id is only valid on the first message in a group.
-ais_nmea_regex_str: str = r"""^!(?P<talker>AI)(?P<string_type>VD[MO])
+AIS_NMEA_REGEX_STR: str = r"""^!(?P<talker>AI)(?P<string_type>VD[MO])
 ,(?P<total>\d?)
 ,(?P<sen_num>\d?)
 ,(?P<seq_id>[0-9]?)
@@ -67,10 +68,10 @@ ais_nmea_regex_str: str = r"""^!(?P<talker>AI)(?P<string_type>VD[MO])
 (,(?P<time_stamp>\d+([.]\d+)?))?
 """
 
-ais_nmea_regex: re.Pattern[str] = re.compile(ais_nmea_regex_str, re.VERBOSE)
+ais_nmea_regex: re.Pattern[str] = re.compile(AIS_NMEA_REGEX_STR, re.VERBOSE)
 
 # Beginning of a KML file for visualization.
-kml_head: str = (
+KML_HEAD: str = (
     '<?xml version="1.0" encoding="UTF-8"?>'
     '<kml xmlns="http://www.opengis.net/kml/2.2" '
     'xmlns:gx="http://www.google.com/kml/ext/2.2" '
@@ -78,12 +79,15 @@ kml_head: str = (
     'xmlns:atom="http://www.w3.org/2005/Atom">'
     "<Document>"
 )
+kml_head: str = KML_HEAD  # pylint: disable=invalid-name
 
 # Finish a KML file.
-kml_tail: str = "</Document></kml>"
+KML_TAIL: str = "</Document></kml>"
+kml_tail: str = KML_TAIL  # pylint: disable=invalid-name
 
 # ISO time format for NetworkLinkControl strftime.
-iso8601_timeformat: str = "%Y-%m-%dT%H:%M:%SZ"
+ISO8601_TIMEFORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
+iso8601_timeformat: str = ISO8601_TIMEFORMAT  # pylint: disable=invalid-name
 
 # By name or number.
 notice_type: dict[Any, Any] = {

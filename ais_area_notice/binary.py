@@ -29,6 +29,7 @@ Attributes:
 """
 
 from collections.abc import Sequence
+from typing import Any
 
 from BitVector import BitVector
 
@@ -42,7 +43,7 @@ END_ASCII_BLOCK_2: int = 119  # 'w'
 GAP_SIZE: int = BGN_ASCII_BLOCK_2 - (END_ASCII_BLOCK_1 + 1)
 
 
-def setBitVectorSize(bv: BitVector, size: int = 8) -> BitVector:
+def set_bit_vector_size(bv: BitVector, size: int = 8) -> BitVector:
     """Pad a BitVector with 0's on the left until it is the specified size.
 
     Args:
@@ -58,7 +59,10 @@ def setBitVectorSize(bv: BitVector, size: int = 8) -> BitVector:
     return bv
 
 
-def _Ais6ToBitvecSlow(str6: str) -> BitVector:
+setBitVectorSize = set_bit_vector_size  # pylint: disable=invalid-name
+
+
+def _ais6_to_bitvec_slow(str6: str) -> BitVector:
     """Convert an ITU AIS VDM 6 bit string into a bit vector.
 
     Args:
@@ -77,23 +81,29 @@ def _Ais6ToBitvecSlow(str6: str) -> BitVector:
         if val == 0:
             bv = BitVector(size=BITS_PER_VDM_CHARACTER)
         else:
-            bv = setBitVectorSize(BitVector.from_int(val), BITS_PER_VDM_CHARACTER)
+            bv = set_bit_vector_size(BitVector.from_int(val), BITS_PER_VDM_CHARACTER)
 
         bvtotal += bv
     return bvtotal
 
 
-def _BuildLookupTable() -> dict[str, BitVector]:
+_Ais6ToBitvecSlow = _ais6_to_bitvec_slow  # pylint: disable=invalid-name
+
+
+def _build_lookup_table() -> dict[str, BitVector]:
     """Create a dict of character keys with the BitVector repr as the value."""
     key_nums = list(range(BGN_ASCII_BLOCK_1, END_ASCII_BLOCK_1 + 1)) + list(
         range(BGN_ASCII_BLOCK_2, END_ASCII_BLOCK_2 + 1)
     )
     assert len(key_nums) == 64
     key_chars = [chr(key) for key in key_nums]
-    return {key_char: _Ais6ToBitvecSlow(key_char) for key_char in key_chars}
+    return {key_char: _ais6_to_bitvec_slow(key_char) for key_char in key_chars}
 
 
-decode: dict[str, BitVector] = _BuildLookupTable()
+_BuildLookupTable = _build_lookup_table  # pylint: disable=invalid-name
+
+
+decode: dict[str, BitVector] = _build_lookup_table()
 
 # Lookup the character representation for an AIS AIVDM message from the 6-bit
 # integer value.
@@ -106,24 +116,27 @@ encode: list[str] = [
 ]
 
 
-def joinBV(bvSeq: Sequence[BitVector]) -> BitVector:
+def join_bv(bv_seq: Sequence[BitVector]) -> BitVector:
     """Combined a sequence of bit vectors into one large BitVector.
 
     TODO(schwehr): Check performance and see if this can be done faster.
 
     Args:
-        bvSeq: sequence of bitvectors.
+        bv_seq: sequence of bitvectors.
 
     Returns:
         An aggregated BitVector.
     """
     bv_total = BitVector(size=0)
-    for bv in bvSeq:
+    for bv in bv_seq:
         bv_total += bv
     return bv_total
 
 
-def AddOne(bv: BitVector) -> BitVector:
+joinBV = join_bv  # pylint: disable=invalid-name
+
+
+def add_one(bv: BitVector) -> BitVector:
     """Add one bit to a bit vector.
 
     Overflows are silently dropped.
@@ -145,7 +158,10 @@ def AddOne(bv: BitVector) -> BitVector:
     return new
 
 
-def SubOne(bv: BitVector) -> BitVector:
+AddOne = add_one  # pylint: disable=invalid-name
+
+
+def sub_one(bv: BitVector) -> BitVector:
     """Subtract one bit from a bit vector.
 
     Args:
@@ -165,7 +181,12 @@ def SubOne(bv: BitVector) -> BitVector:
     return new
 
 
-def bvFromSignedInt(intVal: int, bitSize: int | None = None) -> BitVector:
+SubOne = sub_one  # pylint: disable=invalid-name
+
+
+def bv_from_signed_int(
+    int_val: int, bit_size: int | None = None, **kwargs: Any
+) -> BitVector:
     """Create a two's complement BitVector from a signed integer.
 
     Note that 110 and 10 are both -2.  Positives must have a '0' in the
@@ -173,8 +194,8 @@ def bvFromSignedInt(intVal: int, bitSize: int | None = None) -> BitVector:
     position.
 
     Args:
-        intVal: integer value to turn into a bit vector.
-        bitSize: optional size to flush out the number of bits.
+        int_val: integer value to turn into a bit vector.
+        bit_size: optional size to flush out the number of bits.
 
     Returns:
         A BitVector flushed out to the correct size.
@@ -182,27 +203,31 @@ def bvFromSignedInt(intVal: int, bitSize: int | None = None) -> BitVector:
     Raises:
         ValueError: If the bit size does not make sense.
     """
+    bit_size = kwargs.get("bitSize", bit_size)
     bv = None
-    if not bitSize:
-        bv = BitVector.from_int(abs(intVal))
+    if not bit_size:
+        bv = BitVector.from_int(abs(int_val))
     else:
-        bv = setBitVectorSize(BitVector.from_int(abs(intVal)), bitSize - 1)
-        if bitSize - 1 != len(bv) and not (
-            len(bv) == bitSize and bv[0] == 1 and bv[-1] == 0
+        bv = set_bit_vector_size(BitVector.from_int(abs(int_val)), bit_size - 1)
+        if bit_size - 1 != len(bv) and not (
+            len(bv) == bit_size and bv[0] == 1 and bv[-1] == 0
         ):
             raise ValueError("incorrect bit size")
-        if len(bv) == bitSize and bv[0] == 1:
+        if len(bv) == bit_size and bv[0] == 1:
             return bv
-    if intVal >= 0:
+    if int_val >= 0:
         bv = BitVector.from_int(0, size=1) + bv
     else:
-        bv = SubOne(bv)
+        bv = sub_one(bv)
         bv = ~bv
         bv = BitVector.from_int(1, size=1) + bv
     return bv
 
 
-def signedIntFromBV(bv: BitVector) -> int:
+bvFromSignedInt = bv_from_signed_int  # pylint: disable=invalid-name
+
+
+def signed_int_from_bv(bv: BitVector) -> int:
     """Interpret a bit vector as an signed integer.
 
     int(BitVector) defaults to treating the bits as an unsigned int.
@@ -218,10 +243,13 @@ def signedIntFromBV(bv: BitVector) -> int:
         # Positive.
         return int(bv)
     # Negative.
-    val = int(AddOne(~(bv[1:])))
+    val = int(add_one(~(bv[1:])))
     if 0 != val:
         return -val
     return -int(bv)
+
+
+signedIntFromBV = signed_int_from_bv  # pylint: disable=invalid-name
 
 
 def ais6tobitvec(str6: str) -> BitVector:
@@ -251,14 +279,16 @@ def ais6tobitvec(str6: str) -> BitVector:
     return bvtotal
 
 
-def bitvectoais6(bv: BitVector, doPadding: bool = True) -> tuple[str, int]:
+def bitvectoais6(
+    bv: BitVector, do_padding: bool = True, **kwargs: Any
+) -> tuple[str, int]:
     """Convert bit vector int an ITU AIS 6 bit string.
 
     Each character represents 6 bits.
 
     Args:
         bv: BitVector, Message bits.
-        doPadding: bool, True if the BitVector should be padded to a multiple of 6.
+        do_padding: bool, True if the BitVector should be padded to a multiple of 6.
 
     Returns:
         A str6 string as represented in a NMEA AIS VDM message and the number of
@@ -267,6 +297,7 @@ def bitvectoais6(bv: BitVector, doPadding: bool = True) -> tuple[str, int]:
     Raises:
         ValueError: The results are not 6-bit aligned.
     """
+    do_padding = kwargs.get("doPadding", do_padding)
     pad = BITS_PER_VDM_CHARACTER - (len(bv) % BITS_PER_VDM_CHARACTER)
     if pad == BITS_PER_VDM_CHARACTER:
         pad = 0
@@ -275,7 +306,7 @@ def bitvectoais6(bv: BitVector, doPadding: bool = True) -> tuple[str, int]:
         str_len += 1
 
     if pad != 0:
-        if doPadding:
+        if do_padding:
             bv += BitVector(size=pad)
         else:
             raise ValueError("Results would not be 6-bit aligned.")

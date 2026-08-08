@@ -20,8 +20,8 @@ class DecodeBits:
         self.bits = bits
         self.pos = 0
 
-    # TODO(schwehr): This method name should be GetUInt.
-    def GetInt(self, length: int) -> int:
+    # TODO(schwehr): This method name should be get_uint.
+    def get_int(self, length: int) -> int:
         """Read an unsigned integer of specified bit length from the bitstream.
 
         Args:
@@ -35,8 +35,10 @@ class DecodeBits:
         self.pos += length
         return value
 
-    # TODO(schwehr): This method name should be GetInt.
-    def GetSignedInt(self, length: int) -> int:
+    GetInt = get_int
+
+    # TODO(schwehr): This method name should be get_int.
+    def get_signed_int(self, length: int) -> int:
         """Read a signed integer of specified bit length from the bitstream.
 
         Args:
@@ -46,11 +48,13 @@ class DecodeBits:
             The signed integer value decoded from the bit slice.
         """
         end = self.pos + length
-        value = binary.signedIntFromBV(self.bits[self.pos : end])
+        value = binary.signed_int_from_bv(self.bits[self.pos : end])
         self.pos += length
         return value
 
-    def GetText(self, length: int, strip: bool = True) -> str:
+    GetSignedInt = get_signed_int
+
+    def get_text(self, length: int, strip: bool = True) -> str:
         """Read 6-bit AIS character text of specified bit length from the bitstream.
 
         Args:
@@ -66,14 +70,16 @@ class DecodeBits:
         if length % 6 != 0:
             raise Error("Bits for text must be six bit aligned.")
         end = self.pos + length
-        text = ais_string.Decode(self.bits[self.pos : end])
+        text = ais_string.decode(self.bits[self.pos : end])
         at = text.find("@")
         if strip and at != -1:
             text = text[:at]
         self.pos += length
         return text
 
-    def Verify(self, offset: int) -> None:
+    GetText = get_text
+
+    def verify(self, offset: int) -> None:
         """Verify that current bit read position matches the expected offset.
 
         Args:
@@ -84,6 +90,8 @@ class DecodeBits:
         """
         if self.pos != offset:
             raise Error(f"Decode verify failed.  {self.pos} != {offset}")
+
+    Verify = verify
 
 
 class BuildBits:
@@ -96,21 +104,25 @@ class BuildBits:
         self.bv_list = []
         self.bits_expected = 0
 
-    def AddUInt(self, val: int, num_bits: int) -> None:
+    def add_uint(self, val: int, num_bits: int) -> None:
         """Add an unsigned integer."""
-        bits = binary.setBitVectorSize(BitVector.from_int(val), num_bits)
+        bits = binary.set_bit_vector_size(BitVector.from_int(val), num_bits)
         assert num_bits == len(bits)
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    def AddInt(self, val: int, num_bits: int) -> None:
+    AddUInt = add_uint
+
+    def add_int(self, val: int, num_bits: int) -> None:
         """Add a signed integer."""
-        bits = binary.bvFromSignedInt(int(val), num_bits)
+        bits = binary.bv_from_signed_int(int(val), num_bits)
         assert num_bits == len(bits)
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    def AddText(self, val: str, num_bits: int) -> None:
+    AddInt = add_int
+
+    def add_text(self, val: str, num_bits: int) -> None:
         """Add 6-bit AIS encoded text of specified bit length to the bitstream.
 
         Args:
@@ -120,11 +132,13 @@ class BuildBits:
         num_char = num_bits // 6
         assert num_bits % 6 == 0
         text = val.ljust(num_char, "@")
-        bits = ais_string.Encode(text)
+        bits = ais_string.encode(text)
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    def Verify(self, num_bits: int) -> None:
+    AddText = add_text
+
+    def verify(self, num_bits: int) -> None:
         """Verify that total packed bits match expected bit count.
 
         Args:
@@ -136,7 +150,9 @@ class BuildBits:
         if self.bits_expected != num_bits:
             raise Error(f"BuildBits did not verify: {self.bits_expected} != {num_bits}")
 
-    def GetBits(self) -> BitVector:
+    Verify = verify
+
+    def get_bits(self) -> BitVector:
         """Concatenate all bit vectors in the list into a single BitVector.
 
         Returns:
@@ -145,7 +161,9 @@ class BuildBits:
         Raises:
             Error: If combined length does not match expected bit count.
         """
-        bits = binary.joinBV(self.bv_list)
+        bits = binary.join_bv(self.bv_list)
         if len(bits) != self.bits_expected:
             raise Error("BuildBits did not match expected bits.")
         return bits
+
+    GetBits = get_bits
