@@ -7,7 +7,6 @@ disable =
     attribute-defined-outside-init,
     bare-except,
     chained-comparison,
-    comparison-with-itself,
     consider-merging-isinstance,
     consider-using-dict-items,
     consider-using-enumerate,

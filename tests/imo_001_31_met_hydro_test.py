@@ -64,7 +64,7 @@ def random_msg():
 
 def test_empty():
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
-    assert mh == mh
+    assert mh == mh  # pylint: disable=comparison-with-itself
     mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
     assert mh == mh_b
 
@@ -73,7 +73,7 @@ def test_random():
     """fuzz test"""
     for _ in range(FUZZ_COUNT):
         mh = met_hydro.MetHydro31(source_mmsi=123456789)
-        assert mh == mh
+        assert mh == mh  # pylint: disable=comparison-with-itself
         mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
         assert mh == mh_b
 

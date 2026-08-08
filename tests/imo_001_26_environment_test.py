@@ -366,7 +366,7 @@ class TestSensorReports:
         """SensorReport equality operator"""
         sr_0 = env.SensorReport(0, 2010, 1, 1, 1, 1, site_id=0)
         sr_0b = env.SensorReport(bits=sr_0.get_bits())
-        assert sr_0 == sr_0
+        assert sr_0 == sr_0  # pylint: disable=comparison-with-itself
         assert sr_0 == sr_0b
 
         sr_0c = env.SensorReport(0, 2010, 1, 1, 1, 2, site_id=0)
@@ -377,7 +377,7 @@ class TestSensorReports:
         assert sr_0 != sr_0e
 
         sr_1 = env.SensorReport(1, site_id=11)
-        assert sr_1 == sr_1
+        assert sr_1 == sr_1  # pylint: disable=comparison-with-itself
         assert sr_0 != sr_1
 
     def test_Sr_not_eq(self):
@@ -1264,7 +1264,7 @@ class TestEnvironment:
 
     def test_empty(self):
         e = env.Environment(source_mmsi=123456)
-        assert e == e
+        assert e == e  # pylint: disable=comparison-with-itself
         assert len(e.sensor_reports) == 0
         assert "sensor_reports" in str(e)
         # Just one line with an empty env msg.
@@ -1281,11 +1281,11 @@ class TestEnvironment:
         e_instances = []
         for sr_class in env.sensor_report_classes:
             e = env.Environment(source_mmsi=123456)
-            assert e == e
+            assert e == e  # pylint: disable=comparison-with-itself
             site_id = int(math.floor(random.random() * 128))
             sr = sr_class(site_id=site_id)
             e.add_sensor_report(sr)
-            assert e == e
+            assert e == e  # pylint: disable=comparison-with-itself
 
             sr_bits = sr.get_bits()
             assert len(sr_bits) == 112  # 85 + report header.
