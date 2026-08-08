@@ -9,8 +9,6 @@ character_bits: dict, lookup table for going from a single character to
 import logging
 import re
 
-
-from . import binary
 from BitVector import BitVector
 
 

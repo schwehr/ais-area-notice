@@ -13,9 +13,7 @@ from . import binary
 from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
 from .imo_001_22_area_notice import AisUnpackingException
-from .imo_001_22_area_notice import BBM
 from .imo_001_22_area_notice import nmea_checksum_hex
-from .imo_001_22_area_notice import notice_type
 
 DAC = 366
 FI = 22

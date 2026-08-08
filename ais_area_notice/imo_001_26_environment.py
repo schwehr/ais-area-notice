@@ -14,7 +14,6 @@ through the binary AIS messages.
 """
 
 import datetime
-import sys
 
 from . import ais_string
 from . import binary
