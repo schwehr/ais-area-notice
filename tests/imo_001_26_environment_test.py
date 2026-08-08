@@ -9,9 +9,10 @@ import math
 import random
 import sys
 
+import pytest
+
 from ais_area_notice import ais_string
 import ais_area_notice.imo_001_26_environment as env
-import pytest
 
 # How many loops to do on fuzz testing
 FUZZ_COUNT = 30

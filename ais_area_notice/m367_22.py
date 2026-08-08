@@ -8,9 +8,10 @@ http://en.wikipedia.org/wiki/Rhumb_line
 import datetime
 import logging
 
+from BitVector import BitVector
+
 from . import ais_string
 from . import binary
-from BitVector import BitVector
 from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
 from .imo_001_22_area_notice import AisUnpackingException

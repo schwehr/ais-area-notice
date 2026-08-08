@@ -7,6 +7,8 @@ since: Mon Feb 14 15:55:02 2011 -0500
 import random
 import sys
 
+import pytest
+
 import ais_area_notice.imo_001_31_met_hydro as met_hydro
 from .imo_001_26_environment_test import random_date
 
@@ -73,9 +75,6 @@ def test_random():
         assert mh == mh
         mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
         assert mh == mh_b
-
-
-import pytest
 
 
 def test_ne_and_html_and_geo_interface():

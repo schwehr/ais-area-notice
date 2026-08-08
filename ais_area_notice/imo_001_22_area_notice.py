@@ -28,14 +28,15 @@ import re
 import sys
 import time
 
-from . import ais_string
-from . import binary
 from BitVector import BitVector
 import lxml
 import lxml.html
 from lxml.html import builder as E
 from pyproj import Proj
 import shapely.geometry
+
+from . import ais_string
+from . import binary
 
 
 # Track the next value to use for multiline nmea messages.

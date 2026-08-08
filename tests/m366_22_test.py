@@ -1,8 +1,10 @@
 """Test USCG specific 8:366:22 area notice message Version 23 samples."""
 
 import datetime
-from ais_area_notice import m366_22
+
 import pytest
+
+from ais_area_notice import m366_22
 
 
 def test_empty_init():

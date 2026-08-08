@@ -1,8 +1,9 @@
 """Tests for ais_area_notice.an_util."""
 
-from ais_area_notice import an_util
 from BitVector import BitVector
 import pytest
+
+from ais_area_notice import an_util
 
 
 def test_decode_bits_get_int():

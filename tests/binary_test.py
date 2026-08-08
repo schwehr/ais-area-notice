@@ -2,8 +2,9 @@
 
 """Tests for ais_area_notice.binary."""
 
-from ais_area_notice import binary
 from BitVector import BitVector
+
+from ais_area_notice import binary
 
 # TODO(schwehr): Test joinBV.
 # TODO(schwehr): Test setBitVectorSize.

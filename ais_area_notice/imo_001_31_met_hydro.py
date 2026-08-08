@@ -11,8 +11,9 @@ Be aware of:
 import datetime
 import sys
 
-from . import binary
 from BitVector import BitVector
+
+from . import binary
 from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
 from .imo_001_22_area_notice import AisUnpackingException

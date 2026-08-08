@@ -9,9 +9,10 @@ import math
 import runpy
 import sys
 
-import ais_area_notice.imo_001_22_area_notice as area_notice
 import geojson
 import pytest
+
+import ais_area_notice.imo_001_22_area_notice as area_notice
 
 PI_2 = math.pi / 2
 PI_4 = math.pi / 4

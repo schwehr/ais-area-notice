@@ -50,5 +50,4 @@ disable =
     unnecessary-dunder-call,
     unspecified-encoding,
     unused-argument,
-    wrong-import-order,
     wrong-import-position,

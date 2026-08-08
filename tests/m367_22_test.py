@@ -3,6 +3,8 @@
 
 import datetime
 
+import pytest
+
 from ais_area_notice import binary
 from ais_area_notice.m367_22 import AreaNotice
 from ais_area_notice.m367_22 import AreaNoticeCircle
@@ -11,7 +13,6 @@ from ais_area_notice.m367_22 import AreaNoticeRectangle
 from ais_area_notice.m367_22 import AreaNoticeSector
 from ais_area_notice.m367_22 import AreaNoticeText
 from ais_area_notice.m367_22 import SHAPES
-import pytest
 
 
 class DiffAreaNotice:
