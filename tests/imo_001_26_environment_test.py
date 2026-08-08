@@ -365,6 +365,12 @@ def random_sensorreport() -> env.SensorReport:
 class TestSensorReports:
     """Test suite for sensor report classes and bitstream packing/unpacking."""
 
+    year: int
+    month: int
+    day: int
+    hour: int
+    minute: int
+
     def setup_method(self) -> None:
         """Set up current timestamp for test instances."""
         now = datetime.datetime.utcnow()
@@ -1329,6 +1335,12 @@ class TestSensorReports:
 
 class TestEnvironment:
     """Environmental Message with a variety of SensorReports"""
+
+    year: int
+    month: int
+    day: int
+    hour: int
+    minute: int
 
     def setup_method(self) -> None:
         """Set up current timestamp for environment test instances."""

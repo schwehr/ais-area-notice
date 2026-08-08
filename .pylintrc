@@ -3,7 +3,6 @@ fail-under = 9.0
 
 [MESSAGES CONTROL]
 disable =
-    attribute-defined-outside-init,
     bare-except,
     duplicate-code,
     expression-not-assigned,
