@@ -20,7 +20,6 @@ disable =
     pointless-string-statement,
     potential-index-error,
     raise-missing-from,
-    redefined-builtin,
     redefined-outer-name,
     too-few-public-methods,
     too-many-arguments,

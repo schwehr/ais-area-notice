@@ -470,7 +470,7 @@ class SensorReportWind(SensorReport):
         site_id=None,
         speed=122,
         gust=122,
-        dir=360,
+        dir=360,  # pylint: disable=redefined-builtin
         gust_dir=360,
         data_descr=0,
         forecast_speed=122,
