@@ -67,6 +67,12 @@ repos:
     hooks:
       - id: zizmor
 
+  - repo: https://github.com/semgrep/pre-commit
+    rev: v1.170.0
+    hooks:
+      - id: semgrep
+        args: [--config, p/default]
+
   - repo: local
     hooks:
       - id: check-uv-lock-public-index
