@@ -7,7 +7,6 @@ disable =
     attribute-defined-outside-init,
     bare-except,
     chained-comparison,
-    consider-using-generator,
     deprecated-module,
     duplicate-code,
     expression-not-assigned,

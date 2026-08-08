@@ -429,7 +429,7 @@ class TestAreaNotice:
             ),
             "!AIVDM,2,2,0,A,00000000bPbJT1Q9hd680000,0*03",
         ]
-        body = "".join([sentence.split(",")[5] for sentence in msg])
+        body = "".join(sentence.split(",")[5] for sentence in msg)
         sub_area_msg = body[-32:-16]
         assert len(sub_area_msg) == 16
         sa1_bits = binary.ais6tobitvec(sub_area_msg)

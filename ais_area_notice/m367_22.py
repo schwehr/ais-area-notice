@@ -319,7 +319,7 @@ class AreaNoticePoly(AreaNoticeSubArea):
             self.lat = lat
         if points:
             self.points = points
-            max_dist = max([pt[1] for pt in points])
+            max_dist = max(pt[1] for pt in points)
             if not scale_factor:
                 self.scale_factor = self.getScaleFactor(max_dist)
         if scale_factor:
@@ -356,7 +356,7 @@ class AreaNoticePoly(AreaNoticeSubArea):
         assert self.area_shape in (SHAPES["POLYLINE"], SHAPES["POLYGON"])
         bb.AddUInt(self.area_shape, 3)
         if "scale_factor" not in self.__dict__:
-            max_dist = max([pt[1] for pt in self.points])
+            max_dist = max(pt[1] for pt in self.points)
             self.scale_factor = self.getScaleFactor(max_dist)
         bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
         for angle, dist in self.points:

@@ -1261,7 +1261,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             assert len(points) > 0 and len(points) < 5
             self.points = points
 
-            max_dist = max([pt[1] for pt in points])
+            max_dist = max(pt[1] for pt in points)
             if max_dist / 100.0 >= 1023:
                 self.scale_factor_raw = 3
             elif max_dist / 10.0 > 1023:
@@ -1937,7 +1937,7 @@ def message_2_fetcherformatter(
         bits,
     ]
 
-    return ",".join([str(item) for item in line])
+    return ",".join(str(item) for item in line)
 
 
 class NormQueue(Queue.Queue):
