@@ -134,6 +134,16 @@ data_timeout_hrs_lut = {
 
 
 def almost_equal(a, b, epsilon=0.001):
+    """Check if two numbers are equal within a specified epsilon tolerance.
+
+    Args:
+        a: First numeric value.
+        b: Second numeric value.
+        epsilon: Maximum allowed absolute difference between a and b.
+
+    Returns:
+        True if the absolute difference is less than epsilon, None otherwise.
+    """
     if (a < b + epsilon) and (a > b - epsilon):
         return True
 
@@ -226,6 +236,11 @@ class SensorReport:
         return True
 
     def get_date(self):
+        """Construct a datetime object from report timestamp fields.
+
+        Returns:
+            A datetime object for the sensor report timestamp.
+        """
         # TODO(schwehr): Add the UTC timezone?
         return datetime.datetime(
             self.year, self.month, self.day, self.hour, self.minute
@@ -245,6 +260,14 @@ class SensorReport:
         return self.__unicode__()
 
     def decode_bits(self, bits, year=None, month=None, **kwargs):
+        """Unpack common sensor report header fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override. Defaults to current year.
+            month: Optional month override. Defaults to current month.
+            **kwargs: Additional unused keyword arguments.
+        """
         assert len(bits) >= SENSOR_REPORT_HDR_SIZE
         assert len(bits) <= SENSOR_REPORT_SIZE
 
@@ -265,6 +288,11 @@ class SensorReport:
         self.month = month
 
     def get_bits(self):
+        """Encode common sensor report header fields into a BitVector.
+
+        Returns:
+            A BitVector containing header bits (report type, day, hour, minute, site ID).
+        """
         bv_list = []
         bv_list.append(BitVector.from_int(self.report_type, size=4))
         bv_list.append(BitVector.from_int(self.day, size=5))
@@ -1604,6 +1632,11 @@ class Environment(BBM):
         raise NotImplementedError
 
     def append(self, report):
+        """Append a sensor report to the environment message.
+
+        Args:
+            report: The SensorReport object to append.
+        """
         self.add_sensor_report(report)
 
     def add_sensor_report(self, report):
@@ -1616,6 +1649,11 @@ class Environment(BBM):
         self.sensor_reports.append(report)
 
     def get_report_types(self):
+        """Get the list of sensor report type IDs in this environment message.
+
+        Returns:
+            A list of integer report type identifiers.
+        """
         s = []
         for sr in self.sensor_reports:
             s.append(sr.report_type)

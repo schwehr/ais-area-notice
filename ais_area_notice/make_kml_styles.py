@@ -13,6 +13,11 @@ def hex_len2(h):
 
 
 def rand_hex_color():
+    """Generate a random 6-character hex color string.
+
+    Returns:
+        A 6-character hexadecimal color string.
+    """
     return "".join(
         [hex_len2(hex(int(random.random() * 255)).split("x")[1]) for j in range(3)]
     )

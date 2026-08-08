@@ -9,6 +9,12 @@ from ais_area_notice import imo_001_26_environment as env
 
 
 def env_dump(e, description):
+    """Print details, bit representations, and NMEA sentences for an environmental report.
+
+    Args:
+        e: The Environment message instance to dump.
+        description: A string description of the test case.
+    """
     print("\n#", description)
     print(e.__str__(verbose=True))
     print("bit_len:", len(e.get_bits()))
@@ -18,6 +24,7 @@ def env_dump(e, description):
 
 
 def env_samples():
+    """Generate and dump various sample environmental report messages."""
     # env each with 1 sensor report
     year = 2011
     month = 6
@@ -297,6 +304,13 @@ def env_samples():
 
 
 def dump_all(area_notice, kmlfile, byte_align=False):
+    """Print representations of an Area Notice and write its KML output.
+
+    Args:
+        area_notice: The AreaNotice instance to dump.
+        kmlfile: An open file handle for writing KML output.
+        byte_align: Whether to byte-align the generated NMEA sentences.
+    """
     print("#", area_notice.name)
     print(str(area_notice))
     for line in area_notice.get_bbm():
@@ -317,6 +331,14 @@ def dump_all(area_notice, kmlfile, byte_align=False):
 
 
 def point(lon, lat, zone_type, kmlfile):
+    """Generate a single point Area Notice sample and output KML.
+
+    Args:
+        lon: Longitude of the point in degrees.
+        lat: Latitude of the point in degrees.
+        zone_type: Area notice zone type identifier.
+        kmlfile: An open file handle for writing KML output.
+    """
     print("# Point")
     pt1 = an.AreaNotice(
         zone_type,

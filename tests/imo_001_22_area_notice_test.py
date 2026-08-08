@@ -71,6 +71,7 @@ class TestRegex:
     """Test NMEA sentence regular expression parsing."""
 
     def testWithoutMetadata(self):
+        """Test parsing NMEA sentence without metadata header."""
         msg_str = "!AIVDM,1,1,,A,E>b6Kpiacg`0aagRW:JJropqKLpLkD6D8AB;000000VP20,4*4C"
         match = area_notice.ais_nmea_regex.search(msg_str)
         assert match is not None
@@ -87,6 +88,7 @@ class TestRegex:
         assert result["checksum"] == "4C"
 
     def testWithSimpleMetadata(self):
+        """Test parsing NMEA sentence with simple station and timestamp metadata."""
         msg_str = (
             "!AIVDM,1,1,,B,15N8ac?P00ISgOBA4VU:lOv028Rq,0*4A,b003669953,1297555217"
         )
@@ -107,6 +109,7 @@ class TestRegex:
         assert result["time_stamp"] == "1297555217"
 
     def testWithMetadata(self):
+        """Test parsing NMEA sentence with full receiver metadata."""
         msg_str = (
             # pylint: disable=line-too-long
             "!AIVDM,1,1,,A,15Muq2PP00J64Bf?ktmFpwvl0L0P,0*3F,d-091,S0977,t080226.00,T26.05630183,r07RCED1,1297584148"
@@ -133,6 +136,7 @@ class TestRegex:
         assert result["time_stamp"] == "1297584148"
 
     def testWithX(self):
+        """Test parsing NMEA sentence with extended station metadata fields."""
         msg_str = (
             # pylint: disable=line-too-long
             "!AIVDM,1,1,,B,3018lEU000rA?L@>sp;8L5<>0000,0*26,x367022,s32171,d-079,T08.48347459,r003669976,1166058609"
@@ -158,6 +162,7 @@ class TestRegex:
         assert result["time_stamp"] == "1166058609"
 
     def testMultiLine1(self):
+        """Test parsing first sentence of multi-line NMEA message."""
         msg_str = (
             # pylint: disable=line-too-long
             "!AIVDM,2,1,6,B,54eGK=h00000<O;C?H104<THT>10ThuB1ALt00000000040000000000,0*58,b003669705,1297584166"
@@ -174,6 +179,7 @@ class TestRegex:
         assert result["msg_id"] == "5"
 
     def testMultiLine2(self):
+        """Test parsing second sentence of multi-line NMEA message."""
         msg_str = "!AIVDM,2,2,6,B,000000000000000,2*21,b003669705,1297584166"
         match = area_notice.ais_nmea_regex.search(msg_str)
         assert match is not None
@@ -186,6 +192,7 @@ class TestRegex:
         assert result["chan"] == "B"
 
     def testOwnShip(self):
+        """Test parsing AIVDO own-ship sentence."""
         msg_str = "!AIVDO,1,1,,,13tfD@?P7BJsWhhHb5eBtwwL0000,0*05,rnhjel,1297555200.32"
         match = area_notice.ais_nmea_regex.search(msg_str)
         assert match is not None
@@ -203,6 +210,7 @@ class Test0Math:
     """Test vector rotation math helpers."""
 
     def testRotate(self):
+        """Test rotating origin point vector."""
         # Rotate about 0.
         p1 = (0, 0)
         assert (0, 0) == area_notice.vec_rot(p1, 0)
@@ -212,6 +220,7 @@ class Test0Math:
         assert (0, 0) == area_notice.vec_rot(p1, -math.pi / 4)
 
     def testRotate2(self):
+        """Test rotating unit X vector by various angles."""
         # Rotate of 1, 0.
         p1 = (1, 0)
         assert (1, 0) == area_notice.vec_rot(p1, 0)
@@ -234,6 +243,7 @@ class Test0Math:
         )
 
     def testRotate3(self):
+        """Test rotating unit Y vector by various angles."""
         # Rotate of 0, 1.
         p1 = (0, 1)
         assert (0, 1) == area_notice.vec_rot(p1, 0)
@@ -257,6 +267,7 @@ class Test1AIVDM:
     """Test AIVDM sentence generator base class."""
 
     def testAivdm(self):
+        """Test AIVDM sentence generator raises exception when mandatory fields missing."""
         a = area_notice.AIVDM()
         with pytest.raises(area_notice.AisPackingException):
             a.get_aivdm(sequence_num=0, channel="A", source_mmsi=123456789)
@@ -275,6 +286,7 @@ class Test3AreaNoticeCirclePt:
     """Test circle/point subarea geometry and bit packing."""
 
     def testCircleGeom(self):
+        """Test point and circle Shapely geometry generation."""
         pt1 = area_notice.AreaNoticeCirclePt(-73, 43, 0)
         assert pt1.radius == 0
         assert_almost_equal_series((-73, 43), list(pt1.geom().coords)[0])
@@ -284,6 +296,7 @@ class Test3AreaNoticeCirclePt:
         assert len(pt2.geom().boundary.coords) > 10
 
     def testSelfConsistant(self):
+        """Test AreaNoticeCirclePt bit packing and unpacking round-trip consistency."""
         pt0 = area_notice.AreaNoticeCirclePt(-73, 43, 0)
         pt1 = area_notice.AreaNoticeCirclePt(bits=pt0.get_bits())
         assert pt1.lon == pytest.approx(-73)
@@ -302,6 +315,7 @@ class Test5AreaNoticeSimple:
     """Test simple Area Notice message encoding and visualization."""
 
     def testSimple(self):
+        """Test basic Area Notice bitstream generation with options."""
         an1 = area_notice.AreaNotice(0, datetime.datetime.utcnow(), 100)
         assert len(an1.get_bits()) == 2 + 16 + 10 + 7 + 4 + 5 + 5 + 6 + 18
         assert len(an1.get_bits(include_dac_fi=False)) == 10 + 7 + 4 + 5 + 5 + 6 + 18
@@ -321,6 +335,7 @@ class Test5AreaNoticeSimple:
         assert len(an1.get_bbm()) == 1
 
     def testWhale(self):
+        """Test building Area Notice for whale safety subareas."""
         no_whales = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
             datetime.datetime.utcnow(),
@@ -335,6 +350,7 @@ class Test5AreaNoticeSimple:
         no_whales.add_subarea(area_notice.AreaNoticeCirclePt(-68, 43, radius=9260))
 
     def testCircleSubareaJson(self):
+        """Test GeoJSON export for circle and point subareas."""
         area = area_notice.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260)
         assert len(area.__geo_interface__["geometry"]["coordinates"]) > 5
 
@@ -342,6 +358,7 @@ class Test5AreaNoticeSimple:
         assert len(area.__geo_interface__["geometry"]["coordinates"]) == 2
 
     def testHtml(self):
+        """Test HTML rendering of Area Notice."""
         whales = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
             datetime.datetime.utcnow(),
@@ -355,6 +372,7 @@ class Test5AreaNoticeSimple:
         # TODO(schwehr): Write the test.
 
     def testKml(self):
+        """Test KML markup generation for Area Notice."""
         whales = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
             datetime.datetime.utcnow(),
@@ -375,6 +393,7 @@ class TestBitDecoding:
     """Test Area Notice bit decoding for point subareas."""
 
     def testPoint(self):
+        """Test Area Notice encoding and decoding roundtrip for point subarea."""
         year = datetime.datetime.utcnow().year
         pt1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
@@ -397,6 +416,7 @@ class TestBitDecoding:
         assert_almost_equal_geojson(orig, decoded)
 
     def testCircle(self):
+        """Test Area Notice encoding and decoding roundtrip for circle subarea."""
         now = datetime.datetime.utcnow()
         circle1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
@@ -417,6 +437,7 @@ class TestBitDecoding:
         assert_almost_equal_geojson(orig, decoded)
 
     def testRectangle(self):
+        """Test Area Notice encoding and decoding roundtrip for rectangle subarea."""
         rect = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
             datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
@@ -435,6 +456,7 @@ class TestBitDecoding:
         assert_almost_equal_geojson(orig, decoded)
 
     def testSector(self):
+        """Test Area Notice encoding and decoding roundtrip for sector subarea."""
         sec1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_habitat_reduce_speed"],
             datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
@@ -452,6 +474,7 @@ class TestBitDecoding:
         assert_almost_equal_geojson(orig, decoded)
 
     def testLine(self):
+        """Test Area Notice encoding and decoding roundtrip for polyline subarea."""
         line1 = area_notice.AreaNotice(
             area_notice.notice_type["report_of_icing"],
             datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
@@ -468,6 +491,7 @@ class TestBitDecoding:
         assert_almost_equal_geojson(orig, decoded)
 
     def testPolygon(self):
+        """Test Area Notice encoding and decoding roundtrip for polygon subarea."""
         poly1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_divers"],
             datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
@@ -486,6 +510,7 @@ class TestBitDecoding:
         assert_almost_equal_geojson(orig, decoded)
 
     def testFreeText(self):
+        """Test Area Notice encoding and decoding roundtrip for free text subarea."""
         text1 = area_notice.AreaNotice(
             area_notice.notice_type["res_military_ops"],
             datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 4, 0),
@@ -509,6 +534,7 @@ class TestBitDecoding2:
     """Test Area Notice bit decoding for complex mixed subareas."""
 
     def testPoint(self):
+        """Test Area Notice with one subarea of every shape type."""
         # One of each.
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
@@ -539,6 +565,7 @@ class TestBitDecoding2:
         assert_almost_equal_geojson(orig, decoded)
 
     def testManySectors(self):
+        """Test Area Notice with multiple sector subareas and max subarea limit."""
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
             datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
@@ -589,6 +616,7 @@ class TestBitDecoding2:
             )
 
     def testFullText(self):
+        """Test Area Notice with multi-part text subareas and merged text retrieval."""
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
             datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
@@ -630,6 +658,7 @@ class TestLineTools:
 
     @pytest.mark.skip(reason="TODO(schwehr): Fix this failure.")
     def testOneSegmentCardinal(self):
+        """Test converting lon/lat segments to polyline angle and distance offsets."""
         p0 = (0, 0)
 
         deg_1_meters = 111120
@@ -660,6 +689,7 @@ class TestWhaleNotices:
     """Make sure the whale notices works correctly."""
 
     def testNoWhales(self):
+        """Test Area Notice for cautionary no whales observed zone."""
         zone_type = area_notice.notice_type["cau_mammals_not_obs"]
         circle = area_notice.AreaNotice(
             zone_type,
@@ -695,6 +725,7 @@ class TestWhaleNotices:
         # TODO(schwehr): Verify other parameters like the location and times.
 
     def testWhalesObservedCircleNotice(self):
+        """Test Area Notice for mandatory whale speed reduction circle zone."""
         zone_type = area_notice.notice_type["cau_mammals_reduce_speed"]
         circle = area_notice.AreaNotice(
             zone_type,
@@ -730,17 +761,20 @@ class TestWhaleNotices:
 
 
 def test_ll_to_polyline_and_helpers():
+    """Test converting lon/lat coordinates to polyline angle and distance offsets."""
     ll_points = [(-122.0, 37.0), (-122.1, 37.1), (-122.2, 37.2)]
     offsets = area_notice.ll_to_polyline(ll_points)
     assert len(offsets) == 2
 
 
 def test_frange_defaults():
+    """Test floating point range generator defaults."""
     r1 = list(area_notice.frange(5))
     assert r1 == [0.0, 1.0, 2.0, 3.0, 4.0]
 
 
 def test_geom2kml_linestring_and_invalid():
+    """Test GeoJSON geometry to KML conversion."""
     ls_geom = {
         "geometry": {
             "type": "LineString",
@@ -756,12 +790,14 @@ def test_geom2kml_linestring_and_invalid():
 
 
 def test_ais_exception_repr():
+    """Test string representation of AisException instances."""
     exc = area_notice.AisException("test error")
     assert repr(exc) == "test error"
     assert str(exc) == "test error"
 
 
 def test_get_bits_header_errors_and_override(monkeypatch):
+    """Test AIVDM header bit generation and validation error handling."""
     aivdm = area_notice.AIVDM(message_id=8, repeat_indicator=0, source_mmsi=123456789)
     bv = aivdm.get_bits_header(source_mmsi=987654321)
     assert len(bv) == 38
@@ -774,6 +810,7 @@ def test_get_bits_header_errors_and_override(monkeypatch):
 
 
 def test_get_aivdm_validation_errors():
+    """Test get_aivdm parameter validation and exception handling."""
     aivdm = area_notice.AIVDM(message_id=8, repeat_indicator=0, source_mmsi=123456789)
     with pytest.raises(area_notice.AisPackingException, match="sequence_num 10"):
         aivdm.get_aivdm(sequence_num=10)
@@ -786,6 +823,7 @@ def test_get_aivdm_validation_errors():
 
 
 def test_get_aivdm_byte_align_and_normal_form_and_sequence_wrap():
+    """Test AIVDM byte alignment, normal form, and sequence number wrap-around."""
     when = datetime.datetime(2026, 8, 7, 0, 0, 0)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
@@ -812,6 +850,7 @@ def test_get_aivdm_byte_align_and_normal_form_and_sequence_wrap():
 
 
 def test_aivdm_header_none_mmsi():
+    """Test get_bits_header raises exception when MMSI is None."""
     aivdm = area_notice.AIVDM(message_id=8, repeat_indicator=0)
     with pytest.raises(
         area_notice.AisPackingException, match="source_mmsi must be valid"
@@ -820,6 +859,8 @@ def test_aivdm_header_none_mmsi():
 
 
 def test_aivdm_get_aivdm_byte_aligned_okay(capsys):
+    """Test get_aivdm logs byte alignment status when payload is already byte-aligned."""
+
     class MockAIVDM(area_notice.AIVDM):
         """Mock AIVDM subclass for testing byte alignment logging."""
 
@@ -833,6 +874,7 @@ def test_aivdm_get_aivdm_byte_aligned_okay(capsys):
 
 
 def test_area_notice_kml_options(monkeypatch, tmp_path):
+    """Test KML generation options, styles, and empty geometry handling."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
@@ -872,6 +914,7 @@ def test_area_notice_kml_options(monkeypatch, tmp_path):
 
 
 def test_bbm_errors_and_multisentence():
+    """Test BBM validation errors and multi-sentence NMEA payload generation."""
     bbm = area_notice.BBM(message_id=8)
     with pytest.raises(area_notice.AisPackingException, match="talker"):
         bbm.get_bbm(talker="INVALID")
@@ -892,6 +935,7 @@ def test_bbm_errors_and_multisentence():
 
 
 def test_circle_pt_scale_factors_and_decoding():
+    """Test AreaNoticeCirclePt scale factor calculation and bit decoding."""
     c3 = area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=409500)
     assert c3.scale_factor_raw == 3
     assert c3.scale_factor == 1000
@@ -931,6 +975,7 @@ def test_circle_pt_scale_factors_and_decoding():
 
 
 def test_rectangle_scale_factors_decoding_unicode():
+    """Test AreaNoticeRectangle scale factor calculation and string representation."""
     with pytest.raises(AssertionError):
         area_notice.AreaNoticeRectangle(-122.0, 37.0, east_dim=255000)
 
@@ -957,6 +1002,7 @@ def test_rectangle_scale_factors_decoding_unicode():
 
 
 def test_sector_scale_factors_decoding_unicode():
+    """Test AreaNoticeSector scale factor calculation and decoding."""
     sec3 = area_notice.AreaNoticeSector(
         -122.0, 37.0, radius=409500, left_bound_deg=0, right_bound_deg=90
     )
@@ -989,6 +1035,7 @@ def test_sector_scale_factors_decoding_unicode():
 
 
 def test_polyline_scale_factors_decoding_errors_unicode(capsys):
+    """Test AreaNoticePolyline scale factor calculation, bit encoding limits, and error logging."""
     p2 = area_notice.AreaNoticePolyline(lon=-122.0, lat=37.0, points=[(45, 20000)])
     assert p2.scale_factor_raw == 2
 
@@ -1070,6 +1117,7 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
 
 
 def test_polygon_unicode_and_freetext_methods():
+    """Test AreaNoticePolygon and AreaNoticeFreeText string representation and decoding."""
     poly = area_notice.AreaNoticePolygon(
         lon=-122.0, lat=37.0, points=[(45, 100), (90, 100)]
     )
@@ -1104,6 +1152,7 @@ def test_polygon_unicode_and_freetext_methods():
 
 
 def test_area_notice_init_and_methods_and_errors():
+    """Test AreaNotice initialization, HTML/GeoJSON export, and subarea count limits."""
     with pytest.raises(AssertionError):
         area_notice.AreaNotice()
 
@@ -1185,6 +1234,7 @@ def test_area_notice_init_and_methods_and_errors():
 
 
 def test_area_notice_decode_nmea_errors():
+    """Test AreaNotice NMEA sentence decoding error handling."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
@@ -1202,6 +1252,7 @@ def test_area_notice_decode_nmea_errors():
 
 
 def test_subarea_factory_and_get_shapes():
+    """Test subarea factory shape instantiation and sequencing validation."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
@@ -1242,6 +1293,7 @@ def test_subarea_factory_and_get_shapes():
 
 
 def test_message_2_fetcherformatter_and_normqueue():
+    """Test CSV message formatting and NormQueue multi-sentence NMEA reassembly."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
@@ -1297,6 +1349,7 @@ def test_message_2_fetcherformatter_and_normqueue():
 
 
 def test_main_cli(monkeypatch, tmp_path):
+    """Test CLI main entry point sentence parsing and KML output file creation."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789

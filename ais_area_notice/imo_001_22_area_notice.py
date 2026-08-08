@@ -358,6 +358,14 @@ short_notice = _make_short_notice()
 
 
 def lon_to_utm_zone(lon):
+    """Determine the UTM longitude zone number for a given longitude.
+
+    Args:
+        lon: Longitude in degrees.
+
+    Returns:
+        The UTM zone number (1 to 60).
+    """
     return int((lon + 180) / 6) + 1
 
 
@@ -374,12 +382,29 @@ def ll_to_delta_m(lon1, lat1, lon2, lat2):
 
 
 def dist(p1, p2):
+    """Calculate Euclidean distance between two 2D points.
+
+    Args:
+        p1: Tuple of (x, y) coordinates for the first point.
+        p2: Tuple of (x, y) coordinates for the second point.
+
+    Returns:
+        The Euclidean distance between p1 and p2.
+    """
     return math.sqrt(
         (p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1])
     )
 
 
 def deltas_to_angle_dist(deltas_m):
+    """Convert sequence of metric offset points to angle and distance pairs.
+
+    Args:
+        deltas_m: List of (dx, dy) coordinate tuples in meters.
+
+    Returns:
+        A list of (angle_degrees, distance_meters) tuples.
+    """
     r = []
     for i in range(1, len(deltas_m)):
         p1 = deltas_m[i - 1]
@@ -393,6 +418,14 @@ def deltas_to_angle_dist(deltas_m):
 
 
 def ll_to_polyline(ll_points):
+    """Convert sequence of (lon, lat) points to polyline relative angle/distance offsets.
+
+    Args:
+        ll_points: List of (lon, lat) tuples (at least 2 points).
+
+    Returns:
+        A list of (angle_degrees, distance_meters) tuples relative to preceding point.
+    """
     # Skips the first point as that is returned as an x, y.  ll==lonlat
     ll = ll_points
     assert len(ll) >= 2
@@ -405,6 +438,15 @@ def ll_to_polyline(ll_points):
 
 
 def polyline_to_ll(start, angles_and_offsets):
+    """Reconstruct absolute (lon, lat) points from start point and offset sequence.
+
+    Args:
+        start: Tuple of (lon, lat) for the initial point.
+        angles_and_offsets: List of (angle_degrees, distance_meters) tuples.
+
+    Returns:
+        A list of (lon, lat) coordinate tuples.
+    """
     # Start lon, lat plus a list of (angle, offset) from that point
     # 0 is true north and runs clockwise
     points = angles_and_offsets
@@ -444,6 +486,15 @@ def frange(start, stop=None, step=None):
 
 
 def vec_add(a, b):
+    """Add two 2D vectors element-wise.
+
+    Args:
+        a: Tuple of (x, y) coordinates.
+        b: Tuple of (x, y) coordinates.
+
+    Returns:
+        A tuple of (a_x + b_x, a_y + b_y).
+    """
     return (a[0] + b[0], a[1] + b[1])
 
 
@@ -538,6 +589,19 @@ class AIVDM:
         raise NotImplementedError()
 
     def get_bits_header(self, message_id=None, repeat_indicator=None, source_mmsi=None):
+        """Construct the standard 38-bit binary header for AIS messages.
+
+        Args:
+            message_id: Optional message ID override (1 to 63).
+            repeat_indicator: Optional repeat indicator override (0 to 3).
+            source_mmsi: Optional source MMSI override.
+
+        Returns:
+            A BitVector containing the 38-bit header payload.
+
+        Raises:
+            AisPackingException: If any header parameter is invalid.
+        """
         if message_id is None:
             message_id = self.message_id
         if repeat_indicator is None:
@@ -846,6 +910,14 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         return  # Return an empty object
 
     def decode_bits(self, bits):
+        """Unpack circle/point subarea fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded subarea payload.
+
+        Raises:
+            AisUnpackingException: If payload bit length is invalid.
+        """
         if len(bits) != SUB_AREA_SIZE:
             raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
@@ -893,6 +965,11 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         return f"AreaNoticeCirclePt: Circle centered at ({self.lon:.4f},{self.lat:.4f}) - radius {self.radius}m"
 
     def geom(self):
+        """Construct Shapely geometry representation of this circle or point.
+
+        Returns:
+            A Shapely Point or Polygon geometry.
+        """
         if self.radius <= 0.01:
             return shapely.geometry.Point(self.lon, self.lat)
 
@@ -990,6 +1067,14 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             self.decode_bits(bits)
 
     def decode_bits(self, bits):
+        """Unpack rectangle subarea fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded subarea payload.
+
+        Raises:
+            AisUnpackingException: If payload bit length is invalid.
+        """
         if len(bits) != SUB_AREA_SIZE:
             raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
@@ -1014,6 +1099,11 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         self.spare = int(bits[82:])
 
     def get_bits(self):
+        """Pack rectangle subarea fields into a BitVector payload.
+
+        Returns:
+            A BitVector containing the encoded rectangle subarea payload.
+        """
         bv_list = []
         bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.area_shape), 3))
         bv_list.append(
@@ -1142,6 +1232,14 @@ class AreaNoticeSector(AreaNoticeSubArea):
             self.decode_bits(bits)
 
     def decode_bits(self, bits):
+        """Unpack sector subarea fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded subarea payload.
+
+        Raises:
+            AisUnpackingException: If payload bit length is invalid.
+        """
         if len(bits) != SUB_AREA_SIZE:
             raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
@@ -1395,6 +1493,11 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         return polyline_to_ll((self.lon, self.lat), self.points)
 
     def geom(self):
+        """Construct Shapely LineString geometry representation of this polyline.
+
+        Returns:
+            A Shapely LineString geometry object.
+        """
         return shapely.geometry.LineString(self.get_points())
 
     @property
@@ -1518,6 +1621,11 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
         return f'AreaNoticeFreeText: "{self.text}"'
 
     def geom(self):
+        """Construct Shapely geometry representation for free text subarea.
+
+        Returns:
+            None as free text does not have explicit spatial geometry.
+        """
         # TODO(schwehr): Should this somehow have a position?
         return None
 
@@ -1671,6 +1779,14 @@ class AreaNotice(BBM):
         return "".join(strings)
 
     def add_subarea(self, area):
+        """Add a subarea shape to this Area Notice.
+
+        Args:
+            area: The subarea shape object to add.
+
+        Raises:
+            AisPackingException: If maximum subarea count (9) is exceeded.
+        """
         if not hasattr(self, "areas"):
             self.areas = []
         if len(self.areas) >= 9:
@@ -2026,6 +2142,7 @@ class NormQueue(Queue.Queue):
 
 
 def main():
+    """Command-line entry point for processing sample NMEA Area Notice messages."""
     parser = optparse.OptionParser(usage="%prog [options]")
 
     _unused_options, args = parser.parse_args()

@@ -16,7 +16,6 @@ disable =
     invalid-name,
     invalid-unary-operand-type,
     line-too-long,
-    missing-function-docstring,
     no-member,
     pointless-string-statement,
     potential-index-error,
