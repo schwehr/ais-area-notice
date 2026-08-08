@@ -892,8 +892,8 @@ class TestSensorReports:
         sr_b = env.SensorReportCurrentHorz(bits=sr.get_bits())
 
         for cur in sr_b.cur:
-            for field in cur:
-                assert cur[field] == pytest.approx(0.0)
+            for val in cur.values():
+                assert val == pytest.approx(0.0)
 
     def test_SensorReportCurrentHorz_max(self):
         """SensorReport CurrentHorz maximum"""

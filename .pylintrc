@@ -7,7 +7,6 @@ disable =
     attribute-defined-outside-init,
     bare-except,
     chained-comparison,
-    consider-using-dict-items,
     consider-using-enumerate,
     consider-using-generator,
     deprecated-module,

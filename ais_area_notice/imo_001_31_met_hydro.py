@@ -214,15 +214,15 @@ class MetHydro31(BBM):
             return False
         if len(self.__dict__) != len(other.__dict__):
             return False
-        for key in self.__dict__:
+        for key, val in self.__dict__.items():
             # TODO(schwehr): Should we skip checking the year and month?
             #   They are not really part of the message?
             if key not in other.__dict__:
                 return False
-            if isinstance(self.__dict__[key], float):
-                if not almost_equal(self.__dict__[key], other.__dict__[key]):
+            if isinstance(val, float):
+                if not almost_equal(val, other.__dict__[key]):
                     return False
-            elif self.__dict__[key] != other.__dict__[key]:
+            elif val != other.__dict__[key]:
                 return False
         return True
 
