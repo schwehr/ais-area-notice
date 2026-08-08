@@ -1540,7 +1540,7 @@ class TestEnvironment:
             def __init__(self):
                 self.calls = 0
 
-            def search(self, text):
+            def search(self, _text):
                 """Simulate regex search calls returning fake matches."""
                 self.calls += 1
                 if self.calls == 1:

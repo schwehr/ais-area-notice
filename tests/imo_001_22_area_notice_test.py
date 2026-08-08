@@ -945,7 +945,7 @@ def test_circle_pt_scale_factors_and_decoding():
     cd_tuple = area_notice.AreaNoticeCirclePt(bits=bits_tuple)
     assert cd_tuple.radius == pytest.approx(c1.radius, abs=1000)
 
-    def mock_join_short(bv_list):
+    def mock_join_short(_bv_list):
         return BitVector(size=50)
 
     with pytest.raises(area_notice.AisPackingException, match="area not 87 bits"):
@@ -1120,7 +1120,7 @@ def test_polygon_unicode_and_freetext_methods():
     ft_tup = area_notice.AreaNoticeFreeText(bits=bv_tup)
     assert ft_tup.text == "TEST"
 
-    def mock_join_short(bv_list):
+    def mock_join_short(_bv_list):
         return BitVector(size=50)
 
     with pytest.raises(

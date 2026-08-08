@@ -259,14 +259,14 @@ class SensorReport:
     def __str__(self):
         return self.__unicode__()
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(self, bits, year=None, month=None, **_kwargs):
         """Unpack common sensor report header fields from a BitVector.
 
         Args:
             bits: BitVector containing encoded sensor report bits.
             year: Optional year override. Defaults to current year.
             month: Optional month override. Defaults to current month.
-            **kwargs: Additional unused keyword arguments.
+            **_kwargs: Additional unused keyword arguments.
         """
         assert len(bits) >= SENSOR_REPORT_HDR_SIZE
         assert len(bits) <= SENSOR_REPORT_SIZE
@@ -1569,7 +1569,7 @@ class Environment(BBM):
     def __init__(
         self,
         source_mmsi=None,
-        name=None,
+        _name=None,
         nmea_strings=None,
         bits=None,
     ):
@@ -1704,7 +1704,7 @@ class Environment(BBM):
         except (AttributeError, TypeError):
             raise AisUnpackingException(f"NMEA line malformed: {strings} ")
 
-    def decode_bits(self, bits, year=None):
+    def decode_bits(self, bits, _year=None):
         """Decode the bits for a message."""
 
         # TODO(schwehr): Handle the option of without AIS hdr and message 8 hdr.

@@ -342,7 +342,7 @@ class MetHydro31(BBM):
         # TODO(schwehr): Decode the NMEA.
         raise NotImplementedError
 
-    def decode_bits(self, bits, year=None):
+    def decode_bits(self, bits, _year=None):
         """Decode the bits for a message."""
 
         # TODO: Pass these through and verify.

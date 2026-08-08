@@ -1387,8 +1387,8 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             assert lat is not None
             self.decode_bits(bits, lon, lat)
 
-    def decode_bits(self, bits, lon, lat):
-        """lon and lat are the starting point for the point."""
+    def decode_bits(self, bits, _lon=None, _lat=None):
+        """lon and lat are unused for free text subareas."""
 
         if len(bits) != SUB_AREA_SIZE:
             raise AisUnpackingException(f"bit length {len(bits)}")
