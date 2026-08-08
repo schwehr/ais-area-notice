@@ -469,9 +469,7 @@ class AreaNotice(BBM):
             bv_list.append(area.get_bits())
         bv = binary.joinBV(bv_list)
         if len(bv) > 984:
-            raise AisPackingException(
-                "Message to large:  %d > %d" % (len(bv), self.max_bits)
-            )
+            raise AisPackingException(f"Message to large:  {len(bv)} > {self.max_bits}")
         return bv
 
     def decode_nmea(self, strings):

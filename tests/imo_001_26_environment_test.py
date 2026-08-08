@@ -24,7 +24,7 @@ def random_date():
     j_day = random.randint(1, 355)
     hour = random.randint(0, 23)
     minute = random.randint(0, 59)
-    date_str = "%4d-%03dT%02d:%02d" % (year, j_day, hour, minute)
+    date_str = f"{year:4d}-{j_day:03d}T{hour:02d}:{minute:02d}"
     return datetime.datetime.strptime(date_str, "%Y-%jT%H:%M")
 
 

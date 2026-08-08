@@ -42,7 +42,7 @@ class DecodeBits:
 
     def Verify(self, offset):
         if self.pos != offset:
-            raise Error("Decode verify failed.  %d != %d" % (self.pos, offset))
+            raise Error(f"Decode verify failed.  {self.pos} != {offset}")
 
 
 class BuildBits:
@@ -74,9 +74,7 @@ class BuildBits:
 
     def Verify(self, num_bits):
         if self.bits_expected != num_bits:
-            raise Error(
-                "BuildBits did not verify: %d != %d" % (self.bits_expected, num_bits)
-            )
+            raise Error(f"BuildBits did not verify: {self.bits_expected} != {num_bits}")
 
     def GetBits(self):
         bits = binary.joinBV(self.bv_list)

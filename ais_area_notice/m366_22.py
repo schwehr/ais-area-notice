@@ -204,7 +204,7 @@ class AreaNotice:
         #               len(sub_areas_bits), SUB_AREA_BIT_SIZE,
         #               len(sub_areas_bits) / SUB_AREA_BIT_SIZE)
         if num_sub_areas > MAX_SUB_AREAS:
-            raise Error("Sub area overflow: %d %d" % (MAX_SUB_AREAS, num_sub_areas))
+            raise Error(f"Sub area overflow: {MAX_SUB_AREAS} {num_sub_areas}")
 
         for area_num in range(num_sub_areas):
             start = area_num * SUB_AREA_BIT_SIZE
@@ -238,4 +238,4 @@ class AreaNotice:
             return AreaNoticePoly(bits=bits, lon=lon, lat=lat)
         if shape == 5:
             return AreaNoticeText(bits=bits)
-        raise Error("Unsupported area shape: %d" % shape)
+        raise Error(f"Unsupported area shape: {shape}")

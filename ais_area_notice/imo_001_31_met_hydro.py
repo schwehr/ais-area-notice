@@ -198,10 +198,10 @@ class MetHydro31(BBM):
 
     def __unicode__(self, verbose=False):
         r = []
-        r.append("MetHydro31: ".format(**self.__dict__))
+        r.append("MetHydro31: ")
         if not verbose:
             return r[0]
-        r.append("\t".format(**self.__dict__))
+        r.append("\t")
         return "\n".join(r)
 
     def __str__(self, verbose=False):
@@ -308,12 +308,10 @@ class MetHydro31(BBM):
 
         bv = binary.joinBV(bv_list)
         if len(bv) != MSG_SIZE:
-            sys.stderr.write(
-                "MetHydro31 wrong size: %d  WANT: %d\n" % (len(bv), MSG_SIZE)
-            )
+            sys.stderr.write(f"MetHydro31 wrong size: {len(bv)}  WANT: {MSG_SIZE}\n")
             raise AisPackingException(
-                "message wrong size.  Need %d bits, "
-                "but can only use %d bits" % (MSG_SIZE, len(bv))
+                f"message wrong size.  Need {MSG_SIZE} bits, "
+                f"but can only use {len(bv)} bits"
             )
         return bv
 

@@ -466,9 +466,7 @@ def geom2kml(geom_dict):
     geom_coords = geom_dict["geometry"]["coordinates"]
 
     if geom_type == "Point":
-        return "<Point><coordinates>{lon},{lat},0</coordinates></Point>".format(
-            lon=geom_coords[0], lat=geom_coords[1]
-        )
+        return f"<Point><coordinates>{geom_coords[0]},{geom_coords[1]},0</coordinates></Point>"
     if geom_type == "Polygon":
         o = ["<Polygon><outerBoundaryIs><LinearRing><coordinates>"]
         for pt in geom_coords:
@@ -483,7 +481,7 @@ def geom2kml(geom_dict):
         o.append("</coordinates></LineString>")
         return "\n".join(o)
 
-    raise ValueError("Not a recognized __geo_interface__ type: %s" % (geom_type))
+    raise ValueError(f"Not a recognized __geo_interface__ type: {geom_type}")
 
 
 class AisException(Exception):
@@ -546,13 +544,13 @@ class AIVDM:
             source_mmsi = self.source_mmsi
 
         if message_id is None or message_id < 1 or message_id > 63:
-            raise AisPackingException("message_id must be valid: %s" % message_id)
+            raise AisPackingException(f"message_id must be valid: {message_id}")
         if repeat_indicator is None or repeat_indicator < 0 or repeat_indicator > 3:
             raise AisPackingException(
                 f"repeat_indicator must be valid: [{repeat_indicator}]"
             )
         if source_mmsi is None:
-            raise AisPackingException("source_mmsi must be valid: %s" % source_mmsi)
+            raise AisPackingException(f"source_mmsi must be valid: {source_mmsi}")
         assert source_mmsi is not None
 
         bv_list = []
@@ -561,7 +559,7 @@ class AIVDM:
         bv_list.append(binary.setBitVectorSize(BitVector.from_int(source_mmsi), 30))
         bv = binary.joinBV(bv_list)
         if len(bv) != 38:
-            raise AisPackingException("invalid header size %d" % len(bv))
+            raise AisPackingException(f"invalid header size {len(bv)}")
         return bv
 
     def get_aivdm(
@@ -589,7 +587,7 @@ class AIVDM:
         # if sequence_num is not None and (sequence_num <= 0 or sequence_num >= 9):
         # if sequence_num is not None and (sequence_num < 0 or sequence_num >= 9):
         if sequence_num is not None and sequence_num not in range(9):
-            raise AisPackingException("sequence_num %d" % sequence_num)
+            raise AisPackingException(f"sequence_num {sequence_num}")
         if channel not in ("A", "B"):
             raise AisPackingException("channel " + str(channel))
 
@@ -611,8 +609,8 @@ class AIVDM:
             bits_needed = 0 if 0 == bits_over else 8 - len(bits) % 8
             if bits_over != 0:
                 sys.stderr.write(
-                    "WARNING: non-byte aligned message %d - over: "
-                    "%d need: %d\n" % (len(bits), bits_over, bits_needed)
+                    f"WARNING: non-byte aligned message {len(bits)} - over: "
+                    f"{bits_over} need: {bits_needed}\n"
                 )
                 bits = bits + BitVector(size=bits_needed)
                 assert len(bits) % 8 == 0
@@ -627,14 +625,7 @@ class AIVDM:
             if not sequence_num:
                 sequence_num = ""
 
-            sentence = "!AIVDM,{tot_sentences},{sentence_num},{sequence_num},{channel},{payload},{pad}".format(
-                tot_sentences=1,
-                sentence_num=1,
-                sequence_num=sequence_num,
-                channel=channel,
-                payload=payload,
-                pad=pad,
-            )
+            sentence = f"!AIVDM,{1},{1},{sequence_num},{channel},{payload},{pad}"
             return [sentence + "*" + nmea_checksum_hex(sentence)]
 
         max_payload_char = 60
@@ -656,26 +647,12 @@ class AIVDM:
         for i in range(tot_sentences - 1):
             sentence_num = i + 1
             payload_part = payload[i * max_payload_char : (i + 1) * max_payload_char]
-            sentence = "!AIVDM,{tot_sentences},{sentence_num},{sequence_num},{channel},{payload},{pad}".format(
-                tot_sentences=tot_sentences,
-                sentence_num=sentence_num,
-                sequence_num=sequence_num,
-                channel=channel,
-                payload=payload_part,
-                pad=0,
-            )
+            sentence = f"!AIVDM,{tot_sentences},{sentence_num},{sequence_num},{channel},{payload_part},0"
             sentences.append(sentence + "*" + nmea_checksum_hex(sentence))
 
         sentence_num += 1
         payload_part = payload[(sentence_num - 1) * max_payload_char :]
-        sentence = "!AIVDM,{tot_sentences},{sentence_num},{sequence_num},{channel},{payload},{pad}".format(
-            tot_sentences=tot_sentences,
-            sentence_num=sentence_num,
-            sequence_num=sequence_num,
-            channel=channel,
-            payload=payload_part,
-            pad=pad,  # The last part gets the pad
-        )
+        sentence = f"!AIVDM,{tot_sentences},{sentence_num},{sequence_num},{channel},{payload_part},{pad}"
         sentences.append(sentence + "*" + nmea_checksum_hex(sentence))
 
         return sentences
@@ -702,16 +679,15 @@ class AIVDM:
 
             o.append("<Placemark>")
             try:
-                o.append("<name>%s</name>" % (self.name))
+                o.append(f"<name>{self.name}</name>")
             except:
                 o.append(
-                    "<name>%s</name>"
-                    % (short_notice[self.area_type].replace("_", " "),)
+                    f"<name>{short_notice[self.area_type].replace('_', ' ')}</name>"
                 )
             if with_style:
                 if isinstance(with_style, str):
                     o.append(f"<styleUrl>{with_style}</styleUrl>")
-                o.append("<styleUrl>#AreaNotice_%d</styleUrl>" % self.area_type)
+                o.append(f"<styleUrl>#AreaNotice_{self.area_type}</styleUrl>")
 
             if with_extended_data:
                 o.append("<ExtendedData>")
@@ -745,8 +721,7 @@ class AIVDM:
                     iso8601_timeformat,
                 )
                 o.append(
-                    """<TimeSpan><begin>%s</begin><end>%s</end></TimeSpan>"""
-                    % (start, end)
+                    f"""<TimeSpan><begin>{start}</begin><end>{end}</end></TimeSpan>"""
                 )
 
             o.append("</Placemark>\n")
@@ -803,30 +778,12 @@ class BBM(AIVDM):
             payload_part = payload[
                 i * self.max_payload_char : (i + 1) * self.max_payload_char
             ]
-            sentence = "!{talker}BBM,{tot_sentences},{sentence_num},{sequence_num},{channel},{msg_type},{payload},{pad}".format(
-                talker=talker,
-                tot_sentences=tot_sentences,
-                sentence_num=sentence_num,
-                sequence_num=sequence_num,
-                channel=channel,
-                msg_type=self.message_id,
-                payload=payload_part,
-                pad=0,
-            )
+            sentence = f"!{talker}BBM,{tot_sentences},{sentence_num},{sequence_num},{channel},{self.message_id},{payload_part},0"
             sentences.append(sentence + "*" + nmea_checksum_hex(sentence))
 
         sentence_num += 1
         payload_part = payload[(sentence_num - 1) * self.max_payload_char :]
-        sentence = "!{talker}BBM,{tot_sentences},{sentence_num},{sequence_num},{channel},{msg_type},{payload},{pad}".format(
-            talker=talker,
-            tot_sentences=tot_sentences,
-            sentence_num=sentence_num,
-            sequence_num=sequence_num,
-            channel=channel,
-            msg_type=self.message_id,
-            payload=payload_part,
-            pad=pad,  # The last part gets the pad
-        )
+        sentence = f"!{talker}BBM,{tot_sentences},{sentence_num},{sequence_num},{channel},{self.message_id},{payload_part},{pad}"
         sentences.append(sentence + "*" + nmea_checksum_hex(sentence))
 
         return sentences
@@ -883,7 +840,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
     def decode_bits(self, bits):
         if len(bits) != SUB_AREA_SIZE:
-            raise AisUnpackingException("bit length %d" % len(bits))
+            raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
             bits = BitVector.from_bitstring(bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
@@ -920,19 +877,13 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         bv_list.append(binary.setBitVectorSize(BitVector.from_int(0), 18))  # spare
         bv = binary.joinBV(bv_list)
         if SUB_AREA_SIZE != len(bv):
-            raise AisPackingException("area not %d bits: %d" % (SUB_AREA_SIZE, len(bv)))
+            raise AisPackingException(f"area not {SUB_AREA_SIZE} bits: {len(bv)}")
         return bv
 
     def __unicode__(self):
         if self.radius == 0.0:
-            return "AreaNoticeCirclePt: Point at ({:.4f},{:.4f})".format(
-                self.lon, self.lat
-            )
-        return "AreaNoticeCirclePt: Circle centered at (%.4f,%.4f) - radius %dm" % (
-            self.lon,
-            self.lat,
-            self.radius,
-        )
+            return f"AreaNoticeCirclePt: Point at ({self.lon:.4f},{self.lat:.4f})"
+        return f"AreaNoticeCirclePt: Circle centered at ({self.lon:.4f},{self.lat:.4f}) - radius {self.radius}m"
 
     def geom(self):
         if self.radius <= 0.01:
@@ -1031,7 +982,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
     def decode_bits(self, bits):
         if len(bits) != SUB_AREA_SIZE:
-            raise AisUnpackingException("bit length %d" % len(bits))
+            raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
             bits = BitVector.from_bitstring(bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
@@ -1077,13 +1028,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         return bv
 
     def __unicode__(self):
-        return "AreaNoticeRectangle: (%.4f,%.4f) [%d,%d]m rot: %d deg" % (
-            self.lon,
-            self.lat,
-            self.e_dim,
-            self.n_dim,
-            self.orientation_deg,
-        )
+        return f"AreaNoticeRectangle: ({self.lon:.4f},{self.lat:.4f}) [{self.e_dim},{self.n_dim}]m rot: {self.orientation_deg} deg"
 
     def geom(self):
         """Return shapely geometry object."""
@@ -1187,7 +1132,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
     def decode_bits(self, bits):
         if len(bits) != SUB_AREA_SIZE:
-            raise AisUnpackingException("bit length %d" % len(bits))
+            raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
             bits = BitVector.from_bitstring(bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
@@ -1232,13 +1177,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
         return bv
 
     def __unicode__(self):
-        return "AreaNoticeSector: (%.4f,%.4f) %d rot: %d to %d deg" % (
-            self.lon,
-            self.lat,
-            self.radius,
-            self.left_bound_deg,
-            self.right_bound_deg,
-        )
+        return f"AreaNoticeSector: ({self.lon:.4f},{self.lat:.4f}) {self.radius} rot: {self.left_bound_deg} to {self.right_bound_deg} deg"
 
     def geom(self):
         """Return shapely geometry object."""
@@ -1341,7 +1280,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         """lon and lat are the starting point for the point."""
 
         if len(bits) != SUB_AREA_SIZE:
-            raise AisUnpackingException("bit length %d" % len(bits))
+            raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
             bits = BitVector.from_bitstring(bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
@@ -1401,10 +1340,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             )
 
             if len(bv_list[-1]) != 10:
-                msg = "Angle would not fit: %d -> %d bits != 10" % (
-                    pt[0],
-                    len(bv_list[-1]),
-                )
+                msg = f"Angle would not fit: {pt[0]} -> {len(bv_list[-1])} bits != 10"
                 raise AisPackingException(msg)
 
             # TODO(schwehr): Is ceil the right thing to do?  Do we always want an area
@@ -1416,9 +1352,8 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             )
 
             if len(bv_list[-1]) != 10:
-                msg = "Distance would not fit: %d -> %d bits != 10" % (
-                    pt[1],
-                    len(bv_list[-1]),
+                msg = (
+                    f"Distance would not fit: {pt[1]} -> {len(bv_list[-1])} bits != 10"
                 )
                 raise AisPackingException(msg)
 
@@ -1432,16 +1367,12 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
         bv = binary.joinBV(bv_list)
         if len(bv) != SUB_AREA_SIZE:
-            raise AisPackingException("area not %d bits: %d" % (SUB_AREA_SIZE, len(bv)))
+            raise AisPackingException(f"area not {SUB_AREA_SIZE} bits: {len(bv)}")
 
         return start_pt_bits + bv
 
     def __unicode__(self):
-        return "AreaNoticePolyline: (%.4f,%.4f) %d points" % (
-            self.lon,
-            self.lat,
-            len(self.points),
-        )
+        return f"AreaNoticePolyline: ({self.lon:.4f},{self.lat:.4f}) {len(self.points)} points"
 
     def __str__(self):
         return self.__unicode__()
@@ -1483,11 +1414,7 @@ class AreaNoticePolygon(AreaNoticePolyline):
     area_name = "polygon"
 
     def __unicode__(self):
-        return "AreaNoticePolygon: (%.4f,%.4f) %d points" % (
-            self.lon,
-            self.lat,
-            len(self.points),
-        )
+        return f"AreaNoticePolygon: ({self.lon:.4f},{self.lat:.4f}) {len(self.points)} points"
 
     def geom(self):
         zone = lon_to_utm_zone(self.lon)
@@ -1545,7 +1472,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
     def decode_bits(self, bits):
         """Removes the "@" padding."""
         if len(bits) != SUB_AREA_SIZE:
-            raise AisUnpackingException("bit length %d" % len(bits))
+            raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
             bits = BitVector.from_bitstring(bits)
         elif isinstance(bits, list) or isinstance(bits, tuple):
@@ -1567,7 +1494,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
         bv = binary.joinBV(bv_list)
         if SUB_AREA_SIZE != len(bv):
             raise AisPackingException(
-                "text subarea not " + str(SUB_AREA_SIZE) + " bits: %d" % len(bv)
+                "text subarea not " + str(SUB_AREA_SIZE) + f" bits: {len(bv)}"
             )
         assert SUB_AREA_SIZE == len(bv)
         return bv
@@ -1645,16 +1572,7 @@ class AreaNotice(BBM):
         self.source_mmsi = source_mmsi
 
     def __unicode__(self, verbose=False):
-        result = (
-            "AreaNotice: type=%d  start=%s  duration=%d m  link_id=%d  sub-areas: %d"
-            % (
-                self.area_type,
-                str(self.when),
-                self.duration,
-                self.link_id,
-                len(self.areas),
-            )
-        )
+        result = f"AreaNotice: type={self.area_type}  start={self.when}  duration={self.duration} m  link_id={self.link_id}  sub-areas: {len(self.areas)}"
         if not verbose:
             return result
         if verbose:
@@ -1784,7 +1702,7 @@ class AreaNotice(BBM):
         bv = binary.joinBV(bv_list)
         if len(bv) > 953:
             raise AisPackingException(
-                "message to large.  Need %d bits, but can only use 953" % len(bv)
+                f"message to large.  Need {len(bv)} bits, but can only use 953"
             )
         return bv
 
@@ -1932,7 +1850,7 @@ class AreaNotice(BBM):
             # TODO(schwehr): Can free text come before the geometry?
             return AreaNoticeFreeText(bits=bits)
 
-        sys.stderr.write("Warning: unknown shape type %d" % shape)
+        sys.stderr.write(f"Warning: unknown shape type {shape}")
         return None  # bad bits?
 
 
@@ -2122,9 +2040,11 @@ def main():
                     msg = norm_queue.get(False)
                     if msg["body"][0] != "8":
                         continue
-                    nmea = "!AIVDM,1,1,,A,{body},{fill_bits}*{{checksum}},{station},{time_stamp}".format(
-                        **msg
-                    )
+                    body = msg["body"]
+                    fill_bits = msg["fill_bits"]
+                    station = msg["station"]
+                    time_stamp = msg["time_stamp"]
+                    nmea = f"!AIVDM,1,1,,A,{body},{fill_bits}*{{checksum}},{station},{time_stamp}"
                     checksum = nmea_checksum_hex(nmea)
                     nmea = nmea.format(checksum=checksum)
                     area_notice = AreaNotice(nmea_strings=(nmea,))

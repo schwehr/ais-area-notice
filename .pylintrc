@@ -10,7 +10,6 @@ disable =
     consider-merging-isinstance,
     consider-using-dict-items,
     consider-using-enumerate,
-    consider-using-f-string,
     consider-using-generator,
     consider-using-with,
     deprecated-module,

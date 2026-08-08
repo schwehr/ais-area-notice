@@ -43,7 +43,7 @@ def assert_almost_equal_geojson(g1, g2, delta=1e-4, verbose=False):
 
     if not isinstance(g1, dict) or not isinstance(g2, dict):
         if verbose:
-            sys.stderr.write("cp1: %s\n" % type(g1))
+            sys.stderr.write(f"cp1: {type(g1)}\n")
         if isinstance(g1, (float, int)):
             assert g1 == pytest.approx(g2, abs=delta)
         else:

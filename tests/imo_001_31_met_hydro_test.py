@@ -19,7 +19,7 @@ FUZZ_COUNT = 30
 
 def random_msg():
     date = random_date()
-    sys.stderr.write("date: %s\n" % date)
+    sys.stderr.write(f"date: {date}\n")
     return met_hydro.MetHydro31(
         source_mmsi=random.randint(100000, 999999999),
         lon=random.randint(-180000, 180000) / 1000.0,
