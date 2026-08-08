@@ -844,7 +844,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
             raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
             bits = BitVector.from_bitstring(bits)
-        elif isinstance(bits, list) or isinstance(bits, tuple):
+        elif isinstance(bits, (list, tuple)):
             bits = BitVector(bitlist=bits)
 
         self.area_shape = int(bits[:3])
@@ -986,7 +986,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
             bits = BitVector.from_bitstring(bits)
-        elif isinstance(bits, list) or isinstance(bits, tuple):
+        elif isinstance(bits, (list, tuple)):
             bits = BitVector(bitlist=bits)
 
         self.area_shape = int(bits[:3])
@@ -1136,7 +1136,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
             raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
             bits = BitVector.from_bitstring(bits)
-        elif isinstance(bits, list) or isinstance(bits, tuple):
+        elif isinstance(bits, (list, tuple)):
             bits = BitVector(bitlist=bits)
 
         self.area_shape = int(bits[:3])
@@ -1284,7 +1284,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
             bits = BitVector.from_bitstring(bits)
-        elif isinstance(bits, list) or isinstance(bits, tuple):
+        elif isinstance(bits, (list, tuple)):
             bits = BitVector(bitlist=bits)
 
         self.area_shape = int(bits[:3])
@@ -1476,7 +1476,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
             raise AisUnpackingException(f"bit length {len(bits)}")
         if isinstance(bits, str):
             bits = BitVector.from_bitstring(bits)
-        elif isinstance(bits, list) or isinstance(bits, tuple):
+        elif isinstance(bits, (list, tuple)):
             bits = BitVector(bitlist=bits)
 
         area_shape = int(bits[:3])
