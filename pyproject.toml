@@ -40,8 +40,11 @@ Homepage = "https://github.com/schwehr/ais-area-notice"
 
 [dependency-groups]
 dev = [
+    "mypy>=1.15.0",
     "pytest>=8.0.0",
     "pytest-cov>=5.0.0",
+    "types-lxml",
+    "types-shapely",
 ]
 
 [[tool.uv.index]]
@@ -70,3 +73,7 @@ invalid-method-override = "ignore"
 unresolved-attribute = "ignore"
 unresolved-reference = "ignore"
 unsupported-operator = "ignore"
+
+[[tool.mypy.overrides]]
+module = ["geojson", "geojson.*"]
+ignore_missing_imports = true
