@@ -142,8 +142,6 @@ class AreaNoticeCircle(AreaNoticeSubArea):
             self.decode_bits(bits)
         # TODO(schwehr): Warn for else.
 
-        return  # Return an empty object
-
     def decode_bits(self, bits):
         assert len(bits) == SUB_AREA_SIZE
         db = DecodeBits(bits)
