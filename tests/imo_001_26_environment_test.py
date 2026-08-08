@@ -1622,7 +1622,7 @@ class TestEnvironment:
     def test_environment_init_nmea_strings_and_verbose_unicode_and_eq_diff_reports_and_html(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Test Environment initialization, unicode formatting, and comparison with different report types."""
+        """Test Environment init, unicode formatting, and comparison with different reports."""
         monkeypatch.setattr(env.Environment, "decode_nmea", lambda self, strings: None)
         e = env.Environment(
             nmea_strings=["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"]

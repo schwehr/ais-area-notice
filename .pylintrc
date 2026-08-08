@@ -12,7 +12,6 @@ disable =
     global-statement,
     inconsistent-return-statements,
     invalid-unary-operand-type,
-    line-too-long,
     no-member,
     pointless-string-statement,
     potential-index-error,
