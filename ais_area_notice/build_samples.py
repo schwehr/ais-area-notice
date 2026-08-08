@@ -16,7 +16,7 @@ def env_dump(e, description):
         description: A string description of the test case.
     """
     print("\n#", description)
-    print(e.__str__(verbose=True))
+    print(e.__unicode__(verbose=True))
     print("bit_len:", len(e.get_bits()))
     print("bit_str:", e.get_bits())
     for line in e.get_aivdm(byte_align=True):

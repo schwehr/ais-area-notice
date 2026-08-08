@@ -160,7 +160,7 @@ def test_unicode_and_str():
     assert mh.__unicode__() == "MetHydro31: "
     assert "MetHydro31: " in mh.__unicode__(verbose=True)
     assert str(mh) == "MetHydro31: "
-    assert "MetHydro31: " in mh.__str__(verbose=True)
+    assert "MetHydro31: " in mh.__unicode__(verbose=True)
 
 
 def test_eq_branches():

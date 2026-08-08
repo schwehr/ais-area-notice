@@ -1722,7 +1722,7 @@ class AreaNotice(BBM):
             l.append(E.LI(str(area)))
         if efactory:
             return
-        return lxml.html.tostring(E.DIV(E.P(self.__str__()), l), encoding="unicode")
+        return lxml.html.tostring(E.DIV(E.P(str(self)), l), encoding="unicode")
 
     @property
     def __geo_interface__(self):
