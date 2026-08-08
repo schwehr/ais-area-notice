@@ -322,11 +322,11 @@ class SensorReportLocation(SensorReport):
         self.owner = owner
         self.timeout = timeout
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.lon = binary.signedIntFromBV(bits[27:55]) / 600000.0
         self.lat = binary.signedIntFromBV(bits[55:82]) / 600000.0
         self.alt = int(bits[82:93]) / 10.0
@@ -394,11 +394,11 @@ class SensorReportId(SensorReport):
         )
         self.id_str = id_str.ljust(14, "@")
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.id_str = ais_string.Decode(bits[27:-1])
         # 1 spare bit
 
@@ -488,11 +488,11 @@ class SensorReportWind(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.speed = int(bits[27:34])
         self.gust = int(bits[34:41])
         self.dir = int(bits[41:50])
@@ -630,13 +630,13 @@ class SensorReportWaterLevel(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
 
         assert self.report_type == int(bits[:4])
 
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
 
         self.wl_type = int(bits[27:28])
         self.wl = binary.signedIntFromBV(bits[28:44]) / 100.0
@@ -759,11 +759,11 @@ class SensorReportCurrent2d(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.cur = []
         for i in range(3):
             base = SENSOR_REPORT_HDR_SIZE + i * 26
@@ -858,11 +858,11 @@ class SensorReportCurrent3d(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.cur = []
         for i in range(2):
             base = SENSOR_REPORT_HDR_SIZE + i * 33
@@ -970,11 +970,11 @@ class SensorReportCurrentHorz(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.cur = []
         for i in range(2):
             base = SENSOR_REPORT_HDR_SIZE + i * 42
@@ -1089,11 +1089,11 @@ class SensorReportSeaState(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
 
         self.swell_height = int(bits[27:35]) / 10.0
         self.swell_period = int(bits[35:41])
@@ -1220,11 +1220,11 @@ class SensorReportSalinity(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
 
         self.temp = int(bits[27:37]) / 10.0 - 10
         self.cond = int(bits[37:47]) / 100.0
@@ -1337,11 +1337,11 @@ class SensorReportWeather(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits, year=None, month=None):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits, year=year, month=month)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
 
         self.air_temp = binary.signedIntFromBV(bits[27:38]) / 10.0
         self.air_temp_data_descr = int(bits[38:41])
@@ -1469,11 +1469,11 @@ class SensorReportAirGap(SensorReport):
         )
         # TODO(schwehr): No sensor data description like other reports?
 
-    def decode_bits(self, bits, year=None, month=None):
+    def decode_bits(self, bits, year=None, month=None, **kwargs):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
-        SensorReport.decode_bits(self, bits, year=year, month=month)
+        SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
 
         # TODO(schwehr): Spec of 0.1m steps for draft and gap?
         self.draft = int(bits[27:40]) / 100.0

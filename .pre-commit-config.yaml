@@ -28,6 +28,22 @@ repos:
           - types-lxml
           - types-shapely
 
+  - repo: https://github.com/facebook/pyrefly-pre-commit
+    rev: 1.1.1
+    hooks:
+      - id: pyrefly-check
+        pass_filenames: false
+        additional_dependencies:
+          - bitvector-modern
+          - geojson
+          - lxml
+          - pyproj
+          - pytest
+          - pytest-benchmark
+          - shapely
+          - types-lxml
+          - types-shapely
+
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.0.0
     hooks:
