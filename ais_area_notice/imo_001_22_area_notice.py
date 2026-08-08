@@ -669,7 +669,8 @@ class AIVDM:
         o = []
         if full:
             o.append(kml_head)
-            o.append(open("areanotice_styles.kml").read())
+            with open("areanotice_styles.kml", encoding="utf-8") as f:
+                o.append(f.read())
         html = self.html()
         for area in self.areas:
             geo_i = area.__geo_interface__
@@ -2014,48 +2015,52 @@ def main():
     _unused_options, args = parser.parse_args()
     norm_queue = NormQueue()
 
-    kmlfile = open("out.kml", "w")
-    kmlfile.write(kml_head)
-    kmlfile.write(open("areanotice_styles.kml").read())
+    with open("out.kml", "w", encoding="utf-8") as kmlfile:
+        kmlfile.write(kml_head)
+        with open("areanotice_styles.kml", encoding="utf-8") as f:
+            kmlfile.write(f.read())
 
-    if 0 == len(args):
-        assert False
-    if "!AIVDM" in args[0]:
-        an = AreaNotice(nmea_strings=args)
-        print("Area Notice:", str(an))
-    else:
-        # Assume these are files
+        if 0 == len(args):
+            assert False
+        if "!AIVDM" in args[0]:
+            an = AreaNotice(nmea_strings=args)
+            print("Area Notice:", str(an))
+        else:
+            # Assume these are files
 
-        for filename in args:
-            for line in open(filename):
-                match = ais_nmea_regex.search(line)
-                if match is None:
-                    if "AIVDM" in line:
-                        logging.error("BAD_MATCH: %s", line)
-                    continue
-                match_dict = match.groupdict()
+            for filename in args:
+                with open(filename, encoding="utf-8") as f:
+                    for line in f:
+                        match = ais_nmea_regex.search(line)
+                        if match is None:
+                            if "AIVDM" in line:
+                                logging.error("BAD_MATCH: %s", line)
+                            continue
+                        match_dict = match.groupdict()
 
-                norm_queue.put(match_dict)
-                if norm_queue.qsize() > 0:
-                    msg = norm_queue.get(False)
-                    if msg["body"][0] != "8":
-                        continue
-                    body = msg["body"]
-                    fill_bits = msg["fill_bits"]
-                    station = msg["station"]
-                    time_stamp = msg["time_stamp"]
-                    nmea = f"!AIVDM,1,1,,A,{body},{fill_bits}*{{checksum}},{station},{time_stamp}"
-                    checksum = nmea_checksum_hex(nmea)
-                    nmea = nmea.format(checksum=checksum)
-                    area_notice = AreaNotice(nmea_strings=(nmea,))
-                    print("AreaNotice:", area_notice)
-                    kmlfile.write(
-                        area_notice.kml(
-                            with_style=True, with_time=True, with_extended_data=True
-                        )
-                    )
+                        norm_queue.put(match_dict)
+                        if norm_queue.qsize() > 0:
+                            msg = norm_queue.get(False)
+                            if msg["body"][0] != "8":
+                                continue
+                            body = msg["body"]
+                            fill_bits = msg["fill_bits"]
+                            station = msg["station"]
+                            time_stamp = msg["time_stamp"]
+                            nmea = f"!AIVDM,1,1,,A,{body},{fill_bits}*{{checksum}},{station},{time_stamp}"
+                            checksum = nmea_checksum_hex(nmea)
+                            nmea = nmea.format(checksum=checksum)
+                            area_notice = AreaNotice(nmea_strings=(nmea,))
+                            print("AreaNotice:", area_notice)
+                            kmlfile.write(
+                                area_notice.kml(
+                                    with_style=True,
+                                    with_time=True,
+                                    with_extended_data=True,
+                                )
+                            )
 
-    kmlfile.write(kml_tail)
+        kmlfile.write(kml_tail)
 
 
 if __name__ == "__main__":

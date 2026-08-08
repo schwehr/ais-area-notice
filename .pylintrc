@@ -11,7 +11,6 @@ disable =
     consider-using-dict-items,
     consider-using-enumerate,
     consider-using-generator,
-    consider-using-with,
     deprecated-module,
     duplicate-code,
     expression-not-assigned,
