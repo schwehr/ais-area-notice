@@ -405,9 +405,7 @@ class TestBitDecoding:
         pt1.add_subarea(area_notice.AreaNoticeCirclePt(-69.8, 42.0, radius=0))
         orig = geojson.loads(geojson.dumps(pt1))
 
-        decoded_pt = area_notice.AreaNotice(
-            nmea_strings=[line for line in pt1.get_aivdm()]
-        )
+        decoded_pt = area_notice.AreaNotice(nmea_strings=list(pt1.get_aivdm()))
 
         decoded = geojson.loads(geojson.dumps(decoded_pt))
 
@@ -429,7 +427,7 @@ class TestBitDecoding:
         circle1.add_subarea(area_notice.AreaNoticeCirclePt(-69.8, 42.1, radius=4260))
 
         orig = geojson.loads(geojson.dumps(circle1))
-        nmea_strings = [line for line in circle1.get_aivdm()]
+        nmea_strings = list(circle1.get_aivdm())
         decoded = geojson.loads(
             geojson.dumps(area_notice.AreaNotice(nmea_strings=nmea_strings))
         )
@@ -449,9 +447,7 @@ class TestBitDecoding:
 
         orig = geojson.loads(geojson.dumps(rect))
         decoded = geojson.loads(
-            geojson.dumps(
-                area_notice.AreaNotice(nmea_strings=[line for line in rect.get_aivdm()])
-            )
+            geojson.dumps(area_notice.AreaNotice(nmea_strings=list(rect.get_aivdm())))
         )
         assert_almost_equal_geojson(orig, decoded)
 
@@ -467,9 +463,7 @@ class TestBitDecoding:
         sec1.add_subarea(area_notice.AreaNoticeSector(-69.8, 42.3, 4000, 10, 50))
         orig = geojson.loads(geojson.dumps(sec1))
         decoded = geojson.loads(
-            geojson.dumps(
-                area_notice.AreaNotice(nmea_strings=[line for line in sec1.get_aivdm()])
-            )
+            geojson.dumps(area_notice.AreaNotice(nmea_strings=list(sec1.get_aivdm())))
         )
         assert_almost_equal_geojson(orig, decoded)
 
@@ -484,9 +478,7 @@ class TestBitDecoding:
         )
         line1.add_subarea(area_notice.AreaNoticePolyline([(10, 2400)], -69.8, 42.4))
         orig = geojson.loads(geojson.dumps(line1))
-        line2 = area_notice.AreaNotice(
-            nmea_strings=[line for line in line1.get_aivdm()]
-        )
+        line2 = area_notice.AreaNotice(nmea_strings=list(line1.get_aivdm()))
         decoded = geojson.loads(geojson.dumps(line2))
         assert_almost_equal_geojson(orig, decoded)
 
@@ -503,9 +495,7 @@ class TestBitDecoding:
             area_notice.AreaNoticePolygon([(10, 1400), (90, 1950)], -69.8, 42.5)
         )
         orig = geojson.loads(geojson.dumps(poly1))
-        poly2 = area_notice.AreaNotice(
-            nmea_strings=[line for line in poly1.get_aivdm()]
-        )
+        poly2 = area_notice.AreaNotice(nmea_strings=list(poly1.get_aivdm()))
         decoded = geojson.loads(geojson.dumps(poly2))
         assert_almost_equal_geojson(orig, decoded)
 
@@ -522,9 +512,7 @@ class TestBitDecoding:
         text1.add_subarea(area_notice.AreaNoticeFreeText(text="Explanation"))
 
         orig = geojson.loads(geojson.dumps(text1))
-        text2 = area_notice.AreaNotice(
-            nmea_strings=[line for line in text1.get_aivdm()]
-        )
+        text2 = area_notice.AreaNotice(nmea_strings=list(text1.get_aivdm()))
         decoded = geojson.loads(geojson.dumps(text2))
 
         assert_almost_equal_geojson(orig, decoded)
@@ -558,7 +546,7 @@ class TestBitDecoding2:
         notice.add_subarea(area_notice.AreaNoticeFreeText(text="Some Text"))
 
         orig = geojson.loads(geojson.dumps(notice))
-        nmea_strings = [line for line in notice.get_aivdm()]
+        nmea_strings = list(notice.get_aivdm())
         decoded = geojson.loads(
             geojson.dumps(area_notice.AreaNotice(nmea_strings=nmea_strings))
         )
@@ -590,11 +578,7 @@ class TestBitDecoding2:
 
         orig = geojson.loads(geojson.dumps(notice))
         decoded = geojson.loads(
-            geojson.dumps(
-                area_notice.AreaNotice(
-                    nmea_strings=[line for line in notice.get_aivdm()]
-                )
-            )
+            geojson.dumps(area_notice.AreaNotice(nmea_strings=list(notice.get_aivdm())))
         )
         assert_almost_equal_geojson(orig, decoded)
 
@@ -644,11 +628,7 @@ class TestBitDecoding2:
 
         orig = geojson.loads(geojson.dumps(notice))
         decoded = geojson.loads(
-            geojson.dumps(
-                area_notice.AreaNotice(
-                    nmea_strings=[line for line in notice.get_aivdm()]
-                )
-            )
+            geojson.dumps(area_notice.AreaNotice(nmea_strings=list(notice.get_aivdm())))
         )
         assert_almost_equal_geojson(orig, decoded)
 
