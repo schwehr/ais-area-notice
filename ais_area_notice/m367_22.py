@@ -39,6 +39,14 @@ class DecodeBits:
 
     # TODO(schwehr): This should be GetUInt.
     def GetInt(self, length):
+        """Read an unsigned integer of specified bit length from the bitstream.
+
+        Args:
+            length: Number of bits to read.
+
+        Returns:
+            The unsigned integer value decoded from the bit slice.
+        """
         end = self.pos + length
         value = int(self.bits[self.pos : end])
         self.pos += length
@@ -46,12 +54,29 @@ class DecodeBits:
 
     # TODO(schwehr): This should be GetInt.
     def GetSignedInt(self, length):
+        """Read a signed integer of specified bit length from the bitstream.
+
+        Args:
+            length: Number of bits to read.
+
+        Returns:
+            The signed integer value decoded from the bit slice.
+        """
         end = self.pos + length
         value = binary.signedIntFromBV(self.bits[self.pos : end])
         self.pos += length
         return value
 
     def GetText(self, length, strip=True):
+        """Read 6-bit AIS character text of specified bit length from the bitstream.
+
+        Args:
+            length: Number of bits to read (must be a multiple of 6).
+            strip: Whether to strip padding ('@') characters from the decoded text.
+
+        Returns:
+            The decoded string.
+        """
         assert length % 6 == 0
         end = self.pos + length
         text = ais_string.Decode(self.bits[self.pos : end])
@@ -62,6 +87,11 @@ class DecodeBits:
         return text
 
     def Verify(self, offset):
+        """Verify that current bit read position matches the expected offset.
+
+        Args:
+            offset: Expected bit position offset.
+        """
         if self.pos != offset:
             logging.info("DecodeBits FAILING!  expect: %s got: %s", offset, self.pos)
         assert self.pos == offset
@@ -89,6 +119,12 @@ class BuildBits:
         self.bv_list.append(bits)
 
     def AddText(self, val, num_bits):
+        """Add 6-bit AIS encoded text of specified bit length to the bitstream.
+
+        Args:
+            val: String text to encode.
+            num_bits: Total bit length for the text (must be a multiple of 6).
+        """
         num_char = num_bits // 6
         assert num_bits % 6 == 0
         text = val.ljust(num_char, "@")
@@ -97,9 +133,19 @@ class BuildBits:
         self.bv_list.append(bits)
 
     def Verify(self, num_bits):
+        """Verify that total packed bits match expected bit count.
+
+        Args:
+            num_bits: Expected total bit count.
+        """
         assert self.bits_expected == num_bits
 
     def GetBits(self):
+        """Concatenate all bit vectors in the list into a single BitVector.
+
+        Returns:
+            The combined BitVector.
+        """
         bits = binary.joinBV(self.bv_list)
         assert len(bits) == self.bits_expected
         return bits
@@ -126,6 +172,14 @@ class AreaNoticeSubArea:
         return {1: 0, 10: 1, 100: 2, 1000: 3}[scale_factor]
 
     def decodeScaleFactor(self, db):
+        """Decode 2-bit raw scale factor from bitstream reader into multiplier.
+
+        Args:
+            db: DecodeBits bitstream streamer object.
+
+        Returns:
+            The decoded scale factor multiplier (1, 10, 100, or 1000).
+        """
         scale_factor_raw = db.GetInt(2)
         return (1, 10, 100, 1000)[scale_factor_raw]
 
@@ -152,6 +206,11 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         # TODO(schwehr): Warn for else.
 
     def decode_bits(self, bits):
+        """Unpack circle subarea shape fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded subarea bits.
+        """
         assert len(bits) == SUB_AREA_SIZE
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
@@ -165,6 +224,11 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         db.Verify(SUB_AREA_SIZE)
 
     def get_bits(self):
+        """Pack circle subarea shape fields into a BitVector.
+
+        Returns:
+            A BitVector containing the encoded circle subarea payload.
+        """
         bb = BuildBits()
         bb.AddUInt(SHAPES["CIRCLE"], 3)  # Area shape
         if "scale_factor" not in self.__dict__:
@@ -216,6 +280,11 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             self.decode_bits(bits)
 
     def decode_bits(self, bits):
+        """Unpack rectangle subarea shape fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded subarea bits.
+        """
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
         self.scale_factor = self.decodeScaleFactor(db)
@@ -231,6 +300,11 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         db.Verify(SUB_AREA_SIZE)
 
     def get_bits(self):
+        """Pack rectangle subarea shape fields into a BitVector.
+
+        Returns:
+            A BitVector containing the encoded rectangle subarea payload.
+        """
         bb = BuildBits()
         bb.AddUInt(SHAPES["RECTANGLE"], 3)
         if "scale_factor" not in self.__dict__:
@@ -279,6 +353,11 @@ class AreaNoticeSector(AreaNoticeSubArea):
             self.decode_bits(bits)
 
     def decode_bits(self, bits):
+        """Unpack sector subarea shape fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded subarea bits.
+        """
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
         self.scale_factor = self.decodeScaleFactor(db)
@@ -294,6 +373,11 @@ class AreaNoticeSector(AreaNoticeSubArea):
         db.Verify(SUB_AREA_SIZE)
 
     def get_bits(self):
+        """Pack sector subarea shape fields into a BitVector.
+
+        Returns:
+            A BitVector containing the encoded sector subarea payload.
+        """
         bb = BuildBits()
         bb.AddUInt(SHAPES["SECTOR"], 3)
         if "scale_factor" not in self.__dict__:
@@ -340,6 +424,11 @@ class AreaNoticePoly(AreaNoticeSubArea):
             self.decode_bits(bits)
 
     def decode_bits(self, bits):
+        """Unpack polyline/polygon subarea shape fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded subarea bits.
+        """
         assert len(bits) == SUB_AREA_SIZE
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
@@ -364,6 +453,11 @@ class AreaNoticePoly(AreaNoticeSubArea):
         db.Verify(SUB_AREA_SIZE)
 
     def get_bits(self):
+        """Pack polyline/polygon subarea shape fields into a BitVector.
+
+        Returns:
+            A BitVector containing the encoded polyline/polygon subarea payload.
+        """
         bb = BuildBits()
         assert self.area_shape in (SHAPES["POLYLINE"], SHAPES["POLYGON"])
         bb.AddUInt(self.area_shape, 3)
@@ -393,6 +487,11 @@ class AreaNoticeText(AreaNoticeSubArea):
             self.decode_bits(bits)
 
     def decode_bits(self, bits):
+        """Unpack free text subarea shape fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded subarea bits.
+        """
         db = DecodeBits(bits)
         self.area_shape = db.GetInt(3)
         self.text = db.GetText(90, strip=True)
@@ -400,6 +499,11 @@ class AreaNoticeText(AreaNoticeSubArea):
         db.Verify(SUB_AREA_SIZE)
 
     def get_bits(self):
+        """Pack free text subarea shape fields into a BitVector.
+
+        Returns:
+            A BitVector containing the encoded free text subarea payload.
+        """
         bb = BuildBits()
         bb.AddUInt(SHAPES["TEXT"], 3)
         bb.AddText(self.text, 90)
@@ -444,6 +548,14 @@ class AreaNotice(BBM):
             self.source_mmsi = self.mmsi  # TODO(schwehr): Make all just mmsi.
 
     def add_subarea(self, area):
+        """Add a subarea shape to the Area Notice message.
+
+        Args:
+            area: Subarea shape object to append.
+
+        Raises:
+            AisPackingException: If maximum allowed subareas count is exceeded.
+        """
         if not hasattr(self, "areas"):
             self.areas = []
         if len(self.areas) > self.max_areas:
@@ -453,6 +565,18 @@ class AreaNotice(BBM):
         self.areas.append(area)
 
     def get_bits(self, include_bin_hdr=False, include_dac_fi=True):
+        """Pack Area Notice message fields and subareas into a BitVector.
+
+        Args:
+            include_bin_hdr: Whether to include standard AIS binary header.
+            include_dac_fi: Whether to include DAC and FI fields.
+
+        Returns:
+            A BitVector containing the encoded binary payload.
+
+        Raises:
+            AisPackingException: If message size exceeds maximum bit limit.
+        """
         bv_list = []
         if include_bin_hdr:
             # Messages ID
@@ -488,6 +612,14 @@ class AreaNotice(BBM):
         return bv
 
     def decode_nmea(self, strings):
+        """Decode NMEA 0183 AIVDM sentence strings into this Area Notice message.
+
+        Args:
+            strings: List of NMEA sentence strings.
+
+        Raises:
+            AisUnpackingException: If sentence parsing or checksum verification fails.
+        """
         try:
             msgs = []
             for msg in strings:
@@ -516,6 +648,11 @@ class AreaNotice(BBM):
         self.decode_bits(bits)
 
     def decode_bits(self, bits):
+        """Unpack Area Notice fields from a BitVector payload.
+
+        Args:
+            bits: BitVector containing the encoded binary payload.
+        """
         db = DecodeBits(bits)
         self.message_id = db.GetInt(6)
         self.repeat_indicator = db.GetInt(2)
@@ -552,6 +689,17 @@ class AreaNotice(BBM):
             self.add_subarea(subarea)
 
     def subarea_factory(self, bits):
+        """Instantiate appropriate subarea shape object from raw bit slice.
+
+        Args:
+            bits: BitVector containing encoded subarea bits.
+
+        Returns:
+            An AreaNoticeSubArea subclass instance.
+
+        Raises:
+            AisPackingException: If polyline/polygon sequencing requirements fail.
+        """
         shape = int(bits[:3])
         if shape == 0:
             return AreaNoticeCircle(bits=bits)

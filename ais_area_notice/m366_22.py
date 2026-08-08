@@ -38,6 +38,14 @@ class AreaNoticeSubArea:
     """Base class for subarea shapes in USCG 8:366:22 Area Notices."""
 
     def getScaleFactor(self, value):
+        """Determine scale factor for a numeric value.
+
+        Args:
+            value: Distance or length value to scale.
+
+        Returns:
+            The scaling factor multiplier (1, 10, 100, or 1000).
+        """
         if value / 100.0 >= 4095:
             return 1000
         if value / 10.0 > 4095:
@@ -47,9 +55,25 @@ class AreaNoticeSubArea:
         return 1
 
     def getScaleFactorRaw(self, scale_factor):
+        """Map scale factor multiplier to 2-bit raw integer encoding.
+
+        Args:
+            scale_factor: Integer scale factor (1, 10, 100, or 1000).
+
+        Returns:
+            The 2-bit integer encoding (0, 1, 2, or 3).
+        """
         return {1: 0, 10: 1, 100: 2, 1000: 3}[scale_factor]
 
     def decodeScaleFactor(self, db):
+        """Decode 2-bit raw scale factor from bitstream reader into multiplier.
+
+        Args:
+            db: DecodeBits bitstream streamer object.
+
+        Returns:
+            The decoded scale factor multiplier (1, 10, 100, or 1000).
+        """
         scale_factor_raw = db.GetInt(2)
         return (1, 10, 100, 1000)[scale_factor_raw]
 
@@ -77,6 +101,11 @@ class AreaNoticeCircle(AreaNoticeSubArea):
             raise Error("Must specify bits or parameters.")
 
     def DecodeBits(self, bits):
+        """Unpack circle subarea shape fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded subarea bits.
+        """
         logging.info("areanotice CIRCLE - decode bits %d %s", len(bits), bits)
         db = an_util.DecodeBits(bits)
         self.area_shape = db.GetInt(3)
@@ -91,6 +120,11 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         db.Verify(SUB_AREA_BIT_SIZE)
 
     def get_bits(self):
+        """Pack circle subarea shape fields into a BitVector.
+
+        Returns:
+            A BitVector containing the encoded circle subarea payload.
+        """
         bb = an_util.BuildBits()
         bb.AddUInt(SHAPES["CIRCLE"], 3)
         if "scale_factor" not in self.__dict__:
@@ -144,6 +178,14 @@ class AreaNotice:
             raise Error("Must specify nmea_strings or area_type.")
 
     def add_subarea(self, area):
+        """Add a subarea shape to the Area Notice message.
+
+        Args:
+            area: Subarea shape object to append.
+
+        Raises:
+            AisPackingException: If maximum allowed subareas count is exceeded.
+        """
         if not hasattr(self, "areas"):
             self.areas = []
         if len(self.areas) > self.max_areas:
@@ -153,6 +195,14 @@ class AreaNotice:
         self.areas.append(area)
 
     def decode_nmea(self, strings):
+        """Decode NMEA 0183 AIVDM sentence strings into this Area Notice message.
+
+        Args:
+            strings: List of NMEA sentence strings.
+
+        Raises:
+            AisUnpackingException: If sentence parsing or checksum verification fails.
+        """
         try:
             msgs = []
             for msg in strings:
@@ -181,6 +231,14 @@ class AreaNotice:
         self.DecodeBits(bits)
 
     def DecodeBits(self, bits):
+        """Unpack Area Notice fields from a BitVector payload.
+
+        Args:
+            bits: BitVector containing the encoded binary payload.
+
+        Raises:
+            Error: If message headers or subarea counts are invalid.
+        """
         db = an_util.DecodeBits(bits)
         self.message_id = db.GetInt(6)
         self.repeat_indicator = db.GetInt(2)
@@ -221,6 +279,18 @@ class AreaNotice:
             self.add_subarea(subarea)
 
     def SubareaFactory(self, bits):
+        """Instantiate appropriate subarea shape object from raw bit slice.
+
+        Args:
+            bits: BitVector containing encoded subarea bits.
+
+        Returns:
+            An AreaNoticeSubArea subclass instance.
+
+        Raises:
+            AisPackingException: If polyline/polygon sequencing requirements fail.
+            Error: If shape type is unsupported.
+        """
         shape = int(bits[:3])
         if shape == 0:
             return AreaNoticeCircle(bits=bits)

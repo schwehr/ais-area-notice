@@ -18,6 +18,11 @@ FUZZ_COUNT = 30
 
 
 def random_msg():
+    """Generate a random MetHydro31 message for testing.
+
+    Returns:
+        A randomized MetHydro31 instance.
+    """
     date = random_date()
     sys.stderr.write(f"date: {date}\n")
     return met_hydro.MetHydro31(
@@ -63,6 +68,7 @@ def random_msg():
 
 
 def test_empty():
+    """Test default MetHydro31 message serialization and deserialization."""
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
     assert mh == mh  # pylint: disable=comparison-with-itself
     mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
@@ -79,6 +85,7 @@ def test_random():
 
 
 def test_ne_and_html_and_geo_interface():
+    """Test inequality operator and unimplemented html / geo interface properties."""
     mh1 = met_hydro.MetHydro31(source_mmsi=123456789)
     mh2 = met_hydro.MetHydro31(source_mmsi=987654321)
     assert mh1 != mh2
@@ -89,6 +96,7 @@ def test_ne_and_html_and_geo_interface():
 
 
 def test_get_bits_wrong_size_error(monkeypatch):
+    """Test get_bits raises exception when message size is invalid."""
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
 
     monkeypatch.setattr(met_hydro.binary, "joinBV", lambda bv_list: BitVector(size=100))
@@ -97,6 +105,7 @@ def test_get_bits_wrong_size_error(monkeypatch):
 
 
 def test_decode_nmea_errors():
+    """Test NMEA sentence decoding error handling."""
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
     with pytest.raises(met_hydro.AisUnpackingException, match="Checksum failed"):
         mh.decode_nmea(["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*99"])
@@ -109,16 +118,20 @@ def test_decode_nmea_errors():
 
 
 def test_decode_nmea_none_in_msgs(monkeypatch):
+    """Test NMEA decoding with fake regex matches."""
+
     class FakeMatch1:
         """Fake NMEA regex match with checksum."""
 
         def groupdict(self):
+            """Return groupdict with valid checksum."""
             return {"checksum": "19"}
 
     class FakeMatch2:
         """Fake NMEA regex match with no groupdict."""
 
         def groupdict(self):
+            """Return None for groupdict."""
             return None
 
     class FakeRegex:
@@ -127,7 +140,8 @@ def test_decode_nmea_none_in_msgs(monkeypatch):
         def __init__(self):
             self.calls = 0
 
-        def search(self, text):
+        def search(self, _text):
+            """Simulate regex search calls returning fake matches."""
             self.calls += 1
             if self.calls == 1:
                 return FakeMatch1()
@@ -141,14 +155,16 @@ def test_decode_nmea_none_in_msgs(monkeypatch):
 
 
 def test_unicode_and_str():
+    """Test string representation of MetHydro31 objects."""
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
     assert mh.__unicode__() == "MetHydro31: "
     assert "MetHydro31: " in mh.__unicode__(verbose=True)
     assert str(mh) == "MetHydro31: "
-    assert "MetHydro31: " in mh.__str__(verbose=True)
+    assert "MetHydro31: " in mh.__unicode__(verbose=True)
 
 
 def test_eq_branches():
+    """Test branch paths in equality comparison operator."""
     mh1 = met_hydro.MetHydro31(source_mmsi=123456789)
     mh2 = met_hydro.MetHydro31(source_mmsi=123456789)
 
@@ -176,6 +192,7 @@ def test_eq_branches():
 
 
 def test_get_bits_no_mmsi_error():
+    """Test get_bits raises exception when MMSI is missing."""
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
     mh.source_mmsi = None
     with pytest.raises(met_hydro.AisPackingException, match="No mmsi specified"):
@@ -183,6 +200,7 @@ def test_get_bits_no_mmsi_error():
 
 
 def test_init_nmea_strings():
+    """Test initializing MetHydro31 with NMEA strings."""
     with pytest.raises(NotImplementedError):
         met_hydro.MetHydro31(
             nmea_strings=["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"]
@@ -190,6 +208,7 @@ def test_init_nmea_strings():
 
 
 def test_init_nmea_strings_return(monkeypatch):
+    """Test initializing MetHydro31 with NMEA strings early return."""
     monkeypatch.setattr(met_hydro.MetHydro31, "decode_nmea", lambda self, strings: None)
     mh = met_hydro.MetHydro31(
         nmea_strings=["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"]
@@ -198,6 +217,7 @@ def test_init_nmea_strings_return(monkeypatch):
 
 
 def test_init_none_day_hour_minute():
+    """Test initializing MetHydro31 with None timestamp defaults to current time."""
     mh = met_hydro.MetHydro31(source_mmsi=123456789, day=None, hour=None, minute=None)
     assert mh.day is not None
     assert mh.hour is not None

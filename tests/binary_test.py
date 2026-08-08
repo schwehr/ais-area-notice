@@ -12,17 +12,20 @@ from ais_area_notice import binary
 
 
 def test_add_one():
+    """Test AddOne increments a BitVector value by 1 with rollover."""
     assert str(binary.AddOne(BitVector.from_bitstring("1100"))) == "1101"
     assert str(binary.AddOne(BitVector.from_bitstring("1111"))) == "0000"
 
 
 def test_sub_one():
+    """Test SubOne decrements a BitVector value by 1 with underflow."""
     assert str(binary.SubOne(BitVector.from_bitstring("1111"))) == "1110"
     assert str(binary.SubOne(BitVector.from_bitstring("0010"))) == "0001"
     assert str(binary.SubOne(BitVector.from_bitstring("0000"))) == "1111"
 
 
 def test_bv_from_signed_int():
+    """Test bvFromSignedInt converts positive and negative integers to BitVector."""
     assert str(binary.bvFromSignedInt(0, bitSize=4)) == "0000"
     assert str(binary.bvFromSignedInt(1, bitSize=4)) == "0001"
     assert str(binary.bvFromSignedInt(7, bitSize=4)) == "0111"
@@ -40,6 +43,7 @@ def test_bv_from_signed_int():
 
 
 def test_signed_int_from_bv():
+    """Test signedIntFromBV decodes BitVector to signed integers."""
     assert binary.signedIntFromBV(BitVector.from_bitstring("0000")) == 0
     assert binary.signedIntFromBV(BitVector.from_bitstring("0101")) == 5
 
@@ -58,6 +62,7 @@ def test_signed_int_from_bv():
 
 
 def test_encode():
+    """Test AIS 6-bit ASCII armoring lookup table entries."""
     assert len(binary.encode) == 64
 
     assert binary.encode[0] == "0"  # 000000
@@ -77,27 +82,32 @@ def test_encode():
 
 
 def test_ais6_to_bitvec():
+    """Test ais6tobitvec converts AIS 6-bit ASCII characters to BitVector."""
     assert str(binary.ais6tobitvec("6")) == "000110"
     assert str(binary.ais6tobitvec("6b")) == "000110101010"
     assert str(binary.ais6tobitvec("6bF:R")) == "000110101010010110001010100010"
 
 
 def test_bitvec_to_ais6():
+    """Test bitvectoais6 converts BitVector to AIS 6-bit ASCII string."""
     assert binary.bitvectoais6(
         BitVector.from_bitstring("000110101010010110001010100010")
     ) == ("6bF:R", 0)
 
 
 def test_bv_from_signed_int_no_bitsize():
+    """Test bvFromSignedInt calculates minimum required bit size automatically."""
     assert str(binary.bvFromSignedInt(5)) == "0101"
     assert str(binary.bvFromSignedInt(-5)) == "1011"
 
 
 def test_bv_from_signed_int_invalid_bitsize():
+    """Test bvFromSignedInt raises ValueError when bitSize is too small."""
     with pytest.raises(ValueError, match="incorrect bit size"):
         binary.bvFromSignedInt(251, bitSize=8)
 
 
 def test_bitvec_to_ais6_no_padding_error():
+    """Test bitvectoais6 raises ValueError when bit length is unaligned and doPadding is False."""
     with pytest.raises(ValueError, match="Results would not be 6-bit aligned."):
         binary.bitvectoais6(BitVector.from_bitstring("101"), doPadding=False)
