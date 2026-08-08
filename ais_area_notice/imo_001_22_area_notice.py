@@ -1357,13 +1357,14 @@ class AreaNoticePolyline(AreaNoticeSubArea):
             if angle == 720:
                 done = True
                 continue
-            else:
-                if done and angle != 720:
-                    sys.stderr.write(
-                        "ERROR: bad polyline.  Must have all point with angle 720 (raw) "
-                        "after the first\n"
-                    )
-                    continue
+
+            if done and angle != 720:
+                sys.stderr.write(
+                    "ERROR: bad polyline.  Must have all point with angle 720 (raw) "
+                    "after the first\n"
+                )
+                continue
+
             angle *= 0.5
             dist_scaled = int(bits[base + 10 : base + 10 + 10])
             dist = dist_scaled * (1, 10, 100, 1000)[self.scale_factor]
