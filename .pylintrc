@@ -34,5 +34,4 @@ disable =
     too-many-statements,
     unbalanced-tuple-unpacking,
     undefined-variable,
-    unspecified-encoding,
     unused-argument,
