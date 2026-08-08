@@ -411,6 +411,7 @@ class AreaNotice(BBM):
         mmsi=None,
         nmea_strings=None,
     ):
+        super().__init__()
         self.areas = []
         if nmea_strings:
             self.decode_nmea(nmea_strings)

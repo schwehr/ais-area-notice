@@ -487,6 +487,7 @@ def geom2kml(geom_dict):
 
 class AisException(Exception):
     def __init__(self, msg):
+        super().__init__(msg)
         self.msg = msg
 
     def __repr__(self):
@@ -497,13 +498,11 @@ class AisException(Exception):
 
 
 class AisPackingException(AisException):
-    def __init__(self, msg):
-        self.msg = msg
+    pass
 
 
 class AisUnpackingException(AisException):
-    def __init__(self, msg):
-        self.msg = msg
+    pass
 
 
 def nmea_checksum_hex(sentence):
@@ -772,9 +771,9 @@ class BBM(AIVDM):
     # Maximum length of characters that can go inside the BBM payload.
     max_payload_char = 41
 
-    def __init__(self, message_id=8):
+    def __init__(self, message_id=8, repeat_indicator=0):
         assert message_id in (8, 19, 21)
-        self.message_id = message_id
+        super().__init__(message_id=message_id, repeat_indicator=repeat_indicator)
 
     def get_bbm(self, talker="EC", sequence_num=None, channel=0):
         """channel is:
