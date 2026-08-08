@@ -472,14 +472,14 @@ def geom2kml(geom_dict):
     if geom_type == "Polygon":
         o = ["<Polygon><outerBoundaryIs><LinearRing><coordinates>"]
         for pt in geom_coords:
-            o.append("\t{:f},{:f},0".format(pt[0], pt[1]))
+            o.append(f"\t{pt[0]:f},{pt[1]:f},0")
         o.append("</coordinates></LinearRing></outerBoundaryIs></Polygon>")
         return "\n".join(o)
 
     if geom_type == "LineString":
         o = ["<LineString><coordinates>"]
         for pt in geom_coords:
-            o.append("\t{:f},{:f},0".format(pt[0], pt[1]))
+            o.append(f"\t{pt[0]:f},{pt[1]:f},0")
         o.append("</coordinates></LineString>")
         return "\n".join(o)
 
@@ -549,7 +549,7 @@ class AIVDM:
             raise AisPackingException("message_id must be valid: %s" % message_id)
         if repeat_indicator is None or repeat_indicator < 0 or repeat_indicator > 3:
             raise AisPackingException(
-                "repeat_indicator must be valid: [{}]".format(repeat_indicator)
+                f"repeat_indicator must be valid: [{repeat_indicator}]"
             )
         if source_mmsi is None:
             raise AisPackingException("source_mmsi must be valid: %s" % source_mmsi)
@@ -710,7 +710,7 @@ class AIVDM:
                 )
             if with_style:
                 if isinstance(with_style, str):
-                    o.append("<styleUrl>{}</styleUrl>".format(with_style))
+                    o.append(f"<styleUrl>{with_style}</styleUrl>")
                 o.append("<styleUrl>#AreaNotice_%d</styleUrl>" % self.area_type)
 
             if with_extended_data:
@@ -733,7 +733,7 @@ class AIVDM:
                 o.append("</ExtendedData>\n")
 
             o.append("<description>")
-            o.append("<i>AreaNotice - {}</i>".format(notice_type[self.area_type]))
+            o.append(f"<i>AreaNotice - {notice_type[self.area_type]}</i>")
             o.append(html)
             o.append("</description>")
 
@@ -1573,7 +1573,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
         return bv
 
     def __unicode__(self):
-        return 'AreaNoticeFreeText: "{}"'.format(self.text)
+        return f'AreaNoticeFreeText: "{self.text}"'
 
     def geom(self):
         # TODO(schwehr): Should this somehow have a position?
