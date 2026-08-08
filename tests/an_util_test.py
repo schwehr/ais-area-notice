@@ -6,7 +6,7 @@ import pytest
 from ais_area_notice import an_util
 
 
-def test_decode_bits_get_int():
+def test_decode_bits_get_int() -> None:
     """Test DecodeBits.GetInt reads unsigned integers sequentially."""
     bv = BitVector.from_bitstring("00010100")
     db = an_util.DecodeBits(bv)
@@ -15,7 +15,7 @@ def test_decode_bits_get_int():
     assert db.pos == 8
 
 
-def test_decode_bits_get_signed_int():
+def test_decode_bits_get_signed_int() -> None:
     """Test DecodeBits.GetSignedInt reads signed integers sequentially."""
     bv = BitVector.from_bitstring("00101110")
     db = an_util.DecodeBits(bv)
@@ -24,7 +24,7 @@ def test_decode_bits_get_signed_int():
     assert db.pos == 8
 
 
-def test_decode_bits_get_text_strip():
+def test_decode_bits_get_text_strip() -> None:
     """Test DecodeBits.GetText with strip=True strips padding '@' characters."""
     bv = BitVector.from_bitstring("000001000000000010")
     db = an_util.DecodeBits(bv)
@@ -32,7 +32,7 @@ def test_decode_bits_get_text_strip():
     assert db.pos == 18
 
 
-def test_decode_bits_get_text_no_strip():
+def test_decode_bits_get_text_no_strip() -> None:
     """Test DecodeBits.GetText with strip=False preserves padding '@' characters."""
     bv = BitVector.from_bitstring("000001000000000010")
     db = an_util.DecodeBits(bv)
@@ -40,14 +40,14 @@ def test_decode_bits_get_text_no_strip():
     assert db.pos == 18
 
 
-def test_decode_bits_get_text_no_at():
+def test_decode_bits_get_text_no_at() -> None:
     """Test DecodeBits.GetText on strings without '@' padding."""
     bv = BitVector.from_bitstring("000001000010")
     db = an_util.DecodeBits(bv)
     assert db.GetText(12, strip=True) == "AB"
 
 
-def test_decode_bits_get_text_unaligned_error():
+def test_decode_bits_get_text_unaligned_error() -> None:
     """Test DecodeBits.GetText raises Error when bit length is not 6-bit aligned."""
     bv = BitVector.from_bitstring("00000")
     db = an_util.DecodeBits(bv)
@@ -55,7 +55,7 @@ def test_decode_bits_get_text_unaligned_error():
         db.GetText(5)
 
 
-def test_decode_bits_verify_success():
+def test_decode_bits_verify_success() -> None:
     """Test DecodeBits.Verify passes when bit position matches offset."""
     bv = BitVector.from_bitstring("00000000")
     db = an_util.DecodeBits(bv)
@@ -63,7 +63,7 @@ def test_decode_bits_verify_success():
     db.Verify(8)
 
 
-def test_decode_bits_verify_error():
+def test_decode_bits_verify_error() -> None:
     """Test DecodeBits.Verify raises Error when bit position does not match offset."""
     bv = BitVector.from_bitstring("00000000")
     db = an_util.DecodeBits(bv)
@@ -72,7 +72,7 @@ def test_decode_bits_verify_error():
         db.Verify(8)
 
 
-def test_build_bits_add_uint_add_int_add_text():
+def test_build_bits_add_uint_add_int_add_text() -> None:
     """Test BuildBits packs unsigned int, signed int, and text into BitVector."""
     bb = an_util.BuildBits()
     bb.AddUInt(5, 4)
@@ -83,7 +83,7 @@ def test_build_bits_add_uint_add_int_add_text():
     assert str(bits) == "01011110000001000000"
 
 
-def test_build_bits_verify_error():
+def test_build_bits_verify_error() -> None:
     """Test BuildBits.Verify raises Error when bit count does not match expected."""
     bb = an_util.BuildBits()
     bb.AddUInt(5, 4)
@@ -91,7 +91,7 @@ def test_build_bits_verify_error():
         bb.Verify(8)
 
 
-def test_build_bits_get_bits_mismatch_error():
+def test_build_bits_get_bits_mismatch_error() -> None:
     """Test BuildBits.GetBits raises Error when total bits do not match expected."""
     bb = an_util.BuildBits()
     bb.AddUInt(5, 4)

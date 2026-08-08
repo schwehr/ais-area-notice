@@ -4,10 +4,13 @@
 TODO(schwehr): Need to test the year and month roll overs in time.
 """
 
+from collections.abc import Sequence
 import datetime
 import math
+import pathlib
 import runpy
 import sys
+from typing import Any
 
 from BitVector import BitVector
 import geojson
@@ -19,7 +22,12 @@ PI_2 = math.pi / 2
 PI_4 = math.pi / 4
 
 
-def assert_almost_equal_series(one, two, places=None, delta=None):
+def assert_almost_equal_series(
+    one: Sequence[float],
+    two: Sequence[float],
+    places: int | None = None,
+    delta: float | None = None,
+) -> None:
     """Check two items that are lists or tuples to be almost equal."""
     assert len(one) == len(two)
     for a, b in zip(one, two):
@@ -31,12 +39,15 @@ def assert_almost_equal_series(one, two, places=None, delta=None):
             assert a == pytest.approx(b)
 
 
-def assert_almost_equal_geojson(g1, g2, delta=1e-4, verbose=False):
+def assert_almost_equal_geojson(
+    g1: object, g2: object, delta: float = 1e-4, verbose: bool = False
+) -> None:
     """Compare two geojson dicts to be within a delta."""
     if g1 == g2:
         return
 
     if isinstance(g1, list):
+        assert isinstance(g2, list)
         for item1, item2 in zip(g1, g2):
             assert_almost_equal_geojson(item1, item2, delta=delta, verbose=verbose)
         return
@@ -57,9 +68,12 @@ def assert_almost_equal_geojson(g1, g2, delta=1e-4, verbose=False):
         if isinstance(g1[key], dict):
             assert_almost_equal_geojson(g1[key], g2[key], delta=delta, verbose=verbose)
         elif isinstance(g1[key], list):
-            assert isinstance(g2[key], list)
-            assert len(g1[key]) == len(g2[key])
-            for a, b in zip(g1[key], g2[key]):
+            sub1 = g1[key]
+            sub2 = g2[key]
+            assert isinstance(sub1, list)
+            assert isinstance(sub2, list)
+            assert len(sub1) == len(sub2)
+            for a, b in zip(sub1, sub2):
                 assert_almost_equal_geojson(a, b, delta=delta, verbose=verbose)
         elif isinstance(g1[key], float) or isinstance(g2[key], float):
             assert g1[key] == pytest.approx(g2[key], abs=delta)
@@ -70,7 +84,7 @@ def assert_almost_equal_geojson(g1, g2, delta=1e-4, verbose=False):
 class TestRegex:
     """Test NMEA sentence regular expression parsing."""
 
-    def testWithoutMetadata(self):
+    def testWithoutMetadata(self) -> None:
         """Test parsing NMEA sentence without metadata header."""
         msg_str = "!AIVDM,1,1,,A,E>b6Kpiacg`0aagRW:JJropqKLpLkD6D8AB;000000VP20,4*4C"
         match = area_notice.ais_nmea_regex.search(msg_str)
@@ -87,7 +101,7 @@ class TestRegex:
         assert result["fill_bits"] == "4"
         assert result["checksum"] == "4C"
 
-    def testWithSimpleMetadata(self):
+    def testWithSimpleMetadata(self) -> None:
         """Test parsing NMEA sentence with simple station and timestamp metadata."""
         msg_str = (
             "!AIVDM,1,1,,B,15N8ac?P00ISgOBA4VU:lOv028Rq,0*4A,b003669953,1297555217"
@@ -108,7 +122,7 @@ class TestRegex:
         assert result["station"] == "b003669953"
         assert result["time_stamp"] == "1297555217"
 
-    def testWithMetadata(self):
+    def testWithMetadata(self) -> None:
         """Test parsing NMEA sentence with full receiver metadata."""
         msg_str = (
             # pylint: disable=line-too-long
@@ -135,7 +149,7 @@ class TestRegex:
         assert result["station_type"] == "r"
         assert result["time_stamp"] == "1297584148"
 
-    def testWithX(self):
+    def testWithX(self) -> None:
         """Test parsing NMEA sentence with extended station metadata fields."""
         msg_str = (
             # pylint: disable=line-too-long
@@ -161,7 +175,7 @@ class TestRegex:
         assert result["station"] == "r003669976"
         assert result["time_stamp"] == "1166058609"
 
-    def testMultiLine1(self):
+    def testMultiLine1(self) -> None:
         """Test parsing first sentence of multi-line NMEA message."""
         msg_str = (
             # pylint: disable=line-too-long
@@ -178,7 +192,7 @@ class TestRegex:
         assert result["chan"] == "B"
         assert result["msg_id"] == "5"
 
-    def testMultiLine2(self):
+    def testMultiLine2(self) -> None:
         """Test parsing second sentence of multi-line NMEA message."""
         msg_str = "!AIVDM,2,2,6,B,000000000000000,2*21,b003669705,1297584166"
         match = area_notice.ais_nmea_regex.search(msg_str)
@@ -191,7 +205,7 @@ class TestRegex:
         assert result["seq_id"] == "6"
         assert result["chan"] == "B"
 
-    def testOwnShip(self):
+    def testOwnShip(self) -> None:
         """Test parsing AIVDO own-ship sentence."""
         msg_str = "!AIVDO,1,1,,,13tfD@?P7BJsWhhHb5eBtwwL0000,0*05,rnhjel,1297555200.32"
         match = area_notice.ais_nmea_regex.search(msg_str)
@@ -209,20 +223,20 @@ class TestRegex:
 class Test0Math:
     """Test vector rotation math helpers."""
 
-    def testRotate(self):
+    def testRotate(self) -> None:
         """Test rotating origin point vector."""
         # Rotate about 0.
-        p1 = (0, 0)
+        p1 = (0.0, 0.0)
         assert (0, 0) == area_notice.vec_rot(p1, 0)
         assert (0, 0) == area_notice.vec_rot(p1, math.pi)
         assert (0, 0) == area_notice.vec_rot(p1, math.pi / 2)
         assert (0, 0) == area_notice.vec_rot(p1, math.pi / 4)
         assert (0, 0) == area_notice.vec_rot(p1, -math.pi / 4)
 
-    def testRotate2(self):
+    def testRotate2(self) -> None:
         """Test rotating unit X vector by various angles."""
         # Rotate of 1, 0.
-        p1 = (1, 0)
+        p1 = (1.0, 0.0)
         assert (1, 0) == area_notice.vec_rot(p1, 0)
         assert_almost_equal_series((0, 1), area_notice.vec_rot(p1, PI_2))
         assert_almost_equal_series((-1, 0), area_notice.vec_rot(p1, math.pi))
@@ -242,10 +256,10 @@ class Test0Math:
             (0, 1), area_notice.vec_rot([math.sqrt(0.5)] * 2, PI_4)
         )
 
-    def testRotate3(self):
+    def testRotate3(self) -> None:
         """Test rotating unit Y vector by various angles."""
         # Rotate of 0, 1.
-        p1 = (0, 1)
+        p1 = (0.0, 1.0)
         assert (0, 1) == area_notice.vec_rot(p1, 0)
         assert_almost_equal_series((-1, 0), area_notice.vec_rot(p1, math.pi / 2))
         assert_almost_equal_series((0, -1), area_notice.vec_rot(p1, math.pi))
@@ -266,7 +280,7 @@ class Test0Math:
 class Test1AIVDM:
     """Test AIVDM sentence generator base class."""
 
-    def testAivdm(self):
+    def testAivdm(self) -> None:
         """Test AIVDM sentence generator raises exception when mandatory fields missing."""
         a = area_notice.AIVDM()
         with pytest.raises(area_notice.AisPackingException):
@@ -285,7 +299,7 @@ class Test1AIVDM:
 class Test3AreaNoticeCirclePt:
     """Test circle/point subarea geometry and bit packing."""
 
-    def testCircleGeom(self):
+    def testCircleGeom(self) -> None:
         """Test point and circle Shapely geometry generation."""
         pt1 = area_notice.AreaNoticeCirclePt(-73, 43, 0)
         assert pt1.radius == 0
@@ -295,7 +309,7 @@ class Test3AreaNoticeCirclePt:
         pt2 = area_notice.AreaNoticeCirclePt(-73, 43, 123.4)
         assert len(pt2.geom().boundary.coords) > 10
 
-    def testSelfConsistant(self):
+    def testSelfConsistant(self) -> None:
         """Test AreaNoticeCirclePt bit packing and unpacking round-trip consistency."""
         pt0 = area_notice.AreaNoticeCirclePt(-73, 43, 0)
         pt1 = area_notice.AreaNoticeCirclePt(bits=pt0.get_bits())
@@ -314,7 +328,7 @@ class Test3AreaNoticeCirclePt:
 class Test5AreaNoticeSimple:
     """Test simple Area Notice message encoding and visualization."""
 
-    def testSimple(self):
+    def testSimple(self) -> None:
         """Test basic Area Notice bitstream generation with options."""
         an1 = area_notice.AreaNotice(0, datetime.datetime.utcnow(), 100)
         assert len(an1.get_bits()) == 2 + 16 + 10 + 7 + 4 + 5 + 5 + 6 + 18
@@ -334,7 +348,7 @@ class Test5AreaNoticeSimple:
 
         assert len(an1.get_bbm()) == 1
 
-    def testWhale(self):
+    def testWhale(self) -> None:
         """Test building Area Notice for whale safety subareas."""
         no_whales = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
@@ -349,7 +363,7 @@ class Test5AreaNoticeSimple:
         no_whales.add_subarea(area_notice.AreaNoticeCirclePt(-69, 42, radius=9260))
         no_whales.add_subarea(area_notice.AreaNoticeCirclePt(-68, 43, radius=9260))
 
-    def testCircleSubareaJson(self):
+    def testCircleSubareaJson(self) -> None:
         """Test GeoJSON export for circle and point subareas."""
         area = area_notice.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=9260)
         assert len(area.__geo_interface__["geometry"]["coordinates"]) > 5
@@ -357,7 +371,7 @@ class Test5AreaNoticeSimple:
         area = area_notice.AreaNoticeCirclePt(-69.849541, 42.0792730, radius=0)
         assert len(area.__geo_interface__["geometry"]["coordinates"]) == 2
 
-    def testHtml(self):
+    def testHtml(self) -> None:
         """Test HTML rendering of Area Notice."""
         whales = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
@@ -371,7 +385,7 @@ class Test5AreaNoticeSimple:
         whales.add_subarea(area_notice.AreaNoticeCirclePt(-69.8, 42.07, radius=0))
         # TODO(schwehr): Write the test.
 
-    def testKml(self):
+    def testKml(self) -> None:
         """Test KML markup generation for Area Notice."""
         whales = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
@@ -392,7 +406,7 @@ class Test5AreaNoticeSimple:
 class TestBitDecoding:
     """Test Area Notice bit decoding for point subareas."""
 
-    def testPoint(self):
+    def testPoint(self) -> None:
         """Test Area Notice encoding and decoding roundtrip for point subarea."""
         year = datetime.datetime.utcnow().year
         pt1 = area_notice.AreaNotice(
@@ -413,7 +427,7 @@ class TestBitDecoding:
 
         assert_almost_equal_geojson(orig, decoded)
 
-    def testCircle(self):
+    def testCircle(self) -> None:
         """Test Area Notice encoding and decoding roundtrip for circle subarea."""
         now = datetime.datetime.utcnow()
         circle1 = area_notice.AreaNotice(
@@ -434,7 +448,7 @@ class TestBitDecoding:
 
         assert_almost_equal_geojson(orig, decoded)
 
-    def testRectangle(self):
+    def testRectangle(self) -> None:
         """Test Area Notice encoding and decoding roundtrip for rectangle subarea."""
         rect = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
@@ -451,7 +465,7 @@ class TestBitDecoding:
         )
         assert_almost_equal_geojson(orig, decoded)
 
-    def testSector(self):
+    def testSector(self) -> None:
         """Test Area Notice encoding and decoding roundtrip for sector subarea."""
         sec1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_habitat_reduce_speed"],
@@ -467,7 +481,7 @@ class TestBitDecoding:
         )
         assert_almost_equal_geojson(orig, decoded)
 
-    def testLine(self):
+    def testLine(self) -> None:
         """Test Area Notice encoding and decoding roundtrip for polyline subarea."""
         line1 = area_notice.AreaNotice(
             area_notice.notice_type["report_of_icing"],
@@ -482,7 +496,7 @@ class TestBitDecoding:
         decoded = geojson.loads(geojson.dumps(line2))
         assert_almost_equal_geojson(orig, decoded)
 
-    def testPolygon(self):
+    def testPolygon(self) -> None:
         """Test Area Notice encoding and decoding roundtrip for polygon subarea."""
         poly1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_divers"],
@@ -499,7 +513,7 @@ class TestBitDecoding:
         decoded = geojson.loads(geojson.dumps(poly2))
         assert_almost_equal_geojson(orig, decoded)
 
-    def testFreeText(self):
+    def testFreeText(self) -> None:
         """Test Area Notice encoding and decoding roundtrip for free text subarea."""
         text1 = area_notice.AreaNotice(
             area_notice.notice_type["res_military_ops"],
@@ -521,7 +535,7 @@ class TestBitDecoding:
 class TestBitDecoding2:
     """Test Area Notice bit decoding for complex mixed subareas."""
 
-    def testPoint(self):
+    def testPoint(self) -> None:
         """Test Area Notice with one subarea of every shape type."""
         # One of each.
         notice = area_notice.AreaNotice(
@@ -552,7 +566,7 @@ class TestBitDecoding2:
         )
         assert_almost_equal_geojson(orig, decoded)
 
-    def testManySectors(self):
+    def testManySectors(self) -> None:
         """Test Area Notice with multiple sector subareas and max subarea limit."""
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
@@ -599,7 +613,7 @@ class TestBitDecoding2:
                 area_notice.AreaNoticeSector(-69.8, 39.5, 9000, 220, 290)
             )
 
-    def testFullText(self):
+    def testFullText(self) -> None:
         """Test Area Notice with multi-part text subareas and merged text retrieval."""
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
@@ -637,21 +651,21 @@ class TestLineTools:
     """Check going from lon, lat pairs to angle, distance pairs."""
 
     @pytest.mark.skip(reason="TODO(schwehr): Fix this failure.")
-    def testOneSegmentCardinal(self):
+    def testOneSegmentCardinal(self) -> None:
         """Test converting lon/lat segments to polyline angle and distance offsets."""
-        p0 = (0, 0)
+        p0 = (0.0, 0.0)
 
-        deg_1_meters = 111120
+        deg_1_meters = 111120.0
         r2 = math.sqrt(2)
         for pt_angle_off in (
-            (0, 1, 0, deg_1_meters),
-            (1, 0, 90, deg_1_meters),
-            (0, -1, 180, deg_1_meters),
-            (-1, 0, 270, deg_1_meters),
-            (r2, r2, 45, deg_1_meters),
-            (r2, -r2, 135, deg_1_meters),
-            (-r2, -r2, 225, deg_1_meters),
-            (-r2, r2, 315, deg_1_meters),
+            (0.0, 1.0, 0.0, deg_1_meters),
+            (1.0, 0.0, 90.0, deg_1_meters),
+            (0.0, -1.0, 180.0, deg_1_meters),
+            (-1.0, 0.0, 270.0, deg_1_meters),
+            (r2, r2, 45.0, deg_1_meters),
+            (r2, -r2, 135.0, deg_1_meters),
+            (-r2, -r2, 225.0, deg_1_meters),
+            (-r2, r2, 315.0, deg_1_meters),
         ):
             p1 = pt_angle_off[:2]
 
@@ -668,7 +682,7 @@ class TestLineTools:
 class TestWhaleNotices:
     """Make sure the whale notices works correctly."""
 
-    def testNoWhales(self):
+    def testNoWhales(self) -> None:
         """Test Area Notice for cautionary no whales observed zone."""
         zone_type = area_notice.notice_type["cau_mammals_not_obs"]
         circle = area_notice.AreaNotice(
@@ -704,7 +718,7 @@ class TestWhaleNotices:
         assert data["bbm"]["area_type_desc"] == area_notice.notice_type[zone_type]
         # TODO(schwehr): Verify other parameters like the location and times.
 
-    def testWhalesObservedCircleNotice(self):
+    def testWhalesObservedCircleNotice(self) -> None:
         """Test Area Notice for mandatory whale speed reduction circle zone."""
         zone_type = area_notice.notice_type["cau_mammals_reduce_speed"]
         circle = area_notice.AreaNotice(
@@ -737,23 +751,24 @@ class TestWhaleNotices:
         # Get the data as a dictionary so that we can verify the contents.
         data = geojson.loads(json)
         assert data["bbm"]["area_type"] == zone_type
+
         assert data["bbm"]["area_type_desc"] == area_notice.notice_type[zone_type]
 
 
-def test_ll_to_polyline_and_helpers():
+def test_ll_to_polyline_and_helpers() -> None:
     """Test converting lon/lat coordinates to polyline angle and distance offsets."""
     ll_points = [(-122.0, 37.0), (-122.1, 37.1), (-122.2, 37.2)]
     offsets = area_notice.ll_to_polyline(ll_points)
     assert len(offsets) == 2
 
 
-def test_frange_defaults():
+def test_frange_defaults() -> None:
     """Test floating point range generator defaults."""
     r1 = list(area_notice.frange(5))
     assert r1 == [0.0, 1.0, 2.0, 3.0, 4.0]
 
 
-def test_geom2kml_linestring_and_invalid():
+def test_geom2kml_linestring_and_invalid() -> None:
     """Test GeoJSON geometry to KML conversion."""
     ls_geom = {
         "geometry": {
@@ -769,14 +784,14 @@ def test_geom2kml_linestring_and_invalid():
         area_notice.geom2kml(invalid_geom)
 
 
-def test_ais_exception_repr():
+def test_ais_exception_repr() -> None:
     """Test string representation of AisException instances."""
     exc = area_notice.AisException("test error")
     assert repr(exc) == "test error"
     assert str(exc) == "test error"
 
 
-def test_get_bits_header_errors_and_override(monkeypatch):
+def test_get_bits_header_errors_and_override(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test AIVDM header bit generation and validation error handling."""
     aivdm = area_notice.AIVDM(message_id=8, repeat_indicator=0, source_mmsi=123456789)
     bv = aivdm.get_bits_header(source_mmsi=987654321)
@@ -789,7 +804,7 @@ def test_get_bits_header_errors_and_override(monkeypatch):
         aivdm.get_bits_header()
 
 
-def test_get_aivdm_validation_errors():
+def test_get_aivdm_validation_errors() -> None:
     """Test get_aivdm parameter validation and exception handling."""
     aivdm = area_notice.AIVDM(message_id=8, repeat_indicator=0, source_mmsi=123456789)
     with pytest.raises(area_notice.AisPackingException, match="sequence_num 10"):
@@ -802,7 +817,7 @@ def test_get_aivdm_validation_errors():
         aivdm_no_mmsi.get_aivdm()
 
 
-def test_get_aivdm_byte_align_and_normal_form_and_sequence_wrap():
+def test_get_aivdm_byte_align_and_normal_form_and_sequence_wrap() -> None:
     """Test AIVDM byte alignment, normal form, and sequence number wrap-around."""
     when = datetime.datetime(2026, 8, 7, 0, 0, 0)
     an = area_notice.AreaNotice(
@@ -829,7 +844,7 @@ def test_get_aivdm_byte_align_and_normal_form_and_sequence_wrap():
     assert area_notice.next_sequence == 1
 
 
-def test_aivdm_header_none_mmsi():
+def test_aivdm_header_none_mmsi() -> None:
     """Test get_bits_header raises exception when MMSI is None."""
     aivdm = area_notice.AIVDM(message_id=8, repeat_indicator=0)
     with pytest.raises(
@@ -838,13 +853,19 @@ def test_aivdm_header_none_mmsi():
         aivdm.get_bits_header(source_mmsi=None)
 
 
-def test_aivdm_get_aivdm_byte_aligned_okay(capsys):
+def test_aivdm_get_aivdm_byte_aligned_okay(capsys: pytest.CaptureFixture[str]) -> None:
     """Test get_aivdm logs byte alignment status when payload is already byte-aligned."""
 
     class MockAIVDM(area_notice.AIVDM):
         """Mock AIVDM subclass for testing byte alignment logging."""
 
-        def get_bits(self):
+        def get_bits(
+            self,
+            include_bin_hdr: bool = True,
+            mmsi: int | None = None,
+            include_dac_fi: bool = True,
+            **kwargs: Any,
+        ) -> BitVector:
             return BitVector(size=74)
 
     m = MockAIVDM(message_id=8, repeat_indicator=0, source_mmsi=123456789)
@@ -853,7 +874,9 @@ def test_aivdm_get_aivdm_byte_aligned_okay(capsys):
     assert "byte-aligned okay" in captured.err
 
 
-def test_area_notice_kml_options(monkeypatch, tmp_path):
+def test_area_notice_kml_options(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path
+) -> None:
     """Test KML generation options, styles, and empty geometry handling."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
     an = area_notice.AreaNotice(
@@ -879,11 +902,11 @@ def test_area_notice_kml_options(monkeypatch, tmp_path):
     class NoGeomSubArea(area_notice.AreaNoticeSubArea):
         """Mock subarea without geometry for KML export testing."""
 
-        def __unicode__(self):
+        def __unicode__(self) -> str:
             return "NoGeomSubArea"
 
         @property
-        def __geo_interface__(self):
+        def __geo_interface__(self) -> dict[str, int]:
             return {"area_shape": 99}
 
     an_nogeom = area_notice.AreaNotice(
@@ -893,7 +916,7 @@ def test_area_notice_kml_options(monkeypatch, tmp_path):
     assert an_nogeom.kml() == ""
 
 
-def test_bbm_errors_and_multisentence():
+def test_bbm_errors_and_multisentence() -> None:
     """Test BBM validation errors and multi-sentence NMEA payload generation."""
     bbm = area_notice.BBM(message_id=8)
     with pytest.raises(area_notice.AisPackingException, match="talker"):
@@ -906,7 +929,13 @@ def test_bbm_errors_and_multisentence():
     class LongBBM(area_notice.BBM):
         """Mock long BBM subclass for testing multi-sentence NMEA generation."""
 
-        def get_bits(self):
+        def get_bits(
+            self,
+            include_bin_hdr: bool = True,
+            mmsi: int | None = None,
+            include_dac_fi: bool = True,
+            **kwargs: Any,
+        ) -> BitVector:
             return BitVector(size=300)
 
     lbbm = LongBBM(message_id=8)
@@ -914,7 +943,7 @@ def test_bbm_errors_and_multisentence():
     assert len(sentences) > 1
 
 
-def test_circle_pt_scale_factors_and_decoding():
+def test_circle_pt_scale_factors_and_decoding() -> None:
     """Test AreaNoticeCirclePt scale factor calculation and bit decoding."""
     c3 = area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=409500)
     assert c3.scale_factor_raw == 3
@@ -945,7 +974,7 @@ def test_circle_pt_scale_factors_and_decoding():
     cd_tuple = area_notice.AreaNoticeCirclePt(bits=bits_tuple)
     assert cd_tuple.radius == pytest.approx(c1.radius, abs=1000)
 
-    def mock_join_short(_bv_list):
+    def mock_join_short(_bv_list: list[BitVector]) -> BitVector:
         return BitVector(size=50)
 
     with pytest.raises(area_notice.AisPackingException, match="area not 87 bits"):
@@ -954,7 +983,7 @@ def test_circle_pt_scale_factors_and_decoding():
             c1.get_bits()
 
 
-def test_rectangle_scale_factors_decoding_unicode():
+def test_rectangle_scale_factors_decoding_unicode() -> None:
     """Test AreaNoticeRectangle scale factor calculation and string representation."""
     with pytest.raises(AssertionError):
         area_notice.AreaNoticeRectangle(-122.0, 37.0, east_dim=255000)
@@ -981,7 +1010,7 @@ def test_rectangle_scale_factors_decoding_unicode():
     assert r_tup.e_dim == 100
 
 
-def test_sector_scale_factors_decoding_unicode():
+def test_sector_scale_factors_decoding_unicode() -> None:
     """Test AreaNoticeSector scale factor calculation and decoding."""
     sec3 = area_notice.AreaNoticeSector(
         -122.0, 37.0, radius=409500, left_bound_deg=0, right_bound_deg=90
@@ -1014,7 +1043,9 @@ def test_sector_scale_factors_decoding_unicode():
     assert s_tup.radius == 5000
 
 
-def test_polyline_scale_factors_decoding_errors_unicode(capsys):
+def test_polyline_scale_factors_decoding_errors_unicode(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """Test AreaNoticePolyline scale factor calculation, bit encoding limits, and error logging."""
     p2 = area_notice.AreaNoticePolyline(lon=-122.0, lat=37.0, points=[(45, 20000)])
     assert p2.scale_factor_raw == 2
@@ -1044,7 +1075,7 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
 
     orig_join = area_notice.binary.joinBV
 
-    def mock_join_short_poly(bv_list):
+    def mock_join_short_poly(bv_list: list[BitVector]) -> BitVector:
         if len(bv_list) == 11:
             return BitVector(size=50)
         return orig_join(bv_list)
@@ -1096,7 +1127,7 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
     assert len(p_dist720.points) == 1
 
 
-def test_polygon_unicode_and_freetext_methods():
+def test_polygon_unicode_and_freetext_methods() -> None:
     """Test AreaNoticePolygon and AreaNoticeFreeText string representation and decoding."""
     poly = area_notice.AreaNoticePolygon(
         lon=-122.0, lat=37.0, points=[(45, 100), (90, 100)]
@@ -1105,7 +1136,7 @@ def test_polygon_unicode_and_freetext_methods():
 
     ft = area_notice.AreaNoticeFreeText(text="TEST")
     assert "AreaNoticeFreeText" in str(ft)
-    assert ft.geom() is None
+    assert ft.geom() is None  # type: ignore[func-returns-value]
 
     with pytest.raises(area_notice.AisUnpackingException, match="bit length"):
         ft.decode_bits("0" * 50)
@@ -1120,7 +1151,7 @@ def test_polygon_unicode_and_freetext_methods():
     ft_tup = area_notice.AreaNoticeFreeText(bits=bv_tup)
     assert ft_tup.text == "TEST"
 
-    def mock_join_short(_bv_list):
+    def mock_join_short(_bv_list: list[BitVector]) -> BitVector:
         return BitVector(size=50)
 
     with pytest.raises(
@@ -1131,7 +1162,7 @@ def test_polygon_unicode_and_freetext_methods():
             ft.get_bits()
 
 
-def test_area_notice_init_and_methods_and_errors():
+def test_area_notice_init_and_methods_and_errors() -> None:
     """Test AreaNotice initialization, HTML/GeoJSON export, and subarea count limits."""
     with pytest.raises(AssertionError):
         area_notice.AreaNotice()
@@ -1155,7 +1186,7 @@ def test_area_notice_init_and_methods_and_errors():
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )
     an_freetext.add_subarea(area_notice.AreaNoticeFreeText(text="TEST"))
-    assert "FreeText: TEST" in an_freetext.html()
+    assert "FreeText: TEST" in str(an_freetext.html())
 
     an_no_attrs = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
@@ -1202,7 +1233,7 @@ def test_area_notice_init_and_methods_and_errors():
 
     orig_join = area_notice.binary.joinBV
 
-    def mock_join_large(bv_list):
+    def mock_join_large(bv_list: list[BitVector]) -> BitVector:
         if len(bv_list) >= 9:
             return BitVector(size=1000)
         return orig_join(bv_list)
@@ -1213,7 +1244,7 @@ def test_area_notice_init_and_methods_and_errors():
             an.get_bits()
 
 
-def test_area_notice_decode_nmea_errors():
+def test_area_notice_decode_nmea_errors() -> None:
     """Test AreaNotice NMEA sentence decoding error handling."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
     an = area_notice.AreaNotice(
@@ -1231,7 +1262,7 @@ def test_area_notice_decode_nmea_errors():
         area_notice.AreaNotice(nmea_strings=["NOT_A_VALID_NMEA_STRING"])
 
 
-def test_subarea_factory_and_get_shapes():
+def test_subarea_factory_and_get_shapes() -> None:
     """Test subarea factory shape instantiation and sequencing validation."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
     an = area_notice.AreaNotice(
@@ -1272,7 +1303,7 @@ def test_subarea_factory_and_get_shapes():
         an_rect.subarea_factory(bits=poly_bits)
 
 
-def test_message_2_fetcherformatter_and_normqueue():
+def test_message_2_fetcherformatter_and_normqueue() -> None:
     """Test CSV message formatting and NormQueue multi-sentence NMEA reassembly."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
     an = area_notice.AreaNotice(
@@ -1286,11 +1317,11 @@ def test_message_2_fetcherformatter_and_normqueue():
     assert "BMS,SBNMS" in csv_line
 
     with pytest.raises(NotImplementedError):
-        area_notice.message_2_fetcherformatter("NOT_AN_AREA_NOTICE")
+        area_notice.message_2_fetcherformatter("NOT_AN_AREA_NOTICE")  # type: ignore[arg-type]
 
     nq = area_notice.NormQueue()
     with pytest.raises(TypeError, match="Message must be a dictionary"):
-        nq.put("not a dict")
+        nq.put("not a dict")  # type: ignore[arg-type]
 
     m_single = {"total": 1, "station": "ST0", "body": "BODY_SINGLE"}
     nq.put(m_single)
@@ -1328,7 +1359,7 @@ def test_message_2_fetcherformatter_and_normqueue():
     nq.put(m_bad)
 
 
-def test_main_cli(monkeypatch, tmp_path):
+def test_main_cli(monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path) -> None:
     """Test CLI main entry point sentence parsing and KML output file creation."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
     an = area_notice.AreaNotice(

@@ -13,12 +13,15 @@ class Error(Exception):
 class DecodeBits:
     """Sequential bitstream reader for unpacking integer and text fields."""
 
-    def __init__(self, bits):
+    bits: BitVector
+    pos: int
+
+    def __init__(self, bits: BitVector) -> None:
         self.bits = bits
         self.pos = 0
 
     # TODO(schwehr): This method name should be GetUInt.
-    def GetInt(self, length):
+    def GetInt(self, length: int) -> int:
         """Read an unsigned integer of specified bit length from the bitstream.
 
         Args:
@@ -33,7 +36,7 @@ class DecodeBits:
         return value
 
     # TODO(schwehr): This method name should be GetInt.
-    def GetSignedInt(self, length):
+    def GetSignedInt(self, length: int) -> int:
         """Read a signed integer of specified bit length from the bitstream.
 
         Args:
@@ -47,7 +50,7 @@ class DecodeBits:
         self.pos += length
         return value
 
-    def GetText(self, length, strip=True):
+    def GetText(self, length: int, strip: bool = True) -> str:
         """Read 6-bit AIS character text of specified bit length from the bitstream.
 
         Args:
@@ -70,7 +73,7 @@ class DecodeBits:
         self.pos += length
         return text
 
-    def Verify(self, offset):
+    def Verify(self, offset: int) -> None:
         """Verify that current bit read position matches the expected offset.
 
         Args:
@@ -86,25 +89,28 @@ class DecodeBits:
 class BuildBits:
     """Sequential bitstream writer for packing integer and text fields."""
 
-    def __init__(self):
+    bv_list: list[BitVector]
+    bits_expected: int
+
+    def __init__(self) -> None:
         self.bv_list = []
         self.bits_expected = 0
 
-    def AddUInt(self, val, num_bits):
+    def AddUInt(self, val: int, num_bits: int) -> None:
         """Add an unsigned integer."""
         bits = binary.setBitVectorSize(BitVector.from_int(val), num_bits)
         assert num_bits == len(bits)
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    def AddInt(self, val, num_bits):
+    def AddInt(self, val: int, num_bits: int) -> None:
         """Add a signed integer."""
         bits = binary.bvFromSignedInt(int(val), num_bits)
         assert num_bits == len(bits)
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    def AddText(self, val, num_bits):
+    def AddText(self, val: str, num_bits: int) -> None:
         """Add 6-bit AIS encoded text of specified bit length to the bitstream.
 
         Args:
@@ -118,7 +124,7 @@ class BuildBits:
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    def Verify(self, num_bits):
+    def Verify(self, num_bits: int) -> None:
         """Verify that total packed bits match expected bit count.
 
         Args:
@@ -130,7 +136,7 @@ class BuildBits:
         if self.bits_expected != num_bits:
             raise Error(f"BuildBits did not verify: {self.bits_expected} != {num_bits}")
 
-    def GetBits(self):
+    def GetBits(self) -> BitVector:
         """Concatenate all bit vectors in the list into a single BitVector.
 
         Returns:

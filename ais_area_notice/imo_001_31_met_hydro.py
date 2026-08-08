@@ -10,6 +10,8 @@ Be aware of:
 
 import datetime
 import sys
+from collections.abc import Sequence
+from typing import Any
 
 from BitVector import BitVector
 
@@ -23,9 +25,9 @@ from .imo_001_26_environment import almost_equal
 from .imo_001_26_environment import beaufort_scale
 
 
-MSG_SIZE = 360
+MSG_SIZE: int = 360
 
-precip_types = {
+precip_types: dict[int, str] = {
     # 0: 'reserved',
     1: "rain",
     2: "thunderstorm",
@@ -36,7 +38,7 @@ precip_types = {
     7: "not available",  # default
 }
 
-ice_types = {
+ice_types: dict[int, str] = {
     0: "No",
     1: "Yes",
     # 2: '(reserved for future use)'
@@ -47,56 +49,56 @@ ice_types = {
 class MetHydro31(BBM):
     """IMO SN.1/Circ.289 Meteorological and Hydrographic Data (BBM 8:1:31)."""
 
-    dac = 1
-    fi = 31
+    dac: int = 1
+    fi: int = 31
 
     def __init__(
         self,
-        source_mmsi=None,
-        lon=181,
-        lat=91,
-        pos_acc=0,
-        day=0,
-        hour=24,
-        minute=60,
-        wind=127,
-        gust=127,
-        wind_dir=360,
-        gust_dir=360,
+        source_mmsi: int | None = None,
+        lon: float = 181,
+        lat: float = 91,
+        pos_acc: int = 0,
+        day: int | None = 0,
+        hour: int | None = 24,
+        minute: int | None = 60,
+        wind: int = 127,
+        gust: int = 127,
+        wind_dir: int = 360,
+        gust_dir: int = 360,
         # TODO(schwehr): Check air_pres not avail is 511 in the bits.
-        air_temp=-102.4,
-        humid=101,
-        dew=50.1,
-        air_pres=399 + 510,
-        air_pres_trend=3,
-        vis=12.7,
+        air_temp: float = -102.4,
+        humid: int = 101,
+        dew: float = 50.1,
+        air_pres: int = 399 + 510,
+        air_pres_trend: int = 3,
+        vis: float = 12.7,
         # Water level
-        wl=30.01,
-        wl_trend=3,
-        cur_1=25.5,
-        cur_dir_1=360,  # Surface current.
-        cur_2=25.5,
-        cur_dir_2=360,
-        cur_level_2=31,
-        cur_3=25.5,
-        cur_dir_3=360,
-        cur_level_3=31,
-        wave_height=25.5,
-        wave_period=63,
-        wave_dir=360,
-        swell_height=25.5,
-        swell_period=63,
-        swell_dir=360,
-        sea_state=13,
-        water_temp=50.1,
-        precip=7,
-        salinity=50.1,
-        ice=3,
+        wl: float = 30.01,
+        wl_trend: int = 3,
+        cur_1: float = 25.5,
+        cur_dir_1: int = 360,  # Surface current.
+        cur_2: float = 25.5,
+        cur_dir_2: int = 360,
+        cur_level_2: int = 31,
+        cur_3: float = 25.5,
+        cur_dir_3: int = 360,
+        cur_level_3: int = 31,
+        wave_height: float = 25.5,
+        wave_period: int = 63,
+        wave_dir: int = 360,
+        swell_height: float = 25.5,
+        swell_period: int = 63,
+        swell_dir: int = 360,
+        sea_state: int = 13,
+        water_temp: float = 50.1,
+        precip: int = 7,
+        salinity: float = 50.1,
+        ice: int = 3,
         # OR
-        nmea_strings=None,
+        nmea_strings: Sequence[str] | None = None,
         # OR
-        bits=None,
-    ):
+        bits: BitVector | None = None,
+    ) -> None:
         """Initialize a Met/Hydro ver 2 AIS binary broadcast message (1:8:31)."""
 
         BBM.__init__(self, message_id=8)
@@ -196,7 +198,7 @@ class MetHydro31(BBM):
         self.salinity = salinity
         self.ice = ice
 
-    def __unicode__(self, verbose=False):
+    def __unicode__(self, verbose: bool = False) -> str:
         r = []
         r.append("MetHydro31: ")
         if not verbose:
@@ -204,12 +206,14 @@ class MetHydro31(BBM):
         r.append("\t")
         return "\n".join(r)
 
-    def __str__(self, verbose=False):
+    def __str__(self, verbose: bool = False) -> str:
         return self.__unicode__(verbose=verbose)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if self is other:
             return True
+        if not isinstance(other, MetHydro31):
+            return False
         if self.source_mmsi != other.source_mmsi:
             return False
         if len(self.__dict__) != len(other.__dict__):
@@ -226,14 +230,20 @@ class MetHydro31(BBM):
                 return False
         return True
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
-    def html(self, efactory=False):
+    def html(self, efactory: bool = False) -> str:
         """Return an embeddable html representation."""
         raise NotImplementedError
 
-    def get_bits(self, include_bin_hdr=True, mmsi=None, include_dac_fi=True):
+    def get_bits(
+        self,
+        include_bin_hdr: bool = True,
+        mmsi: int | None = None,
+        include_dac_fi: bool = True,
+        **kwargs: Any,
+    ) -> BitVector:
         """Child classes must implement this."""
         bv_list = []
         if include_bin_hdr:
@@ -243,6 +253,7 @@ class MetHydro31(BBM):
                 raise AisPackingException("No mmsi specified")
             if mmsi is None:
                 mmsi = self.source_mmsi
+            assert mmsi is not None
             bv_list.append(BitVector.from_int(mmsi, size=30))
 
         if include_bin_hdr or include_dac_fi:
@@ -250,8 +261,8 @@ class MetHydro31(BBM):
             bv_list.append(BitVector.from_int(self.dac, size=10))
             bv_list.append(BitVector.from_int(self.fi, size=6))
 
-        (bv_list.append(binary.bvFromSignedInt(int(self.lon * 60000), 25)),)
-        (bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24)),)
+        bv_list.append(binary.bvFromSignedInt(int(self.lon * 60000), 25))
+        bv_list.append(binary.bvFromSignedInt(int(self.lat * 60000), 24))
         bv_list.append(BitVector.from_int(self.pos_acc, size=1))
 
         bv_list.append(BitVector.from_int(self.day, size=5))
@@ -263,9 +274,9 @@ class MetHydro31(BBM):
         bv_list.append(BitVector.from_int(self.wind_dir, size=9))
         bv_list.append(BitVector.from_int(self.gust_dir, size=9))
 
-        (bv_list.append(binary.bvFromSignedInt(int(round(self.air_temp * 10)), 11)),)
+        bv_list.append(binary.bvFromSignedInt(int(round(self.air_temp * 10)), 11))
         bv_list.append(BitVector.from_int(self.humid, size=7))
-        (bv_list.append(binary.bvFromSignedInt(int(round(self.dew * 10)), 10)),)
+        bv_list.append(binary.bvFromSignedInt(int(round(self.dew * 10)), 10))
         bv_list.append(BitVector.from_int(self.air_pres - 799, size=9))
         bv_list.append(BitVector.from_int(self.air_pres_trend, size=2))
 
@@ -276,16 +287,16 @@ class MetHydro31(BBM):
         bv_list.append(BitVector.from_int(self.wl_trend, size=2))
 
         bv_list.append(
-            BitVector.from_int(int(round(self.cur[0]["speed"] * 10)), size=8)
+            BitVector.from_int(int(round(float(self.cur[0]["speed"]) * 10)), size=8)
         )
-        bv_list.append(BitVector.from_int(self.cur[0]["dir"], size=9))
+        bv_list.append(BitVector.from_int(int(self.cur[0]["dir"]), size=9))
 
         for i in (1, 2):
             bv_list.append(
-                BitVector.from_int(int(round(self.cur[i]["speed"] * 10)), size=8)
+                BitVector.from_int(int(round(float(self.cur[i]["speed"]) * 10)), size=8)
             )
-            bv_list.append(BitVector.from_int(self.cur[i]["dir"], size=9))
-            bv_list.append(BitVector.from_int(self.cur[i]["level"], size=5))
+            bv_list.append(BitVector.from_int(int(self.cur[i]["dir"]), size=9))
+            bv_list.append(BitVector.from_int(int(self.cur[i]["level"]), size=5))
 
         bv_list.append(BitVector.from_int(int(round(self.wave_height * 10)), size=8))
         bv_list.append(BitVector.from_int(self.wave_period, size=6))
@@ -297,7 +308,7 @@ class MetHydro31(BBM):
 
         bv_list.append(BitVector.from_int(self.sea_state, size=4))
 
-        (bv_list.append(binary.bvFromSignedInt(int(round(self.water_temp * 10)), 10)),)
+        bv_list.append(binary.bvFromSignedInt(int(round(self.water_temp * 10)), 10))
         bv_list.append(BitVector.from_int(self.precip, size=3))
 
         bv_list.append(BitVector.from_int(int(round(self.salinity * 10)), size=9))
@@ -315,7 +326,7 @@ class MetHydro31(BBM):
             )
         return bv
 
-    def decode_nmea(self, strings):
+    def decode_nmea(self, strings: Sequence[str]) -> None:
         """Unpack nmea instrings into objects."""
 
         try:
@@ -340,7 +351,7 @@ class MetHydro31(BBM):
         # TODO(schwehr): Decode the NMEA.
         raise NotImplementedError
 
-    def decode_bits(self, bits, _year=None):
+    def decode_bits(self, bits: BitVector, _year: int | None = None) -> None:
         """Decode the bits for a message."""
 
         # TODO: Pass these through and verify.
@@ -409,6 +420,6 @@ class MetHydro31(BBM):
         # + 10 spare bits
 
     @property
-    def __geo_interface__(self):
+    def __geo_interface__(self) -> dict[str, Any]:
         """Provide a Geo Interface for GeoJSON serialization."""
         raise NotImplementedError

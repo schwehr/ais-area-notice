@@ -5,14 +5,14 @@ import random
 from ais_area_notice.imo_001_22_area_notice import notice_type
 
 
-def hex_len2(h):
+def hex_len2(h: str) -> str:
     """Make sure the hex numbers are len 2."""
     if len(h) == 2:
         return h
     return "0" + h
 
 
-def rand_hex_color():
+def rand_hex_color() -> str:
     """Generate a random 6-character hex color string.
 
     Returns:

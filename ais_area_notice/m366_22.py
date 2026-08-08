@@ -7,6 +7,9 @@ http://en.wikipedia.org/wiki/Rhumb_line
 
 import datetime
 import logging
+from collections.abc import Sequence
+
+from BitVector import BitVector
 
 from . import an_util
 from . import binary
@@ -15,12 +18,12 @@ from .imo_001_22_area_notice import AisPackingException
 from .imo_001_22_area_notice import AisUnpackingException
 from .imo_001_22_area_notice import nmea_checksum_hex
 
-DAC = 366
-FI = 22
-MAX_SUB_AREAS = 10
-SUB_AREA_BIT_SIZE = 90 + 3
+DAC: int = 366
+FI: int = 22
+MAX_SUB_AREAS: int = 10
+SUB_AREA_BIT_SIZE: int = 90 + 3
 
-SHAPES = {
+SHAPES: dict[str, int] = {
     "CIRCLE": 0,
     "RECTANGLE": 1,
     "SECTOR": 2,
@@ -37,7 +40,7 @@ class Error(Exception):
 class AreaNoticeSubArea:
     """Base class for subarea shapes in USCG 8:366:22 Area Notices."""
 
-    def getScaleFactor(self, value):
+    def getScaleFactor(self, value: float) -> int:
         """Determine scale factor for a numeric value.
 
         Args:
@@ -54,7 +57,7 @@ class AreaNoticeSubArea:
             return 10
         return 1
 
-    def getScaleFactorRaw(self, scale_factor):
+    def getScaleFactorRaw(self, scale_factor: int) -> int:
         """Map scale factor multiplier to 2-bit raw integer encoding.
 
         Args:
@@ -65,7 +68,7 @@ class AreaNoticeSubArea:
         """
         return {1: 0, 10: 1, 100: 2, 1000: 3}[scale_factor]
 
-    def decodeScaleFactor(self, db):
+    def decodeScaleFactor(self, db: an_util.DecodeBits) -> int:
         """Decode 2-bit raw scale factor from bitstream reader into multiplier.
 
         Args:
@@ -81,9 +84,24 @@ class AreaNoticeSubArea:
 class AreaNoticeCircle(AreaNoticeSubArea):
     """Circle subarea shape for USCG 8:366:22 Area Notices."""
 
+    area_shape: int
+    lon: float | None
+    lat: float | None
+    precision: int
+    scale_factor: int
+    radius: float
+    radius_scaled: int
+    spare: int
+
     def __init__(
-        self, lon=None, lat=None, radius=0, precision=4, scale_factor=None, bits=None
-    ):
+        self,
+        lon: float | None = None,
+        lat: float | None = None,
+        radius: float = 0,
+        precision: int = 4,
+        scale_factor: int | None = None,
+        bits: BitVector | None = None,
+    ) -> None:
         if lon is not None:
             self.area_shape = SHAPES["CIRCLE"]
             self.lon = lon
@@ -100,7 +118,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         else:
             raise Error("Must specify bits or parameters.")
 
-    def DecodeBits(self, bits):
+    def DecodeBits(self, bits: BitVector) -> None:
         """Unpack circle subarea shape fields from a BitVector.
 
         Args:
@@ -119,7 +137,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         self.spare = db.GetInt(18)
         db.Verify(SUB_AREA_BIT_SIZE)
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
         """Pack circle subarea shape fields into a BitVector.
 
         Returns:
@@ -131,7 +149,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
             self.scale_factor = self.getScaleFactor(self.radius)
         bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
         assert self.lon is not None and self.lat is not None
-        bb.AddInt(self.lon * 600000, 28)
+        bb.AddInt(round(self.lon * 600000), 28)
         # TODO(schwehr): Do we round all before encoding?
         bb.AddInt(round(self.lat * 600000), 27)
         bb.AddUInt(self.precision, 3)
@@ -144,22 +162,32 @@ class AreaNoticeCircle(AreaNoticeSubArea):
 class AreaNotice:
     """USCG specific Area Notice Version 23 (8:366:22)."""
 
-    version = 1
-    max_areas = 9
-    max_bits = 984
-    message_id = 8
-    dac = 366
-    fi = 22
+    version: int = 1
+    max_areas: int = 9
+    max_bits: int = 984
+    message_id: int = 8
+    dac: int = 366
+    fi: int = 22
+
+    areas: list[AreaNoticeSubArea]
+    area_type: int
+    when: datetime.datetime
+    duration_min: int | None
+    link_id: int | None
+    mmsi: int | None
+    source_mmsi: int | None
+    repeat_indicator: int
+    spare: int
 
     def __init__(
         self,
-        area_type=None,
-        when=None,
-        duration_min=None,
-        link_id=None,
-        mmsi=None,
-        nmea_strings=None,
-    ):
+        area_type: int | None = None,
+        when: datetime.datetime | None = None,
+        duration_min: int | None = None,
+        link_id: int | None = None,
+        mmsi: int | None = None,
+        nmea_strings: Sequence[str] | None = None,
+    ) -> None:
         self.areas = []
         if nmea_strings:
             self.decode_nmea(nmea_strings)
@@ -177,7 +205,7 @@ class AreaNotice:
         else:
             raise Error("Must specify nmea_strings or area_type.")
 
-    def add_subarea(self, area):
+    def add_subarea(self, area: AreaNoticeSubArea) -> None:
         """Add a subarea shape to the Area Notice message.
 
         Args:
@@ -194,7 +222,7 @@ class AreaNotice:
             )
         self.areas.append(area)
 
-    def decode_nmea(self, strings):
+    def decode_nmea(self, strings: Sequence[str]) -> None:
         """Decode NMEA 0183 AIVDM sentence strings into this Area Notice message.
 
         Args:
@@ -220,17 +248,18 @@ class AreaNotice:
         except (AttributeError, TypeError):
             raise AisUnpackingException("One or more NMEA lines were malformed (1)")
 
-        bits = []
-        for msg in msgs:
-            msg["fill_bits"] = int(msg["fill_bits"])
-            bv = binary.ais6tobitvec(msg["body"])
-            if int(msg["fill_bits"]):
-                bv = bv[: -msg["fill_bits"]]
-            bits.append(bv)
-        bits = binary.joinBV(bits)
+        bits_list: list[BitVector] = []
+        for m_dict in msgs:
+            fill_bits = int(m_dict["fill_bits"])  # type: ignore[arg-type]
+            body = str(m_dict["body"])
+            bv = binary.ais6tobitvec(body)
+            if fill_bits:
+                bv = bv[:-fill_bits]
+            bits_list.append(bv)
+        bits = binary.joinBV(bits_list)
         self.DecodeBits(bits)
 
-    def DecodeBits(self, bits):
+    def DecodeBits(self, bits: BitVector) -> None:
         """Unpack Area Notice fields from a BitVector payload.
 
         Args:
@@ -273,12 +302,12 @@ class AreaNotice:
         for area_num in range(num_sub_areas):
             start = area_num * SUB_AREA_BIT_SIZE
             end = start + SUB_AREA_BIT_SIZE
-            bits = sub_areas_bits[start:end]
-            logging.info("bits for sub area: %d %d %d", len(bits), start, end)
-            subarea = self.SubareaFactory(bits)
+            sub_bits = sub_areas_bits[start:end]
+            logging.info("bits for sub area: %d %d %d", len(sub_bits), start, end)
+            subarea = self.SubareaFactory(sub_bits)
             self.add_subarea(subarea)
 
-    def SubareaFactory(self, bits):
+    def SubareaFactory(self, bits: BitVector) -> AreaNoticeSubArea:
         """Instantiate appropriate subarea shape object from raw bit slice.
 
         Args:
@@ -295,15 +324,15 @@ class AreaNotice:
         if shape == 0:
             return AreaNoticeCircle(bits=bits)
         if shape == 1:
-            return AreaNoticeRectangle(bits=bits)
+            return AreaNoticeRectangle(bits=bits)  # type: ignore[name-defined]
         if shape == 2:
-            return AreaNoticeSector(bits=bits)
+            return AreaNoticeSector(bits=bits)  # type: ignore[name-defined]
         if shape in (3, 4):
             if self.areas and isinstance(self.areas[-1], AreaNoticeCircle):
                 lon = self.areas[-1].lon
                 lat = self.areas[-1].lat
                 self.areas.pop()
-            elif self.areas and isinstance(self.areas[-1], AreaNoticePoly):
+            elif self.areas and isinstance(self.areas[-1], AreaNoticePoly):  # type: ignore[name-defined]
                 last_pt = self.areas[-1].points[-1]
                 lon = last_pt[0]
                 lat = last_pt[1]
@@ -311,7 +340,7 @@ class AreaNotice:
                 raise AisPackingException(
                     "Point or another polyline must precede a polyline"
                 )
-            return AreaNoticePoly(bits=bits, lon=lon, lat=lat)
+            return AreaNoticePoly(bits=bits, lon=lon, lat=lat)  # type: ignore[name-defined]
         if shape == 5:
-            return AreaNoticeText(bits=bits)
+            return AreaNoticeText(bits=bits)  # type: ignore[name-defined]
         raise Error(f"Unsupported area shape: {shape}")
