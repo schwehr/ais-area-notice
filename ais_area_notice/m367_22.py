@@ -109,9 +109,9 @@ class AreaNoticeSubArea:
         """The scale factor value for the network."""
         if value / 100.0 >= 4095:
             return 1000
-        elif value / 10.0 > 4095:
+        if value / 10.0 > 4095:
             return 100
-        elif value > 4095:
+        if value > 4095:
             return 10
         return 1
 
@@ -542,11 +542,11 @@ class AreaNotice(BBM):
         shape = int(bits[:3])
         if shape == 0:
             return AreaNoticeCircle(bits=bits)
-        elif shape == 1:
+        if shape == 1:
             return AreaNoticeRectangle(bits=bits)
-        elif shape == 2:
+        if shape == 2:
             return AreaNoticeSector(bits=bits)
-        elif shape in (3, 4):
+        if shape in (3, 4):
             if isinstance(self.areas[-1], AreaNoticeCircle):
                 lon = self.areas[-1].lon
                 lat = self.areas[-1].lat
@@ -561,5 +561,5 @@ class AreaNotice(BBM):
                 )
 
             return AreaNoticePoly(bits=bits, lon=lon, lat=lat)
-        elif shape == 5:
+        if shape == 5:
             return AreaNoticeText(bits=bits)

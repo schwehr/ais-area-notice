@@ -1702,29 +1702,29 @@ class Environment(BBM):
         report_type = int(bits[:4])
         if 0 == report_type:
             return SensorReportLocation(bits=bits)
-        elif 1 == report_type:
+        if 1 == report_type:
             return SensorReportId(bits=bits)
-        elif 2 == report_type:
+        if 2 == report_type:
             return SensorReportWind(bits=bits)
-        elif 3 == report_type:
+        if 3 == report_type:
             return SensorReportWaterLevel(bits=bits)
-        elif 4 == report_type:
+        if 4 == report_type:
             return SensorReportCurrent2d(bits=bits)
-        elif 5 == report_type:
+        if 5 == report_type:
             return SensorReportCurrent3d(bits=bits)
-        elif 6 == report_type:
+        if 6 == report_type:
             return SensorReportCurrentHorz(bits=bits)
-        elif 7 == report_type:
+        if 7 == report_type:
             return SensorReportSeaState(bits=bits)
-        elif 8 == report_type:
+        if 8 == report_type:
             return SensorReportSalinity(bits=bits)
-        elif 9 == report_type:
+        if 9 == report_type:
             return SensorReportWeather(bits=bits)
-        elif 10 == report_type:
+        if 10 == report_type:
             return SensorReportAirGap(bits=bits)
-        else:
-            msg = "Reports 11-15 reserved for future use.  Found: %d"
-            raise AisUnpackingException(msg % report_type)
+
+        msg = f"Reports 11-15 reserved for future use.  Found: {report_type}"
+        raise AisUnpackingException(msg)
 
     @property
     def __geo_interface__(self):

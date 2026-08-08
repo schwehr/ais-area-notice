@@ -469,14 +469,14 @@ def geom2kml(geom_dict):
         return "<Point><coordinates>{lon},{lat},0</coordinates></Point>".format(
             lon=geom_coords[0], lat=geom_coords[1]
         )
-    elif geom_type == "Polygon":
+    if geom_type == "Polygon":
         o = ["<Polygon><outerBoundaryIs><LinearRing><coordinates>"]
         for pt in geom_coords:
             o.append("\t{:f},{:f},0".format(pt[0], pt[1]))
         o.append("</coordinates></LinearRing></outerBoundaryIs></Polygon>")
         return "\n".join(o)
 
-    elif geom_type == "LineString":
+    if geom_type == "LineString":
         o = ["<LineString><coordinates>"]
         for pt in geom_coords:
             o.append("\t{:f},{:f},0".format(pt[0], pt[1]))
@@ -875,7 +875,7 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
             self.radius_scaled = radius / self.scale_factor
             return
 
-        elif bits is not None:
+        if bits is not None:
             self.decode_bits(bits)
             return
 
@@ -1613,7 +1613,7 @@ class AreaNotice(BBM):
             self.decode_nmea(nmea_strings)
             return
 
-        elif area_type is not None and when is not None and duration is not None:
+        if area_type is not None and when is not None and duration is not None:
             # We are creating a new message
             assert area_type >= 0 and area_type <= 127
             self.area_type = area_type
@@ -1887,12 +1887,12 @@ class AreaNotice(BBM):
         shape = int(bits[:3])
         if 0 == shape:
             return AreaNoticeCirclePt(bits=bits)
-        elif 1 == shape:
+        if 1 == shape:
             return AreaNoticeRectangle(bits=bits)
-        elif 2 == shape:
+        if 2 == shape:
             return AreaNoticeSector(bits=bits)
 
-        elif 3 == shape:  # Polyline
+        if 3 == shape:  # Polyline
             # There has to be a point or line before the polyline to give the starting
             # lon and lat
             assert len(self.areas) > 0
@@ -1913,7 +1913,7 @@ class AreaNotice(BBM):
                 )
             return AreaNoticePolyline(bits=bits, lon=lon, lat=lat)
 
-        elif 4 == shape:
+        if 4 == shape:
             assert len(self.areas) > 0
             lon = lat = None
             if isinstance(self.areas[-1], AreaNoticeCirclePt):
@@ -1925,15 +1925,15 @@ class AreaNotice(BBM):
                 lon = last_pt[0]
                 lat = last_pt[1]
             return AreaNoticePolygon(bits=bits, lon=lon, lat=lat)
-        elif 5 == shape:
+        if 5 == shape:
             assert len(self.areas) > 0
             # As long as we have at least one geom, we are good
             assert not isinstance(self.areas[0], AreaNoticeFreeText)
             # TODO(schwehr): Can free text come before the geometry?
             return AreaNoticeFreeText(bits=bits)
-        else:
-            sys.stderr.write("Warning: unknown shape type %d" % shape)
-            return None  # bad bits?
+
+        sys.stderr.write("Warning: unknown shape type %d" % shape)
+        return None  # bad bits?
 
 
 sbnms_bbox = {

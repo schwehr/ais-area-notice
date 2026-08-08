@@ -25,7 +25,6 @@ disable =
     line-too-long,
     missing-class-docstring,
     missing-function-docstring,
-    no-else-return,
     no-member,
     pointless-string-statement,
     potential-index-error,
