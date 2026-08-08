@@ -3,18 +3,11 @@ fail-under = 9.0
 
 [MESSAGES CONTROL]
 disable =
-    abstract-method,
-    attribute-defined-outside-init,
-    bare-except,
     duplicate-code,
-    expression-not-assigned,
     fixme,
     global-statement,
-    inconsistent-return-statements,
     invalid-unary-operand-type,
-    line-too-long,
     no-member,
-    pointless-string-statement,
     potential-index-error,
     raise-missing-from,
     redefined-outer-name,

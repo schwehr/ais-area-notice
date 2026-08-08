@@ -2381,7 +2381,8 @@ class Environment(BBM):
 
         if not 8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE:
             msg = (
-                f"Environment(BBM) trouble: {len(sensor_reports_bits) % SENSOR_REPORT_SIZE} > 8.   for "
+                "Environment(BBM) trouble: "
+                f"{len(sensor_reports_bits) % SENSOR_REPORT_SIZE} > 8.   for "
                 f"{len(sensor_reports_bits)} % {SENSOR_REPORT_SIZE}"
             )
             raise AisUnpackingException(msg)

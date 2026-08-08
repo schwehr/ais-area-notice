@@ -750,12 +750,18 @@ class AIVDM:
         for i in range(tot_sentences - 1):
             sentence_num = i + 1
             payload_part = payload[i * max_payload_char : (i + 1) * max_payload_char]
-            sentence = f"!AIVDM,{tot_sentences},{sentence_num},{seq_num_str},{channel},{payload_part},0"
+            sentence = (
+                f"!AIVDM,{tot_sentences},{sentence_num},{seq_num_str},"
+                f"{channel},{payload_part},0"
+            )
             sentences.append(sentence + "*" + nmea_checksum_hex(sentence))
 
         sentence_num += 1
         payload_part = payload[(sentence_num - 1) * max_payload_char :]
-        sentence = f"!AIVDM,{tot_sentences},{sentence_num},{seq_num_str},{channel},{payload_part},{pad}"
+        sentence = (
+            f"!AIVDM,{tot_sentences},{sentence_num},{seq_num_str},"
+            f"{channel},{payload_part},{pad}"
+        )
         sentences.append(sentence + "*" + nmea_checksum_hex(sentence))
 
         return sentences
@@ -912,12 +918,18 @@ class BBM(AIVDM):
             payload_part = payload[
                 i * self.max_payload_char : (i + 1) * self.max_payload_char
             ]
-            sentence = f"!{talker}BBM,{tot_sentences},{sentence_num},{sequence_num},{channel},{self.message_id},{payload_part},0"
+            sentence = (
+                f"!{talker}BBM,{tot_sentences},{sentence_num},{sequence_num},"
+                f"{channel},{self.message_id},{payload_part},0"
+            )
             sentences.append(sentence + "*" + nmea_checksum_hex(sentence))
 
         sentence_num += 1
         payload_part = payload[(sentence_num - 1) * self.max_payload_char :]
-        sentence = f"!{talker}BBM,{tot_sentences},{sentence_num},{sequence_num},{channel},{self.message_id},{payload_part},{pad}"
+        sentence = (
+            f"!{talker}BBM,{tot_sentences},{sentence_num},{sequence_num},"
+            f"{channel},{self.message_id},{payload_part},{pad}"
+        )
         sentences.append(sentence + "*" + nmea_checksum_hex(sentence))
 
         return sentences
@@ -1073,7 +1085,10 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
     def __unicode__(self) -> str:
         if self.radius == 0.0:
             return f"AreaNoticeCirclePt: Point at ({self.lon:.4f},{self.lat:.4f})"
-        return f"AreaNoticeCirclePt: Circle centered at ({self.lon:.4f},{self.lat:.4f}) - radius {self.radius}m"
+        return (
+            f"AreaNoticeCirclePt: Circle centered at ({self.lon:.4f},"
+            f"{self.lat:.4f}) - radius {self.radius}m"
+        )
 
     def geom(self) -> shapely.geometry.Point | shapely.geometry.Polygon:
         """Construct Shapely geometry representation of this circle or point.
@@ -1260,7 +1275,10 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         return bv
 
     def __unicode__(self) -> str:
-        return f"AreaNoticeRectangle: ({self.lon:.4f},{self.lat:.4f}) [{self.e_dim},{self.n_dim}]m rot: {self.orientation_deg} deg"
+        return (
+            f"AreaNoticeRectangle: ({self.lon:.4f},{self.lat:.4f}) "
+            f"[{self.e_dim},{self.n_dim}]m rot: {self.orientation_deg} deg"
+        )
 
     def geom(self) -> shapely.geometry.Polygon:
         """Return shapely geometry object."""
@@ -1435,7 +1453,10 @@ class AreaNoticeSector(AreaNoticeSubArea):
         return bv
 
     def __unicode__(self) -> str:
-        return f"AreaNoticeSector: ({self.lon:.4f},{self.lat:.4f}) {self.radius} rot: {self.left_bound_deg} to {self.right_bound_deg} deg"
+        return (
+            f"AreaNoticeSector: ({self.lon:.4f},{self.lat:.4f}) {self.radius} "
+            f"rot: {self.left_bound_deg} to {self.right_bound_deg} deg"
+        )
 
     def geom(self) -> shapely.geometry.Polygon:
         """Return shapely geometry object."""
@@ -1842,7 +1863,11 @@ class AreaNotice(BBM):
         self.source_mmsi = source_mmsi
 
     def __unicode__(self, verbose: bool = False) -> str:
-        result = f"AreaNotice: type={self.area_type}  start={self.when}  duration={self.duration} m  link_id={self.link_id}  sub-areas: {len(self.areas)}"
+        result = (
+            f"AreaNotice: type={self.area_type}  start={self.when}  "
+            f"duration={self.duration} m  link_id={self.link_id}  "
+            f"sub-areas: {len(self.areas)}"
+        )
         if not verbose:
             return result
         results = [result]
@@ -2347,7 +2372,10 @@ def main() -> None:
                             time_stamp = msg["time_stamp"]
                             if body and body[0] != "8":
                                 continue
-                            nmea = f"!AIVDM,1,1,,A,{body},{fill_bits}*{{checksum}},{station},{time_stamp}"
+                            nmea = (
+                                f"!AIVDM,1,1,,A,{body},{fill_bits}"
+                                f"*{{checksum}},{station},{time_stamp}"
+                            )
                             checksum = nmea_checksum_hex(nmea)
                             nmea = nmea.format(checksum=checksum)
                             area_notice = AreaNotice(nmea_strings=(nmea,))
