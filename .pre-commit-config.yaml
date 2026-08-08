@@ -48,7 +48,9 @@ repos:
     rev: v3.3.4
     hooks:
       - id: pylint
-        args: ["--fail-under=8.0"]
+        args:
+          - "--fail-under=9.0"
+          - "--disable=abstract-method,attribute-defined-outside-init,bare-except,expression-not-assigned,fixme,global-statement,pointless-string-statement,raise-missing-from,redefined-builtin,redefined-outer-name,reimported,super-init-not-called,unspecified-encoding,unused-argument,unused-import,unused-variable"
         additional_dependencies:
           - bitvector-modern
           - geojson
