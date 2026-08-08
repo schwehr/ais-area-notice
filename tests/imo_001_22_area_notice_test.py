@@ -9,6 +9,7 @@ import math
 import runpy
 import sys
 
+from BitVector import BitVector
 import geojson
 import pytest
 
@@ -751,8 +752,6 @@ def test_get_bits_header_errors_and_override(monkeypatch):
     bv = aivdm.get_bits_header(source_mmsi=987654321)
     assert len(bv) == 38
 
-    from BitVector import BitVector
-
     monkeypatch.setattr(
         area_notice.binary, "joinBV", lambda bv_list: BitVector(size=30)
     )
@@ -809,8 +808,6 @@ def test_aivdm_header_none_mmsi():
 def test_aivdm_get_aivdm_byte_aligned_okay(capsys):
     class MockAIVDM(area_notice.AIVDM):
         def get_bits(self):
-            from BitVector import BitVector
-
             return BitVector(size=74)
 
     m = MockAIVDM(message_id=8, repeat_indicator=0, source_mmsi=123456789)
@@ -867,8 +864,6 @@ def test_bbm_errors_and_multisentence():
 
     class LongBBM(area_notice.BBM):
         def get_bits(self):
-            from BitVector import BitVector
-
             return BitVector(size=300)
 
     lbbm = LongBBM(message_id=8)
@@ -907,8 +902,6 @@ def test_circle_pt_scale_factors_and_decoding():
     assert cd_tuple.radius == pytest.approx(c1.radius, abs=1000)
 
     def mock_join_short(bv_list):
-        from BitVector import BitVector
-
         return BitVector(size=50)
 
     with pytest.raises(area_notice.AisPackingException, match="area not 87 bits"):
@@ -1005,8 +998,6 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
     orig_join = area_notice.binary.joinBV
 
     def mock_join_short_poly(bv_list):
-        from BitVector import BitVector
-
         if len(bv_list) == 11:
             return BitVector(size=50)
         return orig_join(bv_list)
@@ -1025,8 +1016,6 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
 
     p_dec_tup = area_notice.AreaNoticePolyline(bits=bits_tuple, lon=-122.0, lat=37.0)
     assert len(p_dec_tup.points) == 1
-
-    from BitVector import BitVector
 
     bad_poly_bits = (
         BitVector.from_bitstring("01100")
@@ -1084,8 +1073,6 @@ def test_polygon_unicode_and_freetext_methods():
     assert ft_tup.text == "TEST"
 
     def mock_join_short(bv_list):
-        from BitVector import BitVector
-
         return BitVector(size=50)
 
     with pytest.raises(
@@ -1167,8 +1154,6 @@ def test_area_notice_init_and_methods_and_errors():
     orig_join = area_notice.binary.joinBV
 
     def mock_join_large(bv_list):
-        from BitVector import BitVector
-
         if len(bv_list) >= 9:
             return BitVector(size=1000)
         return orig_join(bv_list)
@@ -1218,8 +1203,6 @@ def test_subarea_factory_and_get_shapes():
     an.add_subarea(sa_poly)
     sa_polygon = an.subarea_factory(bits=polygon_bits)
     assert isinstance(sa_polygon, area_notice.AreaNoticePolygon)
-
-    from BitVector import BitVector
 
     unk_bits = BitVector.from_int(6, size=3) + BitVector(size=87)
     assert an.subarea_factory(bits=unk_bits) is None

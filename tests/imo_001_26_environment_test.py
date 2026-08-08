@@ -9,6 +9,7 @@ import math
 import random
 import sys
 
+from BitVector import BitVector
 import pytest
 
 from ais_area_notice import ais_string
@@ -1458,7 +1459,6 @@ class TestEnvironment:
 
     def test_decode_bits_fill_bits_trouble(self):
         e = env.Environment(source_mmsi=123456)
-        from BitVector import BitVector
 
         invalid_bits = BitVector(size=56 + 112 + 10)
         with pytest.raises(
@@ -1468,7 +1468,6 @@ class TestEnvironment:
 
     def test_sensor_report_factory_reserved_type(self):
         e = env.Environment(source_mmsi=123456)
-        from BitVector import BitVector
 
         reserved_bits = BitVector.from_bitstring("1011" + "0" * 108)
         with pytest.raises(
@@ -1484,7 +1483,6 @@ class TestEnvironment:
 
     def test_air_gap_decode_bits_size_and_get_bits_size(self, monkeypatch):
         sr = env.SensorReportAirGap(site_id=1, gap=10.0, draft=5.0)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1540,7 +1538,6 @@ class TestEnvironment:
 
     def test_current_horz_coverage(self, monkeypatch):
         sr = env.SensorReportCurrentHorz(site_id=1)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1565,7 +1562,6 @@ class TestEnvironment:
 
     def test_sea_state_coverage(self, monkeypatch):
         sr = env.SensorReportSeaState(site_id=1)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1590,7 +1586,6 @@ class TestEnvironment:
 
     def test_salinity_coverage(self, monkeypatch):
         sr = env.SensorReportSalinity(site_id=1)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1615,7 +1610,6 @@ class TestEnvironment:
 
     def test_weather_coverage(self, monkeypatch):
         sr = env.SensorReportWeather(site_id=1)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1647,7 +1641,6 @@ class TestEnvironment:
             forecast_speed=12,
             forecast_dir=190,
         )
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1674,7 +1667,6 @@ class TestEnvironment:
 
     def test_water_level_coverage(self, monkeypatch):
         sr = env.SensorReportWaterLevel(site_id=1, wl=1.5, forecast_wl=2.0)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1701,7 +1693,6 @@ class TestEnvironment:
 
     def test_current_2d_coverage(self, monkeypatch):
         sr = env.SensorReportCurrent2d(site_id=1, speed_1=5.0)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1727,7 +1718,6 @@ class TestEnvironment:
 
     def test_current_3d_coverage(self, monkeypatch):
         sr = env.SensorReportCurrent3d(site_id=1, n_1=5.0, level_1=10)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1759,8 +1749,6 @@ class TestEnvironment:
         base_sr = env.SensorReport(report_type=0, day=1, hour=2, minute=3, site_id=4)
         assert "SensorReport: site_id=4" in base_sr.__unicode__()
         assert "SensorReport: site_id=4" in str(base_sr)
-
-        from BitVector import BitVector
 
         loc_sr = env.SensorReportLocation(site_id=1)
         with pytest.raises(env.AisUnpackingException, match="bit length"):

@@ -7,6 +7,7 @@ since: Mon Feb 14 15:55:02 2011 -0500
 import random
 import sys
 
+from BitVector import BitVector
 import pytest
 
 import ais_area_notice.imo_001_31_met_hydro as met_hydro
@@ -89,7 +90,6 @@ def test_ne_and_html_and_geo_interface():
 
 def test_get_bits_wrong_size_error(monkeypatch):
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
-    from BitVector import BitVector
 
     monkeypatch.setattr(met_hydro.binary, "joinBV", lambda bv_list: BitVector(size=100))
     with pytest.raises(met_hydro.AisPackingException, match="message wrong size"):
