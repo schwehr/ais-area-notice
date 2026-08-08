@@ -11,7 +11,6 @@ disable =
     fixme,
     global-statement,
     inconsistent-return-statements,
-    invalid-name,
     invalid-unary-operand-type,
     line-too-long,
     no-member,

@@ -374,7 +374,7 @@ class TestSensorReports:
         self.hour = now.hour
         self.minute = now.minute
 
-    def test_SensorReport(self) -> None:
+    def test_sensor_report(self) -> None:
         """Test base SensorReport initialization, header bit length, and date calculation."""
         # Create and work with just the parent class.
         report_type = 0
@@ -426,7 +426,7 @@ class TestSensorReports:
         )
         assert sr.get_date() == datetime.datetime(2011, 12, 31, 23, 59)
 
-    def test_Sr_eq(self) -> None:
+    def test_sr_eq(self) -> None:
         """SensorReport equality operator"""
         sr_0 = env.SensorReport(0, 2010, 1, 1, 1, 1, site_id=0)
         sr_0b = env.SensorReport(bits=sr_0.get_bits())
@@ -444,13 +444,13 @@ class TestSensorReports:
         assert sr_1 == sr_1  # pylint: disable=comparison-with-itself
         assert sr_0 != sr_1
 
-    def test_Sr_not_eq(self) -> None:
+    def test_sr_not_eq(self) -> None:
         """Test SensorReport inequality for differing site IDs."""
         sr_0 = env.SensorReport(0, 2010, 1, 1, 1, 1, site_id=0)
         sr_1 = env.SensorReport(0, 2010, 1, 1, 1, 1, site_id=1)
         assert sr_0 != sr_1
 
-    def test_SrLocation(self) -> None:
+    def test_sr_location(self) -> None:
         """SensorReportLocation"""
         site_id = int(math.floor(random.random() * 128))
         sr_l = env.SensorReportLocation(day=1, hour=2, minute=3, site_id=site_id)
@@ -460,7 +460,7 @@ class TestSensorReports:
         assert sr_l == sr_l2
         assert sr_l != env.SensorReport(0, site_id=0)
 
-    def test_SrLocation_min(self) -> None:
+    def test_sr_location_min(self) -> None:
         """SrLocation minimum values"""
         sr_l = env.SensorReportLocation(
             year=2010,
@@ -478,7 +478,7 @@ class TestSensorReports:
         sr_lb = env.SensorReportLocation(bits=sr_l.get_bits())
         assert sr_l == sr_lb
 
-    def test_SrLocation_max(self) -> None:
+    def test_sr_location_max(self) -> None:
         """SrLocation maximum values"""
         sr_l = env.SensorReportLocation(
             year=2049,
@@ -506,7 +506,7 @@ class TestSensorReports:
 
         assert sr_l == sr_lb
 
-    def test_SrLoc_fuzz(self) -> None:
+    def test_sr_loc_fuzz(self) -> None:
         """Fuzz test SensorReportLocation bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_loc()
@@ -517,7 +517,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SrId(self) -> None:
+    def test_sr_id(self) -> None:
         """SensorReportId with range of strings."""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportId(site_id=site_id)
@@ -536,7 +536,7 @@ class TestSensorReports:
         assert " id" in s2
         assert s1 == s2
 
-    def test_SrId_fuzz(self) -> None:
+    def test_sr_id_fuzz(self) -> None:
         """Fuzz test SensorReportId bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_id()
@@ -555,7 +555,7 @@ class TestSensorReports:
         assert sr.id_str == id_str.ljust(14, "@")
         assert sr == sr_b
 
-    def test_SrWind(self) -> None:
+    def test_sr_wind(self) -> None:
         """SensorReport Wind"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportWind(site_id=site_id)
@@ -570,7 +570,7 @@ class TestSensorReports:
         assert sr.data_descr == 7
         assert env.SensorReportWind(bits=sr.get_bits()).data_descr == 7
 
-    def test_SrWind_min(self) -> None:
+    def test_sr_wind_min(self) -> None:
         """SensorReport Wind minimum valid values"""
         sr = env.SensorReportWind(
             year=2020,
@@ -614,7 +614,7 @@ class TestSensorReports:
         assert sr_b.forecast_minute == 0
         assert sr_b.duration_min == 1
 
-    def test_SrWind_max(self) -> None:
+    def test_sr_wind_max(self) -> None:
         """SensorReport Wind minimum valid values"""
         sr = env.SensorReportWind(
             year=2018,
@@ -655,7 +655,7 @@ class TestSensorReports:
         assert sr_b.forecast_minute == 59
         assert sr_b.duration_min == 255
 
-    def test_SrWind_fuzz(self) -> None:
+    def test_sr_wind_fuzz(self) -> None:
         """Fuzz test SensorReportWind bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_wind()
@@ -666,7 +666,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SrWaterLevel(self) -> None:
+    def test_sr_water_level(self) -> None:
         """SensorReport WaterLevel"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportWaterLevel(site_id=site_id)
@@ -682,7 +682,7 @@ class TestSensorReports:
         description = env.SensorReportWaterLevel(bits=sr.get_bits()).data_descr
         assert description == 7
 
-    def test_SrWaterLevel_min(self) -> None:
+    def test_sr_water_level_min(self) -> None:
         """SensorReport WaterLevel minimum"""
         sr = env.SensorReportWaterLevel(
             year=2010,
@@ -721,7 +721,7 @@ class TestSensorReports:
         assert sr_b.forecast_minute == 0
         assert sr_b.duration_min == 0
 
-    def test_SrWaterLevel_max(self) -> None:
+    def test_sr_water_level_max(self) -> None:
         """SensorReport WaterLevel maximum"""
         sr = env.SensorReportWaterLevel(
             year=2049,
@@ -760,7 +760,7 @@ class TestSensorReports:
         assert sr_b.forecast_minute == 59
         assert sr_b.duration_min == 255
 
-    def test_SrWaterLevel_fuzz(self) -> None:
+    def test_sr_water_level_fuzz(self) -> None:
         """Fuzz test SensorReportWaterLevel bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_waterlevel()
@@ -771,7 +771,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportCurrent2d(self) -> None:
+    def test_sensor_report_current_2d(self) -> None:
         """SensorReport Current2d"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportCurrent2d(site_id=site_id)
@@ -787,7 +787,7 @@ class TestSensorReports:
         description = env.SensorReportCurrent2d(bits=sr.get_bits()).data_descr
         assert description == 7
 
-    def test_SensorReportCurrent2d_min(self) -> None:
+    def test_sensor_report_current_2d_min(self) -> None:
         """SensorReport Current2d minimum"""
         sr = env.SensorReportCurrent2d(
             year=2010,
@@ -815,7 +815,7 @@ class TestSensorReports:
             assert cur["level"] == pytest.approx(0)
         assert sr_b.data_descr == 0
 
-    def test_SensorReportCurrent2d_max(self) -> None:
+    def test_sensor_report_current_2d_max(self) -> None:
         """SensorReport Current2d maximum"""
         sr = env.SensorReportCurrent2d(
             year=2049,
@@ -843,7 +843,7 @@ class TestSensorReports:
             assert cur["level"] == pytest.approx(361)
         assert sr_b.data_descr == 5
 
-    def test_SrCurrent2d_fuzz(self) -> None:
+    def test_sr_current_2d_fuzz(self) -> None:
         """Fuzz test SensorReportCurrent2d bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_current2d()
@@ -854,7 +854,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportCurrent3d(self) -> None:
+    def test_sensor_report_current_3d(self) -> None:
         """SensorReport Current3d"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportCurrent3d(site_id=site_id)
@@ -864,7 +864,7 @@ class TestSensorReports:
         sr_b = env.SensorReportCurrent3d(bits=sr.get_bits())
         assert sr == sr_b
 
-    def test_SensorReportCurrent3d_min(self) -> None:
+    def test_sensor_report_current_3d_min(self) -> None:
         """SensorReport Current3d minimum"""
         sr = env.SensorReportCurrent3d(
             year=2010,
@@ -891,7 +891,7 @@ class TestSensorReports:
                 assert cur[x] == pytest.approx(0.0)
         assert sr_b.data_descr == 0
 
-    def test_SensorReportCurrent3d_max(self) -> None:
+    def test_sensor_report_current_3d_max(self) -> None:
         """SensorReport Current3d maximum"""
         sr = env.SensorReportCurrent3d(
             year=2010,
@@ -918,7 +918,7 @@ class TestSensorReports:
                 assert cur[x] == pytest.approx(24.6)
         assert sr_b.data_descr == 0
 
-    def test_SrCurrent3d_fuzz(self) -> None:
+    def test_sr_current_3d_fuzz(self) -> None:
         """Fuzz test SensorReportCurrent3d bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_current3d()
@@ -929,7 +929,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportCurrentHorz(self) -> None:
+    def test_sensor_report_current_horz(self) -> None:
         """SensorReport CurrentHorz"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportCurrentHorz(site_id=site_id)
@@ -940,7 +940,7 @@ class TestSensorReports:
 
         assert sr == sr_b
 
-    def test_SensorReportCurrentHorz_min(self) -> None:
+    def test_sensor_report_current_horz_min(self) -> None:
         """SensorReport CurrentHorz minimum"""
         sr = env.SensorReportCurrentHorz(
             year=2010,
@@ -966,7 +966,7 @@ class TestSensorReports:
             for val in cur.values():
                 assert val == pytest.approx(0.0)
 
-    def test_SensorReportCurrentHorz_max(self) -> None:
+    def test_sensor_report_current_horz_max(self) -> None:
         """SensorReport CurrentHorz maximum"""
         sr = env.SensorReportCurrentHorz(
             year=2010,
@@ -994,7 +994,7 @@ class TestSensorReports:
             assert cur["dist"] == 121
             assert cur["level"] == 361
 
-    def test_SrCurrentHorz_fuzz(self) -> None:
+    def test_sr_current_horz_fuzz(self) -> None:
         """Fuzz test SensorReportCurrentHorz bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_currenthorz()
@@ -1005,7 +1005,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportSeaState(self) -> None:
+    def test_sensor_report_sea_state(self) -> None:
         """SensorReport SeaState"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportSeaState(site_id=site_id)
@@ -1014,7 +1014,7 @@ class TestSensorReports:
         assert sr.month == 1
         env.SensorReportSeaState(bits=sr.get_bits())
 
-    def test_SensorReportSeaState_min(self) -> None:
+    def test_sensor_report_sea_state_min(self) -> None:
         """SensorReport SeaState minimum"""
         sr = env.SensorReportSeaState(
             year=2010,
@@ -1053,7 +1053,7 @@ class TestSensorReports:
         assert sr_b.wave_data_descr == pytest.approx(1)
         assert sr_b.salinity == pytest.approx(0)
 
-    def test_SensorReportSeaState_max(self) -> None:
+    def test_sensor_report_sea_state_max(self) -> None:
         """SensorReport SeaState max"""
         sr = env.SensorReportSeaState(
             year=2010,
@@ -1091,7 +1091,7 @@ class TestSensorReports:
         assert sr_b.wave_data_descr == 5
         assert sr_b.salinity == pytest.approx(50.0)
 
-    def test_SrCurrentSeaState_fuzz(self) -> None:
+    def test_sr_current_sea_state_fuzz(self) -> None:
         """Fuzz test SensorReportSeaState bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_seastate()
@@ -1102,7 +1102,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportSalinity(self) -> None:
+    def test_sensor_report_salinity(self) -> None:
         """SensorReport Salinity"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportSalinity(site_id=site_id)
@@ -1111,7 +1111,7 @@ class TestSensorReports:
         assert sr.month == 1
         env.SensorReportSalinity(bits=sr.get_bits())
 
-    def test_SensorReportSalinity_min(self) -> None:
+    def test_sensor_report_salinity_min(self) -> None:
         """SensorReport Salinity minimum"""
         sr = env.SensorReportSalinity(
             year=2010,
@@ -1135,7 +1135,7 @@ class TestSensorReports:
         assert sr_b.salinity_type == 0
         assert sr_b.data_descr == 1
 
-    def test_SensorReportSalinity_max(self) -> None:
+    def test_sensor_report_salinity_max(self) -> None:
         """SensorReport Salinity maximum"""
         sr = env.SensorReportSalinity(
             year=2010,
@@ -1159,7 +1159,7 @@ class TestSensorReports:
         assert sr_b.salinity_type == 2
         assert sr_b.data_descr == 5
 
-    def test_SrCurrentSalinity_fuzz(self) -> None:
+    def test_sr_current_salinity_fuzz(self) -> None:
         """Fuzz test SensorReportSalinity bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_salinity()
@@ -1170,7 +1170,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportWeather(self) -> None:
+    def test_sensor_report_weather(self) -> None:
         """SensorReport Weather"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportWeather(site_id=site_id)
@@ -1179,7 +1179,7 @@ class TestSensorReports:
         assert sr.month == 1
         env.SensorReportWeather(bits=sr.get_bits())
 
-    def test_SensorReportWeather_min(self) -> None:
+    def test_sensor_report_weather_min(self) -> None:
         """SensorReport Weather minimum"""
         sr = env.SensorReportWeather(
             year=2010,
@@ -1211,7 +1211,7 @@ class TestSensorReports:
         assert sr_b.air_pres_data_descr == 1
         assert sr_b.salinity == pytest.approx(0.0)
 
-    def test_SensorReportWeather_max(self) -> None:
+    def test_sensor_report_weather_max(self) -> None:
         """SensorReport Weather maximum"""
         sr = env.SensorReportWeather(
             year=2010,
@@ -1243,7 +1243,7 @@ class TestSensorReports:
         assert sr_b.air_pres_data_descr == 5
         assert sr_b.salinity == pytest.approx(50.0)
 
-    def test_SrWeather_fuzz(self) -> None:
+    def test_sr_weather_fuzz(self) -> None:
         """Fuzz test SensorReportWeather bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_weather()
@@ -1254,7 +1254,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportAirGap(self) -> None:
+    def test_sensor_report_air_gap(self) -> None:
         """SensorReport AirGap"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportAirGap(site_id=site_id)
@@ -1263,7 +1263,7 @@ class TestSensorReports:
         assert sr.month == 1
         env.SensorReportAirGap(bits=sr.get_bits())
 
-    def test_SensorReportAirGap_min(self) -> None:
+    def test_sensor_report_air_gap_min(self) -> None:
         """SensorReport AirGap minimum"""
         sr = env.SensorReportAirGap(
             year=2010,
@@ -1289,7 +1289,7 @@ class TestSensorReports:
         assert sr_b.forecast_hour == pytest.approx(0)
         assert sr_b.forecast_minute == pytest.approx(0)
 
-    def test_SensorReportAirGap_max(self) -> None:
+    def test_sensor_report_air_gap_max(self) -> None:
         """SensorReport AirGap maximumx"""
         sr = env.SensorReportAirGap(
             year=2049,
@@ -1315,7 +1315,7 @@ class TestSensorReports:
         assert sr_b.forecast_hour == 23
         assert sr_b.forecast_minute == 59
 
-    def test_SrAirGap_fuzz(self) -> None:
+    def test_sr_air_gap_fuzz(self) -> None:
         """Fuzz test SensorReportAirGap bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_airgap()

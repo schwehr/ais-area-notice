@@ -40,7 +40,7 @@ class Error(Exception):
 class AreaNoticeSubArea:
     """Base class for subarea shapes in USCG 8:366:22 Area Notices."""
 
-    def getScaleFactor(self, value: float) -> int:
+    def get_scale_factor(self, value: float) -> int:
         """Determine scale factor for a numeric value.
 
         Args:
@@ -57,7 +57,9 @@ class AreaNoticeSubArea:
             return 10
         return 1
 
-    def getScaleFactorRaw(self, scale_factor: int) -> int:
+    getScaleFactor = get_scale_factor
+
+    def get_scale_factor_raw(self, scale_factor: int) -> int:
         """Map scale factor multiplier to 2-bit raw integer encoding.
 
         Args:
@@ -68,7 +70,9 @@ class AreaNoticeSubArea:
         """
         return {1: 0, 10: 1, 100: 2, 1000: 3}[scale_factor]
 
-    def decodeScaleFactor(self, db: an_util.DecodeBits) -> int:
+    getScaleFactorRaw = get_scale_factor_raw
+
+    def decode_scale_factor(self, db: an_util.DecodeBits) -> int:
         """Decode 2-bit raw scale factor from bitstream reader into multiplier.
 
         Args:
@@ -77,8 +81,10 @@ class AreaNoticeSubArea:
         Returns:
             The decoded scale factor multiplier (1, 10, 100, or 1000).
         """
-        scale_factor_raw = db.GetInt(2)
-        return (1, 10, 100, 1000)[scale_factor_raw]
+        scale_factor_raw = db.get_int(2)
+        return {0: 1, 1: 10, 2: 100, 3: 1000}[scale_factor_raw]
+
+    decodeScaleFactor = decode_scale_factor
 
 
 class AreaNoticeCircle(AreaNoticeSubArea):
@@ -114,11 +120,11 @@ class AreaNoticeCircle(AreaNoticeSubArea):
             self.radius = radius
             self.radius_scaled = int(radius / self.scale_factor)
         elif bits is not None:
-            self.DecodeBits(bits)
+            self.decode_bits(bits)
         else:
             raise Error("Must specify bits or parameters.")
 
-    def DecodeBits(self, bits: BitVector) -> None:
+    def decode_bits(self, bits: BitVector) -> None:
         """Unpack circle subarea shape fields from a BitVector.
 
         Args:
@@ -126,16 +132,18 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         """
         logging.info("areanotice CIRCLE - decode bits %d %s", len(bits), bits)
         db = an_util.DecodeBits(bits)
-        self.area_shape = db.GetInt(3)
-        self.scale_factor = self.decodeScaleFactor(db)
-        self.lon = db.GetSignedInt(28) / 600000.0
-        lat_raw = db.GetSignedInt(27)
+        self.area_shape = db.get_int(3)
+        self.scale_factor = self.decode_scale_factor(db)
+        self.lon = db.get_signed_int(28) / 600000.0
+        lat_raw = db.get_signed_int(27)
         self.lat = lat_raw / 600000.0
-        self.precision = db.GetInt(3)
-        self.radius_scaled = db.GetInt(12)
+        self.precision = db.get_int(3)
+        self.radius_scaled = db.get_int(12)
         self.radius = self.radius_scaled * self.scale_factor
-        self.spare = db.GetInt(18)
-        db.Verify(SUB_AREA_BIT_SIZE)
+        self.spare = db.get_int(18)
+        db.verify(SUB_AREA_BIT_SIZE)
+
+    DecodeBits = decode_bits
 
     def get_bits(self) -> BitVector:
         """Pack circle subarea shape fields into a BitVector.
@@ -144,19 +152,19 @@ class AreaNoticeCircle(AreaNoticeSubArea):
             A BitVector containing the encoded circle subarea payload.
         """
         bb = an_util.BuildBits()
-        bb.AddUInt(SHAPES["CIRCLE"], 3)
+        bb.add_uint(SHAPES["CIRCLE"], 3)
         if "scale_factor" not in self.__dict__:
-            self.scale_factor = self.getScaleFactor(self.radius)
-        bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+            self.scale_factor = self.get_scale_factor(self.radius)
+        bb.add_uint(self.get_scale_factor_raw(self.scale_factor), 2)
         assert self.lon is not None and self.lat is not None
-        bb.AddInt(round(self.lon * 600000), 28)
+        bb.add_int(round(self.lon * 600000), 28)
         # TODO(schwehr): Do we round all before encoding?
-        bb.AddInt(round(self.lat * 600000), 27)
-        bb.AddUInt(self.precision, 3)
-        bb.AddUInt(int(self.radius / self.scale_factor), 12)
-        bb.AddUInt(0, 18)
-        bb.Verify(SUB_AREA_BIT_SIZE)
-        return bb.GetBits()
+        bb.add_int(round(self.lat * 600000), 27)
+        bb.add_uint(self.precision, 3)
+        bb.add_uint(int(self.radius / self.scale_factor), 12)
+        bb.add_uint(0, 18)
+        bb.verify(SUB_AREA_BIT_SIZE)
+        return bb.get_bits()
 
 
 class AreaNotice:
@@ -256,10 +264,10 @@ class AreaNotice:
             if fill_bits:
                 bv = bv[:-fill_bits]
             bits_list.append(bv)
-        bits = binary.joinBV(bits_list)
-        self.DecodeBits(bits)
+        bits = binary.join_bv(bits_list)
+        self.decode_bits(bits)
 
-    def DecodeBits(self, bits: BitVector) -> None:
+    def decode_bits(self, bits: BitVector) -> None:
         """Unpack Area Notice fields from a BitVector payload.
 
         Args:
@@ -269,26 +277,26 @@ class AreaNotice:
             Error: If message headers or subarea counts are invalid.
         """
         db = an_util.DecodeBits(bits)
-        self.message_id = db.GetInt(6)
-        self.repeat_indicator = db.GetInt(2)
-        self.mmsi = db.GetInt(30)
-        self.spare = db.GetInt(2)
-        self.dac = db.GetInt(10)
-        self.fi = db.GetInt(6)
-        db.Verify(56)
-        self.link_id = db.GetInt(10)
-        self.area_type = db.GetInt(7)
-        month = db.GetInt(4)  # UTC
-        day = db.GetInt(5)
-        hour = db.GetInt(5)
-        minute = db.GetInt(6)
+        self.message_id = db.get_int(6)
+        self.repeat_indicator = db.get_int(2)
+        self.mmsi = db.get_int(30)
+        self.spare = db.get_int(2)
+        self.dac = db.get_int(10)
+        self.fi = db.get_int(6)
+        db.verify(56)
+        self.link_id = db.get_int(10)
+        self.area_type = db.get_int(7)
+        month = db.get_int(4)  # UTC
+        day = db.get_int(5)
+        hour = db.get_int(5)
+        minute = db.get_int(6)
         # TODO(schwehr): Handle year boundary.
         now = datetime.datetime.utcnow()
         self.when = datetime.datetime(now.year, month, day, hour, minute)
-        self.duration_min = db.GetInt(18)
+        self.duration_min = db.get_int(18)
         # self.spare2 = db.GetInt(3)
         start_sub_areas = 111
-        db.Verify(start_sub_areas)
+        db.verify(start_sub_areas)
 
         sub_areas_bits = bits[start_sub_areas:]
         num_sub_areas = len(sub_areas_bits) // SUB_AREA_BIT_SIZE
@@ -304,10 +312,12 @@ class AreaNotice:
             end = start + SUB_AREA_BIT_SIZE
             sub_bits = sub_areas_bits[start:end]
             logging.info("bits for sub area: %d %d %d", len(sub_bits), start, end)
-            subarea = self.SubareaFactory(sub_bits)
+            subarea = self.subarea_factory(sub_bits)
             self.add_subarea(subarea)
 
-    def SubareaFactory(self, bits: BitVector) -> AreaNoticeSubArea:
+    DecodeBits = decode_bits
+
+    def subarea_factory(self, bits: BitVector) -> AreaNoticeSubArea:
         """Instantiate appropriate subarea shape object from raw bit slice.
 
         Args:
@@ -344,3 +354,5 @@ class AreaNotice:
         if shape == 5:
             return AreaNoticeText(bits=bits)  # type: ignore[name-defined]
         raise Error(f"Unsupported area shape: {shape}")
+
+    SubareaFactory = subarea_factory

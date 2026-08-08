@@ -1,3 +1,4 @@
 """AIS Area Notice package."""
 
-version: str = "0.5"
+__version__: str = "0.5"
+VERSION: str = __version__

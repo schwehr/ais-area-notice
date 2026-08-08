@@ -154,7 +154,7 @@ character_bits: dict[str, BitVector] = {
 }
 
 
-def Decode(bits: BitVector, drop_after_first_at: bool = False) -> str:
+def decode(bits: BitVector, drop_after_first_at: bool = False) -> str:
     """Decode bits as a string.
 
     Does not remove the end space or @@@@.  Must be an multiple of 6 bits.
@@ -180,7 +180,11 @@ def Decode(bits: BitVector, drop_after_first_at: bool = False) -> str:
     return "".join(s)
 
 
-def Encode(string: str, bit_size: int | None = None) -> BitVector:
+# Backward compatibility alias
+Decode = decode  # pylint: disable=invalid-name
+
+
+def encode(string: str, bit_size: int | None = None) -> BitVector:
     """Convert a string to a BitVector.
 
     TODO(schwehr): Pad with "@" to reach requested bitSize.
@@ -209,7 +213,11 @@ def Encode(string: str, bit_size: int | None = None) -> BitVector:
     return bv
 
 
-def Strip(string: str, remove_blanks: bool = True) -> str:
+# Backward compatibility alias
+Encode = encode  # pylint: disable=invalid-name
+
+
+def strip(string: str, remove_blanks: bool = True) -> str:
     """Remove AIS string padding @ characters and spaces on the right.
 
     Args:
@@ -225,7 +233,11 @@ def Strip(string: str, remove_blanks: bool = True) -> str:
     return string
 
 
-def Pad(string: str, length: int) -> str:
+# Backward compatibility alias
+Strip = strip  # pylint: disable=invalid-name
+
+
+def pad(string: str, length: int) -> str:
     """Pad string to length with @ characters.
 
     Args:
@@ -235,7 +247,11 @@ def Pad(string: str, length: int) -> str:
     Returns:
         str of the require length that is right padded.
     """
-    pad = length - len(string)
-    if pad > 0:
-        string += "@" * pad
+    pad_len = length - len(string)
+    if pad_len > 0:
+        string += "@" * pad_len
     return string
+
+
+# Backward compatibility alias
+Pad = pad  # pylint: disable=invalid-name
