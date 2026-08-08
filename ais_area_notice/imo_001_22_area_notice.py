@@ -1608,7 +1608,7 @@ class AreaNotice(BBM):
         """@param area_type: 0..127 based on table 11.10 @param when: when the notice starts @type when: datetime (UTC) @param duration: minutes for the notice to be in effect @param nmea_strings: Pass 1 or more nmea strings as a list"""
         self.areas = []
 
-        if nmea_strings != None:
+        if nmea_strings is not None:
             self.decode_nmea(nmea_strings)
             return
 
@@ -1990,7 +1990,7 @@ def message_2_fetcherformatter(
             # AreaNotice message type has to be greater than 1000
             message_type += 1000
 
-    if link_id == None:
+    if link_id is None:
         link_id = msg.link_id
 
     dac = BitVector.from_int(msg.dac, size=10)
