@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Test USCG specific 8:367:22 area notice message."""
 
+from collections.abc import Sequence
 import datetime
 
 from BitVector import BitVector
@@ -23,10 +24,10 @@ from ais_area_notice.m367_22 import SHAPES
 class DiffAreaNotice:
     """Utility class for comparing two AreaNotice instances."""
 
-    def __init__(self, an1, an2):
+    def __init__(self, an1: AreaNotice, an2: AreaNotice) -> None:
         self.an1 = an1
         self.an2 = an2
-        self.diff_fields = []
+        self.diff_fields: list[str] = []
 
         fields_an1 = set(an1.__dict__.keys())
         fields_an2 = set(an2.__dict__.keys())
@@ -38,7 +39,7 @@ class DiffAreaNotice:
         for field in fields:
             self.CheckField(field)
 
-    def CheckField(self, field):
+    def CheckField(self, field: str) -> None:
         """Compare a specific attribute field between two AreaNotice instances.
 
         Args:
@@ -53,7 +54,7 @@ class DiffAreaNotice:
 class TestAreaNotice:
     """Tests for AreaNotice (8:367:22) encoding, decoding, and subareas."""
 
-    def checkHeader(self, area_notice, mmsi=366123456):
+    def checkHeader(self, area_notice: AreaNotice, mmsi: int = 366123456) -> None:
         """Verify common AIS message header fields.
 
         Args:
@@ -65,7 +66,7 @@ class TestAreaNotice:
         assert area_notice.mmsi == mmsi
         assert area_notice.spare == 0
 
-    def checkDacFi(self, area_notice):
+    def checkDacFi(self, area_notice: AreaNotice) -> None:
         """Verify DAC and FI fields in AreaNotice.
 
         Args:
@@ -75,21 +76,34 @@ class TestAreaNotice:
         assert area_notice.fi == 22  # Area notice.
 
     def checkAreaNoticeHeader(
-        self, area_notice, link_id, area_type, timestamp, duration
-    ):
+        self,
+        area_notice: AreaNotice,
+        link_id: int,
+        area_type: int,
+        timestamp: tuple[int, int, int, int],
+        duration: int,
+    ) -> None:
         """Timestamp is tuple: (month, day, hour, minute)."""
 
         assert area_notice.version == 1
         assert area_notice.link_id == link_id
         assert area_notice.area_type == area_type
         year = datetime.datetime.utcnow().year
-        timestamp = datetime.datetime(year, *timestamp)
-        assert area_notice.when == timestamp
+        timestamp_dt = datetime.datetime(year, *timestamp)
+        assert area_notice.when == timestamp_dt
         assert area_notice.duration_min == duration
         if "spare2" in area_notice.__dict__:
             assert area_notice.spare2 == 0
 
-    def checkCircle(self, subarea, scale_factor, lon, lat, precision, radius):
+    def checkCircle(
+        self,
+        subarea: AreaNoticeCircle,
+        scale_factor: int,
+        lon: float,
+        lat: float,
+        precision: int,
+        radius: float,
+    ) -> None:
         """Verify AreaNoticeCircle subarea fields.
 
         Args:
@@ -113,15 +127,15 @@ class TestAreaNotice:
 
     def checkRectangle(
         self,
-        subarea,
-        scale_factor,
-        lon,
-        lat,
-        precision,
-        e_dim,
-        n_dim,
-        orientation_deg,
-    ):
+        subarea: AreaNoticeRectangle,
+        scale_factor: int,
+        lon: float,
+        lat: float,
+        precision: int,
+        e_dim: float,
+        n_dim: float,
+        orientation_deg: float,
+    ) -> None:
         """Verify AreaNoticeRectangle subarea fields.
 
         Args:
@@ -150,15 +164,15 @@ class TestAreaNotice:
 
     def checkSector(
         self,
-        subarea,
-        scale_factor,
-        lon,
-        lat,
-        precision,
-        radius,
-        left_bound_deg,
-        right_bound_deg,
-    ):
+        subarea: AreaNoticeSector,
+        scale_factor: int,
+        lon: float,
+        lat: float,
+        precision: int,
+        radius: float,
+        left_bound_deg: float,
+        right_bound_deg: float,
+    ) -> None:
         """Verify AreaNoticeSector subarea fields.
 
         Args:
@@ -184,7 +198,15 @@ class TestAreaNotice:
         if "spare" in self.__dict__:
             assert subarea.spare == 0
 
-    def checkPoly(self, sub_area, area_shape, scale_factor, lon, lat, points):
+    def checkPoly(
+        self,
+        sub_area: AreaNoticePoly,
+        area_shape: int,
+        scale_factor: int,
+        lon: float | None,
+        lat: float | None,
+        points: Sequence[tuple[float, float]],
+    ) -> None:
         """Verify AreaNoticePoly subarea fields.
 
         Args:
@@ -207,7 +229,7 @@ class TestAreaNotice:
             assert sub_dist == dist
         assert sub_area.spare == 0
 
-    def checkText(self, sub_area, expected_text):
+    def checkText(self, sub_area: AreaNoticeText, expected_text: str) -> None:
         """Verify AreaNoticeText subarea fields.
 
         Args:
@@ -220,7 +242,7 @@ class TestAreaNotice:
         if "spare" in self.__dict__:
             assert sub_area.spare == 0
 
-    def testCircle(self):
+    def testCircle(self) -> None:
         """Test decoding circle area notice NMEA sample."""
         msg = "!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"
         area_notice = AreaNotice(nmea_strings=[msg])
@@ -236,8 +258,10 @@ class TestAreaNotice:
             duration=2880,
         )
         assert len(area_notice.areas) == 1
+        circle = area_notice.areas[0]
+        assert isinstance(circle, AreaNoticeCircle)
         self.checkCircle(
-            area_notice.areas[0],
+            circle,
             scale_factor=10,
             lon=-71.935,
             lat=41.236666667,
@@ -245,7 +269,7 @@ class TestAreaNotice:
             radius=1800,
         )
 
-    def testOnlyCircleEncode(self):
+    def testOnlyCircleEncode(self) -> None:
         """Test AreaNoticeCircle standalone encoding and decoding."""
         lon = 1.0
         lat = -2.0
@@ -256,7 +280,7 @@ class TestAreaNotice:
         c2 = AreaNoticeCircle(bits=bits)
         self.checkCircle(c2, 1, lon, lat, precision, radius)
 
-    def testEncodeCircleMatchingUSCG(self):
+    def testEncodeCircleMatchingUSCG(self) -> None:
         """Make sure we can recreate the bits in the USCG circle test."""
         msg = "!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"
         # grab just the sub area portion
@@ -278,7 +302,7 @@ class TestAreaNotice:
         c3 = AreaNoticeCircle(bits=c2_bits)
         self.checkCircle(c3, 10, lon, lat, precision, radius)
 
-    def testCircleEncode(self):
+    def testCircleEncode(self) -> None:
         """Test AreaNotice with circle subarea encoding and NMEA generation."""
         # Test against 'Sample AN Data RTCMv1.xlsx' circle
         year = datetime.datetime.utcnow().year
@@ -309,7 +333,7 @@ class TestAreaNotice:
 
         assert lines[0] == expected_msg
 
-    def testRectangle(self):
+    def testRectangle(self) -> None:
         """Test decoding rectangle area notice NMEA sample."""
         msg = "!AIVDM,1,1,0,A,85M:Ih1KmPAVhjAs80e0;cKBN1N:W8Q@:2`0,0*0C"
         area_notice = AreaNotice(nmea_strings=[msg])
@@ -325,6 +349,7 @@ class TestAreaNotice:
         assert len(area_notice.areas) == 1
         # One rectangle
         subarea = area_notice.areas[0]
+        assert isinstance(subarea, AreaNoticeRectangle)
         assert subarea.e_dim_scaled == 40
         assert subarea.n_dim_scaled == 20
         scale_factor = 10
@@ -345,7 +370,7 @@ class TestAreaNotice:
             orientation_deg,
         )
 
-    def testEncodeRectMatchingUSCG(self):
+    def testEncodeRectMatchingUSCG(self) -> None:
         """Test encoding AreaNoticeRectangle matching USCG test vector."""
         msg = "!AIVDM,1,1,0,A,85M:Ih1KmPAVhjAs80e0;cKBN1N:W8Q@:2`0,0*0C"
         sub_area_msg = msg.split(",")[5][-16:]
@@ -376,7 +401,7 @@ class TestAreaNotice:
         )
         assert sa1_bits == sa2_bits
 
-    def testRectangleEncode(self):
+    def testRectangleEncode(self) -> None:
         """Test AreaNotice with rectangle subarea encoding and NMEA generation."""
         year = datetime.datetime.utcnow().year
         when = datetime.datetime(year, 9, 4, 15, 25)
@@ -413,7 +438,7 @@ class TestAreaNotice:
         assert expected_bits == bits
         assert lines[0] == expected_msg
 
-    def testSector(self):
+    def testSector(self) -> None:
         """Test decoding sector area notice NMEA sample."""
         msg = "!AIVDM,1,1,0,A,85M:Ih1KmPAW5BAs80e0EcN<11N6th@6BgL8,0*13"
         area_notice = AreaNotice(nmea_strings=[msg])
@@ -429,6 +454,7 @@ class TestAreaNotice:
         assert len(area_notice.areas) == 1
         # One sector
         subarea = area_notice.areas[0]
+        assert isinstance(subarea, AreaNoticeSector)
         scale_factor = 100
         lon = -71.751666666
         lat = 41.116666666
@@ -440,7 +466,7 @@ class TestAreaNotice:
             subarea, scale_factor, lon, lat, precision, radius, left, right
         )
 
-    def testEncodeSectorMatchingUSCG(self):
+    def testEncodeSectorMatchingUSCG(self) -> None:
         """Test encoding AreaNoticeSector matching USCG test vector."""
         msg = "!AIVDM,1,1,0,A,85M:Ih1KmPAW5BAs80e0EcN<11N6th@6BgL8,0*13"
         sub_area_msg = msg.split(",")[5][-16:]
@@ -463,7 +489,7 @@ class TestAreaNotice:
         self.checkSector(sa3, scale_factor, lon, lat, precision, radius, left, right)
         assert sa1_bits == sa2_bits
 
-    def testPolylineAndText(self):
+    def testPolylineAndText(self) -> None:
         """Test decoding multi-sentence AreaNotice with polyline and text subareas."""
         msg = [
             (
@@ -485,9 +511,13 @@ class TestAreaNotice:
 
         # point = area_notice.areas[0]
         line0, line1, text_block = area_notice.areas
+        assert isinstance(line0, AreaNoticePoly)
+        assert isinstance(line1, AreaNoticePoly)
+        assert isinstance(text_block, AreaNoticeText)
 
         points0 = [(45.0, 2000), (55.5, 1500), (20.0, 755), (75.0, 1825)]
-        lon, lat = -71.6816666666, 41.1483333333
+        lon: float | None = -71.6816666666
+        lat: float | None = 41.1483333333
         self.checkPoly(line0, 3, 1, lon, lat, points0)
 
         # The USCG / Greg Johnson is not following the specs with 0, 0 marking
@@ -501,7 +531,7 @@ class TestAreaNotice:
         assert text_block
         self.checkText(text_block, "TEST LINE 1")
 
-    def testPolylineOnly(self):
+    def testPolylineOnly(self) -> None:
         """Test AreaNoticePoly standalone encoding and decoding."""
         msg = [
             (
@@ -527,7 +557,7 @@ class TestAreaNotice:
         sa2_bits = sa2.get_bits()
         assert sa1_bits == sa2_bits
 
-    def testPolygon(self):
+    def testPolygon(self) -> None:
         """Test decoding polygon area notice NMEA sample."""
         msg = "!AIVDM,1,1,0,A,85M:Ih1KmPAa8jAs85`01cN:41NI@`P00000P7Td4dUP00000000,0*71"
         area_notice = AreaNotice(nmea_strings=[msg])
@@ -541,13 +571,15 @@ class TestAreaNotice:
             duration=2880,
         )
         assert len(area_notice.areas) == 1
+        poly = area_notice.areas[0]
+        assert isinstance(poly, AreaNoticePoly)
 
         points = ((30, 1200), (150, 1200))
         lon = -71.753333333
         lat = 41.241666667
-        self.checkPoly(area_notice.areas[0], 4, 1, lon, lat, points)
+        self.checkPoly(poly, 4, 1, lon, lat, points)
 
-    def testTextOnly(self):
+    def testTextOnly(self) -> None:
         """Test AreaNoticeText standalone encoding and decoding."""
         msg = [
             (
@@ -565,13 +597,13 @@ class TestAreaNotice:
         sa2_bits = sa2.get_bits()
         assert sa1_bits == sa2_bits
 
-    def test_poly_empty_points_padding(self):
+    def test_poly_empty_points_padding(self) -> None:
         """Test polyline encoding with empty point padding."""
         poly = AreaNoticePoly(SHAPES["POLYLINE"], [(10.0, 100)], scale_factor=1)
         bits = poly.get_bits()
         assert len(bits) == 96
 
-    def test_add_subarea_no_areas_attr_and_max_areas_exceeded(self):
+    def test_add_subarea_no_areas_attr_and_max_areas_exceeded(self) -> None:
         """Test subarea addition limits and attribute handling."""
         when = datetime.datetime(2026, 9, 4, 15, 25)
         an = AreaNotice(
@@ -590,7 +622,7 @@ class TestAreaNotice:
         with pytest.raises(AisPackingException, match="Can only have"):
             an.add_subarea(circle)
 
-    def test_get_bits_include_bin_hdr_and_too_large_error(self):
+    def test_get_bits_include_bin_hdr_and_too_large_error(self) -> None:
         """Test binary header inclusion and message size overflow check."""
         when = datetime.datetime(2026, 9, 4, 15, 25)
         an = AreaNotice(
@@ -608,7 +640,7 @@ class TestAreaNotice:
         with pytest.raises(AisPackingException, match="Message to large"):
             an.get_bits()
 
-    def test_decode_nmea_errors_and_fill_bits(self):
+    def test_decode_nmea_errors_and_fill_bits(self) -> None:
         """Test NMEA error handling and fill bits processing."""
         with pytest.raises(AisUnpackingException, match="Checksum failed"):
             AreaNotice(
@@ -627,7 +659,7 @@ class TestAreaNotice:
         an_fill = AreaNotice(nmea_strings=[msg_fill])
         assert len(an_fill.areas) == 1
 
-    def test_subarea_factory_invalid_preceding_shape(self):
+    def test_subarea_factory_invalid_preceding_shape(self) -> None:
         """Test subarea factory throws error for invalid shape sequence."""
         when = datetime.datetime(2026, 9, 4, 15, 25)
         an = AreaNotice(
@@ -649,13 +681,13 @@ class TestAreaNotice:
         ):
             AreaNotice(nmea_strings=None).decode_bits(invalid_bits)
 
-    def test_decode_bits_verify_log(self):
+    def test_decode_bits_verify_log(self) -> None:
         """Test DecodeBits verification failure logging."""
         db = DecodeBits(BitVector.from_bitstring("0000"))
         with pytest.raises(AssertionError):
             db.Verify(10)
 
-    def test_scale_factors_and_defaults(self):
+    def test_scale_factors_and_defaults(self) -> None:
         """Test scale factor auto-computation and default property evaluation."""
         subarea = AreaNoticeCircle(lon=1.0, lat=2.0, radius=500000, scale_factor=None)
         assert subarea.getScaleFactor(500000) == 1000
@@ -690,30 +722,30 @@ class TestAreaNotice:
         del poly.scale_factor
         assert len(poly.get_bits()) == 96
 
-    def test_decode_nmea_none_in_msgs(self, monkeypatch):
+    def test_decode_nmea_none_in_msgs(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test NMEA decoding with fake regex matches."""
 
         class FakeMatch1:
             """Fake NMEA regex match with checksum."""
 
-            def groupdict(self):
+            def groupdict(self) -> dict[str, str]:
                 """Return groupdict with valid checksum."""
                 return {"checksum": "06"}
 
         class FakeMatch2:
             """Fake NMEA regex match with no groupdict."""
 
-            def groupdict(self):
+            def groupdict(self) -> None:
                 """Return None for groupdict."""
                 return None
 
         class FakeRegex:
             """Fake regex search implementation for testing NMEA parsing."""
 
-            def __init__(self):
+            def __init__(self) -> None:
                 self.calls = 0
 
-            def search(self, _text):
+            def search(self, _text: str) -> FakeMatch1 | FakeMatch2:
                 """Simulate regex search calls returning fake matches."""
                 self.calls += 1
                 if self.calls == 1:

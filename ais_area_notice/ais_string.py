@@ -12,7 +12,7 @@ import re
 from BitVector import BitVector
 
 
-character_lut = [
+character_lut: list[str] = [
     "@",
     "A",
     "B",
@@ -82,7 +82,7 @@ character_lut = [
 # Fast lookup for the AIS int code for a character.
 # TODO(schwehr): Remove duplicate character entry without breaking things.
 # pylint: disable=duplicate-key
-character_dict = {
+character_dict: dict[str, int] = {
     "@": 0,
     "A": 1,
     "B": 2,
@@ -149,22 +149,22 @@ character_dict = {
     "?": 63,
 }
 
-character_bits = {
+character_bits: dict[str, BitVector] = {
     char: BitVector.from_int(code, size=6) for char, code in character_dict.items()
 }
 
 
-def Decode(bits, drop_after_first_at=False):
+def Decode(bits: BitVector, drop_after_first_at: bool = False) -> str:
     """Decode bits as a string.
 
     Does not remove the end space or @@@@.  Must be an multiple of 6 bits.
 
     Args:
-      bits: BitVector, n*6 bits that represent a string.
-      drop_after_first_at: Strip trailing add.
+        bits: BitVector, n*6 bits that represent a string.
+        drop_after_first_at: Strip trailing add.
 
     Returns:
-      A string with pad spaces or @@@@.
+        A string with pad spaces or @@@@.
     """
     numchar = len(bits) // 6
     s = []
@@ -180,17 +180,17 @@ def Decode(bits, drop_after_first_at=False):
     return "".join(s)
 
 
-def Encode(string, bit_size=None):
+def Encode(string: str, bit_size: int | None = None) -> BitVector:
     """Convert a string to a BitVector.
 
     TODO(schwehr): Pad with "@" to reach requested bitSize.
 
     Args:
-      string: str to encode.
-      bit_size: integer: multiple of 6 size of the resulting bits.
+        string: str to encode.
+        bit_size: Multiple of 6 size of the resulting bits.
 
     Returns:
-      String representing the bits encoded as an AIS VDM armored characters.
+        BitVector representing the string.
     """
     if bit_size:
         assert bit_size % 6 == 0
@@ -209,15 +209,15 @@ def Encode(string, bit_size=None):
     return bv
 
 
-def Strip(string, remove_blanks=True):
+def Strip(string: str, remove_blanks: bool = True) -> str:
     """Remove AIS string padding @ characters and spaces on the right.
 
     Args:
-      string: A string to cleanup.
-      remove_blanks: Set to true to strip spaces on the right.
+        string: A string to cleanup.
+        remove_blanks: Set to true to strip spaces on the right.
 
     Returns:
-      A cleaned up string.
+        A cleaned up string.
     """
     string = re.sub("@.*", "", string)
     if remove_blanks:
@@ -225,15 +225,15 @@ def Strip(string, remove_blanks=True):
     return string
 
 
-def Pad(string, length):
+def Pad(string: str, length: int) -> str:
     """Pad string to length with @ characters.
 
     Args:
-      string: String to pad out.
-      length: Number of characters that the string must be.
+        string: String to pad out.
+        length: Number of characters that the string must be.
 
     Returns:
-      str of the require length that is right padded.
+        str of the require length that is right padded.
     """
     pad = length - len(string)
     if pad > 0:

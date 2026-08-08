@@ -7,7 +7,7 @@ import pytest
 from ais_area_notice import ais_string
 
 
-def test_strip():
+def test_strip() -> None:
     """Test stripping trailing padding characters and spaces from AIS strings."""
     assert ais_string.Strip("") == ""
     assert ais_string.Strip("@") == ""
@@ -20,7 +20,7 @@ def test_strip():
     assert ais_string.Strip("A@B") == "A"
 
 
-def test_pad():
+def test_pad() -> None:
     """Test padding AIS strings to a specified character length with '@'."""
     assert ais_string.Pad("", 0) == ""
     assert ais_string.Pad("", 1) == "@"
@@ -29,7 +29,7 @@ def test_pad():
     assert ais_string.Pad("MY SHIP NAME", 20) == "MY SHIP NAME@@@@@@@@"
 
 
-def test_round_trip():
+def test_round_trip() -> None:
     """Test encoding and decoding AIS strings preserves original content."""
     strings = ("", " ", "@", " @", "A", "A@A")
     for string in strings:
@@ -37,20 +37,20 @@ def test_round_trip():
         assert ais_string.Decode(encoded) == string
 
 
-def test_decode_drop_after_first_at():
+def test_decode_drop_after_first_at() -> None:
     """Test decoding AIS strings with drop_after_first_at set to True."""
     encoded = ais_string.Encode("A@A")
     assert ais_string.Decode(encoded, drop_after_first_at=True) == "A"
 
 
-def test_encode_bit_size_padding():
+def test_encode_bit_size_padding() -> None:
     """Test encoding AIS strings with explicit bit_size padding."""
     encoded = ais_string.Encode("A", bit_size=12)
     assert len(encoded) == 12
     assert str(encoded) == "000001000000"
 
 
-def test_encode_bit_size_too_small():
+def test_encode_bit_size_too_small() -> None:
     """Test encoding AIS strings raises error when bit_size is too small."""
     with pytest.raises(AssertionError):
         ais_string.Encode("AB", bit_size=6)

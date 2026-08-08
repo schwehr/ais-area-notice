@@ -19,7 +19,7 @@ import ais_area_notice.imo_001_26_environment as env
 FUZZ_COUNT = 30
 
 
-def random_date():
+def random_date() -> datetime.datetime:
     """Generate a random datetime within 2010-2049.
 
     Returns:
@@ -33,7 +33,7 @@ def random_date():
     return datetime.datetime.strptime(date_str, "%Y-%jT%H:%M")
 
 
-def random_loc():
+def random_loc() -> env.SensorReportLocation:
     """Generate a randomized SensorReportLocation instance.
 
     Returns:
@@ -61,7 +61,7 @@ def random_loc():
     )
 
 
-def random_id():
+def random_id() -> env.SensorReportId:
     """Generate a randomized SensorReportId instance.
 
     Returns:
@@ -83,7 +83,7 @@ def random_id():
     )
 
 
-def random_wind():
+def random_wind() -> env.SensorReportWind:
     """Generate a randomized SensorReportWind instance.
 
     Returns:
@@ -114,7 +114,7 @@ def random_wind():
     )
 
 
-def random_waterlevel():
+def random_waterlevel() -> env.SensorReportWaterLevel:
     """Generate a randomized SensorReportWaterLevel instance.
 
     Returns:
@@ -147,7 +147,7 @@ def random_waterlevel():
     )
 
 
-def random_current2d():
+def random_current2d() -> env.SensorReportCurrent2d:
     """Generate a randomized SensorReportCurrent2d instance.
 
     Returns:
@@ -179,7 +179,7 @@ def random_current2d():
 # TODO(schwehr): Level different between 2d and 3d.
 
 
-def random_current3d():
+def random_current3d() -> env.SensorReportCurrent3d:
     """Generate a randomized SensorReportCurrent3d instance.
 
     Returns:
@@ -206,7 +206,7 @@ def random_current3d():
     )
 
 
-def random_currenthorz():
+def random_currenthorz() -> env.SensorReportCurrentHorz:
     """Generate a randomized SensorReportCurrentHorz instance.
 
     Returns:
@@ -234,7 +234,7 @@ def random_currenthorz():
     )
 
 
-def random_seastate():
+def random_seastate() -> env.SensorReportSeaState:
     """Generate a randomized SensorReportSeaState instance.
 
     Returns:
@@ -265,7 +265,7 @@ def random_seastate():
     )
 
 
-def random_salinity():
+def random_salinity() -> env.SensorReportSalinity:
     """Generate a randomized SensorReportSalinity instance.
 
     Returns:
@@ -282,14 +282,14 @@ def random_salinity():
         site_id=site_id,
         temp=random.randrange(-100, 500) / 10.0,
         cond=random.randrange(0, 703) / 100.0,
-        pres=random.randrange(0, 60003) / 10.0,
+        pres=random.randrange(0, 6003) / 10.0,
         salinity=random.randrange(0, 503) / 10.0,
         salinity_type=random.choice((0, 1, 2)),
         data_descr=random.choice(list(env.sensor_type_lut.keys())),
     )
 
 
-def random_weather():
+def random_weather() -> env.SensorReportWeather:
     """Generate a randomized SensorReportWeather instance.
 
     Returns:
@@ -317,7 +317,7 @@ def random_weather():
     )
 
 
-def random_airgap():
+def random_airgap() -> env.SensorReportAirGap:
     """Generate a randomized SensorReportAirGap instance.
 
     Returns:
@@ -357,7 +357,7 @@ random_types = (
 )
 
 
-def random_sensorreport():
+def random_sensorreport() -> env.SensorReport:
     """randomly pick a sensor report and return it with random valid content"""
     return random.choice(random_types)()
 
@@ -365,7 +365,7 @@ def random_sensorreport():
 class TestSensorReports:
     """Test suite for sensor report classes and bitstream packing/unpacking."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up current timestamp for test instances."""
         now = datetime.datetime.utcnow()
         self.year = now.year
@@ -374,7 +374,7 @@ class TestSensorReports:
         self.hour = now.hour
         self.minute = now.minute
 
-    def test_SensorReport(self):
+    def test_SensorReport(self) -> None:
         """Test base SensorReport initialization, header bit length, and date calculation."""
         # Create and work with just the parent class.
         report_type = 0
@@ -426,7 +426,7 @@ class TestSensorReports:
         )
         assert sr.get_date() == datetime.datetime(2011, 12, 31, 23, 59)
 
-    def test_Sr_eq(self):
+    def test_Sr_eq(self) -> None:
         """SensorReport equality operator"""
         sr_0 = env.SensorReport(0, 2010, 1, 1, 1, 1, site_id=0)
         sr_0b = env.SensorReport(bits=sr_0.get_bits())
@@ -444,13 +444,13 @@ class TestSensorReports:
         assert sr_1 == sr_1  # pylint: disable=comparison-with-itself
         assert sr_0 != sr_1
 
-    def test_Sr_not_eq(self):
+    def test_Sr_not_eq(self) -> None:
         """Test SensorReport inequality for differing site IDs."""
         sr_0 = env.SensorReport(0, 2010, 1, 1, 1, 1, site_id=0)
         sr_1 = env.SensorReport(0, 2010, 1, 1, 1, 1, site_id=1)
         assert sr_0 != sr_1
 
-    def test_SrLocation(self):
+    def test_SrLocation(self) -> None:
         """SensorReportLocation"""
         site_id = int(math.floor(random.random() * 128))
         sr_l = env.SensorReportLocation(day=1, hour=2, minute=3, site_id=site_id)
@@ -460,7 +460,7 @@ class TestSensorReports:
         assert sr_l == sr_l2
         assert sr_l != env.SensorReport(0, site_id=0)
 
-    def test_SrLocation_min(self):
+    def test_SrLocation_min(self) -> None:
         """SrLocation minimum values"""
         sr_l = env.SensorReportLocation(
             year=2010,
@@ -478,7 +478,7 @@ class TestSensorReports:
         sr_lb = env.SensorReportLocation(bits=sr_l.get_bits())
         assert sr_l == sr_lb
 
-    def test_SrLocation_max(self):
+    def test_SrLocation_max(self) -> None:
         """SrLocation maximum values"""
         sr_l = env.SensorReportLocation(
             year=2049,
@@ -506,7 +506,7 @@ class TestSensorReports:
 
         assert sr_l == sr_lb
 
-    def test_SrLoc_fuzz(self):
+    def test_SrLoc_fuzz(self) -> None:
         """Fuzz test SensorReportLocation bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_loc()
@@ -517,7 +517,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SrId(self):
+    def test_SrId(self) -> None:
         """SensorReportId with range of strings."""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportId(site_id=site_id)
@@ -536,7 +536,7 @@ class TestSensorReports:
         assert " id" in s2
         assert s1 == s2
 
-    def test_SrId_fuzz(self):
+    def test_SrId_fuzz(self) -> None:
         """Fuzz test SensorReportId bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_id()
@@ -547,7 +547,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_eq_id_at_padding(self):
+    def test_eq_id_at_padding(self) -> None:
         """id based on failures in fuzzing - at padding"""
         id_str = '"Z-@'
         sr = env.SensorReportId(site_id=10, id_str=id_str)
@@ -555,7 +555,7 @@ class TestSensorReports:
         assert sr.id_str == id_str.ljust(14, "@")
         assert sr == sr_b
 
-    def test_SrWind(self):
+    def test_SrWind(self) -> None:
         """SensorReport Wind"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportWind(site_id=site_id)
@@ -570,7 +570,7 @@ class TestSensorReports:
         assert sr.data_descr == 7
         assert env.SensorReportWind(bits=sr.get_bits()).data_descr == 7
 
-    def test_SrWind_min(self):
+    def test_SrWind_min(self) -> None:
         """SensorReport Wind minimum valid values"""
         sr = env.SensorReportWind(
             year=2020,
@@ -614,7 +614,7 @@ class TestSensorReports:
         assert sr_b.forecast_minute == 0
         assert sr_b.duration_min == 1
 
-    def test_SrWind_max(self):
+    def test_SrWind_max(self) -> None:
         """SensorReport Wind minimum valid values"""
         sr = env.SensorReportWind(
             year=2018,
@@ -655,7 +655,7 @@ class TestSensorReports:
         assert sr_b.forecast_minute == 59
         assert sr_b.duration_min == 255
 
-    def test_SrWind_fuzz(self):
+    def test_SrWind_fuzz(self) -> None:
         """Fuzz test SensorReportWind bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_wind()
@@ -666,7 +666,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SrWaterLevel(self):
+    def test_SrWaterLevel(self) -> None:
         """SensorReport WaterLevel"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportWaterLevel(site_id=site_id)
@@ -682,7 +682,7 @@ class TestSensorReports:
         description = env.SensorReportWaterLevel(bits=sr.get_bits()).data_descr
         assert description == 7
 
-    def test_SrWaterLevel_min(self):
+    def test_SrWaterLevel_min(self) -> None:
         """SensorReport WaterLevel minimum"""
         sr = env.SensorReportWaterLevel(
             year=2010,
@@ -721,7 +721,7 @@ class TestSensorReports:
         assert sr_b.forecast_minute == 0
         assert sr_b.duration_min == 0
 
-    def test_SrWaterLevel_max(self):
+    def test_SrWaterLevel_max(self) -> None:
         """SensorReport WaterLevel maximum"""
         sr = env.SensorReportWaterLevel(
             year=2049,
@@ -760,7 +760,7 @@ class TestSensorReports:
         assert sr_b.forecast_minute == 59
         assert sr_b.duration_min == 255
 
-    def test_SrWaterLevel_fuzz(self):
+    def test_SrWaterLevel_fuzz(self) -> None:
         """Fuzz test SensorReportWaterLevel bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_waterlevel()
@@ -771,7 +771,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportCurrent2d(self):
+    def test_SensorReportCurrent2d(self) -> None:
         """SensorReport Current2d"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportCurrent2d(site_id=site_id)
@@ -787,7 +787,7 @@ class TestSensorReports:
         description = env.SensorReportCurrent2d(bits=sr.get_bits()).data_descr
         assert description == 7
 
-    def test_SensorReportCurrent2d_min(self):
+    def test_SensorReportCurrent2d_min(self) -> None:
         """SensorReport Current2d minimum"""
         sr = env.SensorReportCurrent2d(
             year=2010,
@@ -815,7 +815,7 @@ class TestSensorReports:
             assert cur["level"] == pytest.approx(0)
         assert sr_b.data_descr == 0
 
-    def test_SensorReportCurrent2d_max(self):
+    def test_SensorReportCurrent2d_max(self) -> None:
         """SensorReport Current2d maximum"""
         sr = env.SensorReportCurrent2d(
             year=2049,
@@ -843,7 +843,7 @@ class TestSensorReports:
             assert cur["level"] == pytest.approx(361)
         assert sr_b.data_descr == 5
 
-    def test_SrCurrent2d_fuzz(self):
+    def test_SrCurrent2d_fuzz(self) -> None:
         """Fuzz test SensorReportCurrent2d bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_current2d()
@@ -854,7 +854,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportCurrent3d(self):
+    def test_SensorReportCurrent3d(self) -> None:
         """SensorReport Current3d"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportCurrent3d(site_id=site_id)
@@ -864,7 +864,7 @@ class TestSensorReports:
         sr_b = env.SensorReportCurrent3d(bits=sr.get_bits())
         assert sr == sr_b
 
-    def test_SensorReportCurrent3d_min(self):
+    def test_SensorReportCurrent3d_min(self) -> None:
         """SensorReport Current3d minimum"""
         sr = env.SensorReportCurrent3d(
             year=2010,
@@ -891,7 +891,7 @@ class TestSensorReports:
                 assert cur[x] == pytest.approx(0.0)
         assert sr_b.data_descr == 0
 
-    def test_SensorReportCurrent3d_max(self):
+    def test_SensorReportCurrent3d_max(self) -> None:
         """SensorReport Current3d maximum"""
         sr = env.SensorReportCurrent3d(
             year=2010,
@@ -918,7 +918,7 @@ class TestSensorReports:
                 assert cur[x] == pytest.approx(24.6)
         assert sr_b.data_descr == 0
 
-    def test_SrCurrent3d_fuzz(self):
+    def test_SrCurrent3d_fuzz(self) -> None:
         """Fuzz test SensorReportCurrent3d bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_current3d()
@@ -929,7 +929,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportCurrentHorz(self):
+    def test_SensorReportCurrentHorz(self) -> None:
         """SensorReport CurrentHorz"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportCurrentHorz(site_id=site_id)
@@ -940,7 +940,7 @@ class TestSensorReports:
 
         assert sr == sr_b
 
-    def test_SensorReportCurrentHorz_min(self):
+    def test_SensorReportCurrentHorz_min(self) -> None:
         """SensorReport CurrentHorz minimum"""
         sr = env.SensorReportCurrentHorz(
             year=2010,
@@ -966,7 +966,7 @@ class TestSensorReports:
             for val in cur.values():
                 assert val == pytest.approx(0.0)
 
-    def test_SensorReportCurrentHorz_max(self):
+    def test_SensorReportCurrentHorz_max(self) -> None:
         """SensorReport CurrentHorz maximum"""
         sr = env.SensorReportCurrentHorz(
             year=2010,
@@ -994,7 +994,7 @@ class TestSensorReports:
             assert cur["dist"] == 121
             assert cur["level"] == 361
 
-    def test_SrCurrentHorz_fuzz(self):
+    def test_SrCurrentHorz_fuzz(self) -> None:
         """Fuzz test SensorReportCurrentHorz bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_currenthorz()
@@ -1005,7 +1005,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportSeaState(self):
+    def test_SensorReportSeaState(self) -> None:
         """SensorReport SeaState"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportSeaState(site_id=site_id)
@@ -1014,7 +1014,7 @@ class TestSensorReports:
         assert sr.month == 1
         env.SensorReportSeaState(bits=sr.get_bits())
 
-    def test_SensorReportSeaState_min(self):
+    def test_SensorReportSeaState_min(self) -> None:
         """SensorReport SeaState minimum"""
         sr = env.SensorReportSeaState(
             year=2010,
@@ -1053,7 +1053,7 @@ class TestSensorReports:
         assert sr_b.wave_data_descr == pytest.approx(1)
         assert sr_b.salinity == pytest.approx(0)
 
-    def test_SensorReportSeaState_max(self):
+    def test_SensorReportSeaState_max(self) -> None:
         """SensorReport SeaState max"""
         sr = env.SensorReportSeaState(
             year=2010,
@@ -1091,7 +1091,7 @@ class TestSensorReports:
         assert sr_b.wave_data_descr == 5
         assert sr_b.salinity == pytest.approx(50.0)
 
-    def test_SrCurrentSeaState_fuzz(self):
+    def test_SrCurrentSeaState_fuzz(self) -> None:
         """Fuzz test SensorReportSeaState bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_seastate()
@@ -1102,7 +1102,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportSalinity(self):
+    def test_SensorReportSalinity(self) -> None:
         """SensorReport Salinity"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportSalinity(site_id=site_id)
@@ -1111,7 +1111,7 @@ class TestSensorReports:
         assert sr.month == 1
         env.SensorReportSalinity(bits=sr.get_bits())
 
-    def test_SensorReportSalinity_min(self):
+    def test_SensorReportSalinity_min(self) -> None:
         """SensorReport Salinity minimum"""
         sr = env.SensorReportSalinity(
             year=2010,
@@ -1135,7 +1135,7 @@ class TestSensorReports:
         assert sr_b.salinity_type == 0
         assert sr_b.data_descr == 1
 
-    def test_SensorReportSalinity_max(self):
+    def test_SensorReportSalinity_max(self) -> None:
         """SensorReport Salinity maximum"""
         sr = env.SensorReportSalinity(
             year=2010,
@@ -1159,7 +1159,7 @@ class TestSensorReports:
         assert sr_b.salinity_type == 2
         assert sr_b.data_descr == 5
 
-    def test_SrCurrentSalinity_fuzz(self):
+    def test_SrCurrentSalinity_fuzz(self) -> None:
         """Fuzz test SensorReportSalinity bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_salinity()
@@ -1170,7 +1170,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportWeather(self):
+    def test_SensorReportWeather(self) -> None:
         """SensorReport Weather"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportWeather(site_id=site_id)
@@ -1179,7 +1179,7 @@ class TestSensorReports:
         assert sr.month == 1
         env.SensorReportWeather(bits=sr.get_bits())
 
-    def test_SensorReportWeather_min(self):
+    def test_SensorReportWeather_min(self) -> None:
         """SensorReport Weather minimum"""
         sr = env.SensorReportWeather(
             year=2010,
@@ -1211,7 +1211,7 @@ class TestSensorReports:
         assert sr_b.air_pres_data_descr == 1
         assert sr_b.salinity == pytest.approx(0.0)
 
-    def test_SensorReportWeather_max(self):
+    def test_SensorReportWeather_max(self) -> None:
         """SensorReport Weather maximum"""
         sr = env.SensorReportWeather(
             year=2010,
@@ -1243,7 +1243,7 @@ class TestSensorReports:
         assert sr_b.air_pres_data_descr == 5
         assert sr_b.salinity == pytest.approx(50.0)
 
-    def test_SrWeather_fuzz(self):
+    def test_SrWeather_fuzz(self) -> None:
         """Fuzz test SensorReportWeather bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_weather()
@@ -1254,7 +1254,7 @@ class TestSensorReports:
                 sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
-    def test_SensorReportAirGap(self):
+    def test_SensorReportAirGap(self) -> None:
         """SensorReport AirGap"""
         site_id = int(math.floor(random.random() * 128))
         sr = env.SensorReportAirGap(site_id=site_id)
@@ -1263,7 +1263,7 @@ class TestSensorReports:
         assert sr.month == 1
         env.SensorReportAirGap(bits=sr.get_bits())
 
-    def test_SensorReportAirGap_min(self):
+    def test_SensorReportAirGap_min(self) -> None:
         """SensorReport AirGap minimum"""
         sr = env.SensorReportAirGap(
             year=2010,
@@ -1289,7 +1289,7 @@ class TestSensorReports:
         assert sr_b.forecast_hour == pytest.approx(0)
         assert sr_b.forecast_minute == pytest.approx(0)
 
-    def test_SensorReportAirGap_max(self):
+    def test_SensorReportAirGap_max(self) -> None:
         """SensorReport AirGap maximumx"""
         sr = env.SensorReportAirGap(
             year=2049,
@@ -1315,7 +1315,7 @@ class TestSensorReports:
         assert sr_b.forecast_hour == 23
         assert sr_b.forecast_minute == 59
 
-    def test_SrAirGap_fuzz(self):
+    def test_SrAirGap_fuzz(self) -> None:
         """Fuzz test SensorReportAirGap bit stream roundtrip."""
         for _ in range(FUZZ_COUNT):
             sr = random_airgap()
@@ -1330,7 +1330,7 @@ class TestSensorReports:
 class TestEnvironment:
     """Environmental Message with a variety of SensorReports"""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up current timestamp for environment test instances."""
         now = datetime.datetime.utcnow()
         self.year = now.year
@@ -1339,7 +1339,7 @@ class TestEnvironment:
         self.hour = now.hour
         self.minute = now.minute
 
-    def test_empty(self):
+    def test_empty(self) -> None:
         """Test empty Environment message serialization, string representation, and comparison."""
         e = env.Environment(source_mmsi=123456)
         assert e == e  # pylint: disable=comparison-with-itself
@@ -1355,7 +1355,7 @@ class TestEnvironment:
         e_b.source_mmsi = 654321
         assert e != e_b
 
-    def test_single(self):
+    def test_single(self) -> None:
         """Test Environment with single sensor report for all report types."""
         e_instances = []
         for sr_class in env.sensor_report_classes:
@@ -1381,7 +1381,7 @@ class TestEnvironment:
                     continue
                 assert msg != other_msg
 
-    def test_wind(self):
+    def test_wind(self) -> None:
         """Test Environment with SensorReportWind sub-report decoding."""
         e = env.Environment(source_mmsi=656565)
 
@@ -1406,6 +1406,7 @@ class TestEnvironment:
         e.add_sensor_report(sr)
         e_b = env.Environment(bits=e.get_bits(include_bin_hdr=True))
         sr_b = e_b.sensor_reports[0]
+        assert isinstance(sr_b, env.SensorReportWind)
         assert sr_b.day == 15
         assert sr_b.hour == 13
         assert sr_b.minute == 35
@@ -1424,7 +1425,7 @@ class TestEnvironment:
         assert sr_b.forecast_minute == 49
         assert sr_b.duration_min == 35
 
-    def test_single2(self):
+    def test_single2(self) -> None:
         """Try messages with random content"""
         for _ in range(FUZZ_COUNT):
             e = env.Environment(source_mmsi=random.randint(100000, 999999999))
@@ -1435,7 +1436,7 @@ class TestEnvironment:
             assert sr == e_b.sensor_reports[0]
             assert e == e_b
 
-    def test_two(self):
+    def test_two(self) -> None:
         """Test Environment with multiple randomized sensor reports."""
         for _ in range(FUZZ_COUNT // 2):
             e = env.Environment(source_mmsi=random.randint(100000, 999999999))
@@ -1448,7 +1449,7 @@ class TestEnvironment:
             e_b = env.Environment(bits=e.get_bits(include_bin_hdr=True))
             assert e == e_b
 
-    def test_salinity_eq_trouble(self):
+    def test_salinity_eq_trouble(self) -> None:
         """based on a failing random case of salinity report"""
         sr = env.SensorReportSalinity(
             day=17,
@@ -1465,7 +1466,7 @@ class TestEnvironment:
         sr_b = env.SensorReportSalinity(bits=sr.get_bits())
         assert sr == sr_b
 
-    def test_eq_waterlevel(self):
+    def test_eq_waterlevel(self) -> None:
         """water level based on failures in fuzzing - round before int(float_val)"""
         for value in (150.14, 158.7):
             sr = env.SensorReportWaterLevel(site_id=0, wl=value)
@@ -1474,7 +1475,7 @@ class TestEnvironment:
             assert sr.wl == pytest.approx(sb_b.wl)
             assert sr == sb_b
 
-    def test_add_sensor_report_no_attr_and_too_many(self):
+    def test_add_sensor_report_no_attr_and_too_many(self) -> None:
         """Test adding sensor reports handles missing attribute and max limit."""
         e = env.Environment(source_mmsi=123456)
         del e.sensor_reports
@@ -1490,14 +1491,14 @@ class TestEnvironment:
         with pytest.raises(env.AisPackingException, match="Too many sensor reports"):
             e.add_sensor_report(sr)
 
-    def test_get_report_types(self):
+    def test_get_report_types(self) -> None:
         """Test retrieving list of report type IDs in Environment."""
         e = env.Environment(source_mmsi=123456)
         e.add_sensor_report(env.SensorReportLocation(site_id=1))
         e.add_sensor_report(env.SensorReportWind(site_id=2))
         assert e.get_report_types() == [0, 2]
 
-    def test_get_bits_no_mmsi_and_too_large(self):
+    def test_get_bits_no_mmsi_and_too_large(self) -> None:
         """Test get_bits error handling for missing MMSI and oversized payload."""
         e = env.Environment(source_mmsi=123456)
         e.source_mmsi = None
@@ -1511,7 +1512,7 @@ class TestEnvironment:
         with pytest.raises(env.AisPackingException, match="Too large"):
             e2.get_bits()
 
-    def test_decode_nmea_errors(self, monkeypatch):
+    def test_decode_nmea_errors(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test NMEA decoding error handling for Environment."""
         e = env.Environment(source_mmsi=123456)
         with pytest.raises(env.AisUnpackingException, match="Checksum failed"):
@@ -1523,24 +1524,24 @@ class TestEnvironment:
         class FakeMatch1:
             """Fake NMEA regex match with checksum."""
 
-            def groupdict(self):
+            def groupdict(self) -> dict[str, str]:
                 """Return groupdict with valid checksum."""
                 return {"checksum": "19"}
 
         class FakeMatch2:
             """Fake NMEA regex match with no groupdict."""
 
-            def groupdict(self):
+            def groupdict(self) -> None:
                 """Return None for groupdict."""
                 return None
 
         class FakeRegex:
             """Fake regex search implementation for testing NMEA parsing."""
 
-            def __init__(self):
+            def __init__(self) -> None:
                 self.calls = 0
 
-            def search(self, _text):
+            def search(self, _text: str) -> FakeMatch1 | FakeMatch2:
                 """Simulate regex search calls returning fake matches."""
                 self.calls += 1
                 if self.calls == 1:
@@ -1551,7 +1552,7 @@ class TestEnvironment:
         with pytest.raises(env.AisUnpackingException, match="Nothing decoded from"):
             e.decode_nmea(["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"])
 
-    def test_decode_bits_fill_bits_trouble(self):
+    def test_decode_bits_fill_bits_trouble(self) -> None:
         """Test decoding invalid BitVector size raises exception."""
         e = env.Environment(source_mmsi=123456)
 
@@ -1561,7 +1562,7 @@ class TestEnvironment:
         ):
             e.decode_bits(invalid_bits)
 
-    def test_sensor_report_factory_reserved_type(self):
+    def test_sensor_report_factory_reserved_type(self) -> None:
         """Test sensor report factory raises exception for reserved type IDs."""
         e = env.Environment(source_mmsi=123456)
 
@@ -1572,13 +1573,15 @@ class TestEnvironment:
         ):
             e.sensor_report_factory(reserved_bits)
 
-    def test_geo_interface(self):
+    def test_geo_interface(self) -> None:
         """Test unimplemented __geo_interface__ property raises exception."""
         e = env.Environment(source_mmsi=123456)
         with pytest.raises(NotImplementedError):
             _ = e.__geo_interface__
 
-    def test_air_gap_decode_bits_size_and_get_bits_size(self, monkeypatch):
+    def test_air_gap_decode_bits_size_and_get_bits_size(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test SensorReportAirGap size validation exceptions."""
         sr = env.SensorReportAirGap(site_id=1, gap=10.0, draft=5.0)
 
@@ -1588,7 +1591,7 @@ class TestEnvironment:
         orig_joinbv = env.binary.joinBV
         calls = 0
 
-        def fake_joinbv(bv_list):
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
             nonlocal calls
             calls += 1
             if calls == 2:
@@ -1599,7 +1602,7 @@ class TestEnvironment:
         with pytest.raises(env.AisPackingException, match="bit length 100"):
             sr.get_bits()
 
-    def test_air_gap_unicode(self):
+    def test_air_gap_unicode(self) -> None:
         """Test SensorReportAirGap string representation."""
         sr = env.SensorReportAirGap(
             site_id=1,
@@ -1617,8 +1620,8 @@ class TestEnvironment:
         assert "forecast_gap=6.0" in u
 
     def test_environment_init_nmea_strings_and_verbose_unicode_and_eq_diff_reports_and_html(
-        self, monkeypatch
-    ):
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test Environment initialization, unicode formatting, and comparison with different report types."""
         monkeypatch.setattr(env.Environment, "decode_nmea", lambda self, strings: None)
         e = env.Environment(
@@ -1636,7 +1639,7 @@ class TestEnvironment:
         with pytest.raises(NotImplementedError):
             e2.html()
 
-    def test_current_horz_coverage(self, monkeypatch):
+    def test_current_horz_coverage(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test SensorReportCurrentHorz exception handling and unicode formatting."""
         sr = env.SensorReportCurrentHorz(site_id=1)
 
@@ -1646,7 +1649,7 @@ class TestEnvironment:
         orig_joinbv = env.binary.joinBV
         calls = 0
 
-        def fake_joinbv(bv_list):
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
             nonlocal calls
             calls += 1
             if calls == 2:
@@ -1661,7 +1664,7 @@ class TestEnvironment:
         u = sr.__unicode__()
         assert "SensorReport CurrentHorz: site_id=1" in u
 
-    def test_sea_state_coverage(self, monkeypatch):
+    def test_sea_state_coverage(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test SensorReportSeaState exception handling and unicode formatting."""
         sr = env.SensorReportSeaState(site_id=1)
 
@@ -1671,7 +1674,7 @@ class TestEnvironment:
         orig_joinbv = env.binary.joinBV
         calls = 0
 
-        def fake_joinbv(bv_list):
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
             nonlocal calls
             calls += 1
             if calls == 2:
@@ -1686,7 +1689,7 @@ class TestEnvironment:
         u = sr.__unicode__()
         assert "SensorReport SeaState: site_id=1" in u
 
-    def test_salinity_coverage(self, monkeypatch):
+    def test_salinity_coverage(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test SensorReportSalinity exception handling and unicode formatting."""
         sr = env.SensorReportSalinity(site_id=1)
 
@@ -1696,7 +1699,7 @@ class TestEnvironment:
         orig_joinbv = env.binary.joinBV
         calls = 0
 
-        def fake_joinbv(bv_list):
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
             nonlocal calls
             calls += 1
             if calls == 2:
@@ -1711,7 +1714,7 @@ class TestEnvironment:
         u = sr.__unicode__()
         assert "SensorReport Salinity: site_id=1" in u
 
-    def test_weather_coverage(self, monkeypatch):
+    def test_weather_coverage(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test SensorReportWeather exception handling and unicode formatting."""
         sr = env.SensorReportWeather(site_id=1)
 
@@ -1721,7 +1724,7 @@ class TestEnvironment:
         orig_joinbv = env.binary.joinBV
         calls = 0
 
-        def fake_joinbv(bv_list):
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
             nonlocal calls
             calls += 1
             if calls == 2:
@@ -1736,7 +1739,7 @@ class TestEnvironment:
         u = sr.__unicode__()
         assert "SensorReport Wx: site_id=1" in u
 
-    def test_wind_coverage(self, monkeypatch):
+    def test_wind_coverage(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test SensorReportWind exception handling and unicode formatting."""
         sr = env.SensorReportWind(
             site_id=1,
@@ -1753,7 +1756,7 @@ class TestEnvironment:
         orig_joinbv = env.binary.joinBV
         calls = 0
 
-        def fake_joinbv(bv_list):
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
             nonlocal calls
             calls += 1
             if calls == 2:
@@ -1770,7 +1773,7 @@ class TestEnvironment:
         assert "speed=10" in u
         assert "forecast: speed=12" in u
 
-    def test_water_level_coverage(self, monkeypatch):
+    def test_water_level_coverage(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test SensorReportWaterLevel exception handling and unicode formatting."""
         sr = env.SensorReportWaterLevel(site_id=1, wl=1.5, forecast_wl=2.0)
 
@@ -1780,7 +1783,7 @@ class TestEnvironment:
         orig_joinbv = env.binary.joinBV
         calls = 0
 
-        def fake_joinbv(bv_list):
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
             nonlocal calls
             calls += 1
             if calls == 2:
@@ -1797,7 +1800,7 @@ class TestEnvironment:
         assert "wl=1.5" in u
         assert "forecast: wl=2.0" in u
 
-    def test_current_2d_coverage(self, monkeypatch):
+    def test_current_2d_coverage(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test SensorReportCurrent2d exception handling and unicode formatting."""
         sr = env.SensorReportCurrent2d(site_id=1, speed_1=5.0)
 
@@ -1807,7 +1810,7 @@ class TestEnvironment:
         orig_joinbv = env.binary.joinBV
         calls = 0
 
-        def fake_joinbv(bv_list):
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
             nonlocal calls
             calls += 1
             if calls == 2:
@@ -1823,7 +1826,7 @@ class TestEnvironment:
         assert "SensorReport Current2d: site_id=1" in u
         assert "speed=5.0" in u
 
-    def test_current_3d_coverage(self, monkeypatch):
+    def test_current_3d_coverage(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test SensorReportCurrent3d exception handling and unicode formatting."""
         sr = env.SensorReportCurrent3d(site_id=1, n_1=5.0, level_1=10)
 
@@ -1833,7 +1836,7 @@ class TestEnvironment:
         orig_joinbv = env.binary.joinBV
         calls = 0
 
-        def fake_joinbv(bv_list):
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
             nonlocal calls
             calls += 1
             if calls == 2:
@@ -1849,7 +1852,9 @@ class TestEnvironment:
         assert "SensorReport Current3d: site_id=1" in u
         assert "n=5.0" in u
 
-    def test_sensor_report_base_and_location_and_id_coverage(self, monkeypatch):
+    def test_sensor_report_base_and_location_and_id_coverage(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test base SensorReport, Location, and Id coverage edge cases."""
         sr1 = env.SensorReportLocation(site_id=1, lon=10.0, lat=20.0, alt=30.0)
         sr2 = env.SensorReportLocation(site_id=1, lon=15.0, lat=20.0, alt=30.0)
@@ -1873,7 +1878,7 @@ class TestEnvironment:
         orig_joinbv = env.binary.joinBV
         calls = 0
 
-        def fake_joinbv(bv_list):
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
             nonlocal calls
             calls += 1
             if calls == 2:

@@ -5,8 +5,10 @@ Just different.
 http://en.wikipedia.org/wiki/Rhumb_line
 """
 
+from collections.abc import Sequence
 import datetime
 import logging
+from typing import Any
 
 from BitVector import BitVector
 
@@ -18,9 +20,9 @@ from .imo_001_22_area_notice import AisUnpackingException
 from .imo_001_22_area_notice import BBM
 from .imo_001_22_area_notice import nmea_checksum_hex
 
-SUB_AREA_SIZE = 96
+SUB_AREA_SIZE: int = 96
 
-SHAPES = {
+SHAPES: dict[str, int] = {
     "CIRCLE": 0,
     "RECTANGLE": 1,
     "SECTOR": 2,
@@ -31,14 +33,22 @@ SHAPES = {
 
 
 class DecodeBits:
-    """Sequential bitstream reader for unpacking integer and text fields."""
+    """Sequential bitstream reader for unpacking integer and text fields.
 
-    def __init__(self, bits):
+    Attributes:
+        bits: BitVector containing encoded bits.
+        pos: Current bit position in the bitstream.
+    """
+
+    bits: BitVector
+    pos: int
+
+    def __init__(self, bits: BitVector) -> None:
         self.bits = bits
         self.pos = 0
 
     # TODO(schwehr): This should be GetUInt.
-    def GetInt(self, length):
+    def GetInt(self, length: int) -> int:
         """Read an unsigned integer of specified bit length from the bitstream.
 
         Args:
@@ -53,7 +63,7 @@ class DecodeBits:
         return value
 
     # TODO(schwehr): This should be GetInt.
-    def GetSignedInt(self, length):
+    def GetSignedInt(self, length: int) -> int:
         """Read a signed integer of specified bit length from the bitstream.
 
         Args:
@@ -67,7 +77,7 @@ class DecodeBits:
         self.pos += length
         return value
 
-    def GetText(self, length, strip=True):
+    def GetText(self, length: int, strip: bool = True) -> str:
         """Read 6-bit AIS character text of specified bit length from the bitstream.
 
         Args:
@@ -86,7 +96,7 @@ class DecodeBits:
         self.pos += length
         return text
 
-    def Verify(self, offset):
+    def Verify(self, offset: int) -> None:
         """Verify that current bit read position matches the expected offset.
 
         Args:
@@ -98,27 +108,35 @@ class DecodeBits:
 
 
 class BuildBits:
-    """Sequential bitstream writer for packing integer and text fields."""
+    """Sequential bitstream writer for packing integer and text fields.
 
-    def __init__(self):
+    Attributes:
+        bv_list: List of BitVector objects.
+        bits_expected: Expected bit length accumulator.
+    """
+
+    bv_list: list[BitVector]
+    bits_expected: int
+
+    def __init__(self) -> None:
         self.bv_list = []
         self.bits_expected = 0
 
-    def AddUInt(self, val, num_bits):
+    def AddUInt(self, val: int, num_bits: int) -> None:
         """Add an unsigned integer."""
         bits = binary.setBitVectorSize(BitVector.from_int(val), num_bits)
         assert num_bits == len(bits)
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    def AddInt(self, val, num_bits):
+    def AddInt(self, val: int | float, num_bits: int) -> None:
         """Add a signed integer."""
         bits = binary.bvFromSignedInt(int(val), num_bits)
         assert num_bits == len(bits)
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    def AddText(self, val, num_bits):
+    def AddText(self, val: str, num_bits: int) -> None:
         """Add 6-bit AIS encoded text of specified bit length to the bitstream.
 
         Args:
@@ -132,7 +150,7 @@ class BuildBits:
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    def Verify(self, num_bits):
+    def Verify(self, num_bits: int) -> None:
         """Verify that total packed bits match expected bit count.
 
         Args:
@@ -140,7 +158,7 @@ class BuildBits:
         """
         assert self.bits_expected == num_bits
 
-    def GetBits(self):
+    def GetBits(self) -> BitVector:
         """Concatenate all bit vectors in the list into a single BitVector.
 
         Returns:
@@ -157,7 +175,13 @@ class BuildBits:
 class AreaNoticeSubArea:
     """Base class for subarea shapes in USCG 8:367:22 Area Notices."""
 
-    def getScaleFactor(self, value):
+    area_shape: int
+    lon: float | None = None
+    lat: float | None = None
+    e_dim_scaled: int = 0
+    n_dim_scaled: int = 0
+
+    def getScaleFactor(self, value: float) -> int:
         """The scale factor value for the network."""
         if value / 100.0 >= 4095:
             return 1000
@@ -167,11 +191,11 @@ class AreaNoticeSubArea:
             return 10
         return 1
 
-    def getScaleFactorRaw(self, scale_factor):
+    def getScaleFactorRaw(self, scale_factor: int) -> int:
         """Given a scale factor, give the value to be sent over the network."""
         return {1: 0, 10: 1, 100: 2, 1000: 3}[scale_factor]
 
-    def decodeScaleFactor(self, db):
+    def decodeScaleFactor(self, db: DecodeBits) -> int:
         """Decode 2-bit raw scale factor from bitstream reader into multiplier.
 
         Args:
@@ -183,13 +207,47 @@ class AreaNoticeSubArea:
         scale_factor_raw = db.GetInt(2)
         return (1, 10, 100, 1000)[scale_factor_raw]
 
+    def get_bits(self) -> BitVector:
+        """Pack subarea shape fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded subarea payload.
+        """
+        raise NotImplementedError
+
 
 class AreaNoticeCircle(AreaNoticeSubArea):
-    """Circle subarea shape for USCG 8:367:22 Area Notices."""
+    """Circle subarea shape for USCG 8:367:22 Area Notices.
+
+    Attributes:
+        area_shape: Shape identifier code.
+        lon: Longitude in degrees.
+        lat: Latitude in degrees.
+        precision: Precision value.
+        scale_factor: Multiplier scale factor.
+        radius: Radius in meters.
+        radius_scaled: Scaled radius value.
+        spare: Spare bits.
+    """
+
+    area_shape: int
+    lon: float | None
+    lat: float | None
+    precision: int
+    scale_factor: int
+    radius: float
+    radius_scaled: float
+    spare: int
 
     def __init__(
-        self, lon=None, lat=None, radius=0, precision=4, scale_factor=None, bits=None
-    ):
+        self,
+        lon: float | None = None,
+        lat: float | None = None,
+        radius: float = 0,
+        precision: int = 4,
+        scale_factor: int | None = None,
+        bits: BitVector | None = None,
+    ) -> None:
         if lon is not None:
             self.area_shape = SHAPES["CIRCLE"]
             self.lon = lon
@@ -205,7 +263,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
             self.decode_bits(bits)
         # TODO(schwehr): Warn for else.
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits: BitVector) -> None:
         """Unpack circle subarea shape fields from a BitVector.
 
         Args:
@@ -223,7 +281,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         self.spare = db.GetInt(21)
         db.Verify(SUB_AREA_SIZE)
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
         """Pack circle subarea shape fields into a BitVector.
 
         Returns:
@@ -247,19 +305,45 @@ class AreaNoticeCircle(AreaNoticeSubArea):
 
 
 class AreaNoticeRectangle(AreaNoticeSubArea):
-    """Rectangle subarea shape for USCG 8:367:22 Area Notices."""
+    """Rectangle subarea shape for USCG 8:367:22 Area Notices.
+
+    Attributes:
+        area_shape: Shape identifier code.
+        lon: Longitude in degrees.
+        lat: Latitude in degrees.
+        precision: Precision value.
+        scale_factor: Multiplier scale factor.
+        e_dim: East dimension in meters.
+        n_dim: North dimension in meters.
+        e_dim_scaled: Scaled east dimension.
+        n_dim_scaled: Scaled north dimension.
+        orientation_deg: Orientation in degrees.
+        spare: Spare bits.
+    """
+
+    area_shape: int
+    lon: float | None
+    lat: float | None
+    precision: int
+    scale_factor: int
+    e_dim: float
+    n_dim: float
+    e_dim_scaled: int
+    n_dim_scaled: int
+    orientation_deg: int
+    spare: int
 
     def __init__(
         self,
-        lon=None,
-        lat=None,
-        east_dim=0,
-        north_dim=0,
-        orientation_deg=0,
-        precision=4,
-        scale_factor=None,
-        bits=None,
-    ):
+        lon: float | None = None,
+        lat: float | None = None,
+        east_dim: float = 0,
+        north_dim: float = 0,
+        orientation_deg: int = 0,
+        precision: int = 4,
+        scale_factor: int | None = None,
+        bits: BitVector | None = None,
+    ) -> None:
         if lon is not None:
             self.area_shape = SHAPES["RECTANGLE"]
             self.lon = lon
@@ -279,7 +363,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         elif bits is not None:
             self.decode_bits(bits)
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits: BitVector) -> None:
         """Unpack rectangle subarea shape fields from a BitVector.
 
         Args:
@@ -299,7 +383,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         self.spare = db.GetInt(8)
         db.Verify(SUB_AREA_SIZE)
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
         """Pack rectangle subarea shape fields into a BitVector.
 
         Returns:
@@ -323,19 +407,43 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
 
 class AreaNoticeSector(AreaNoticeSubArea):
-    """Sector subarea shape for USCG 8:367:22 Area Notices."""
+    """Sector subarea shape for USCG 8:367:22 Area Notices.
+
+    Attributes:
+        area_shape: Shape identifier code.
+        lon: Longitude in degrees.
+        lat: Latitude in degrees.
+        precision: Precision value.
+        scale_factor: Multiplier scale factor.
+        radius: Radius in meters.
+        radius_scaled: Scaled radius value.
+        left_bound_deg: Left boundary in degrees.
+        right_bound_deg: Right boundary in degrees.
+        spare: Spare bits.
+    """
+
+    area_shape: int
+    lon: float | None
+    lat: float | None
+    precision: int
+    scale_factor: int
+    radius: float
+    radius_scaled: int
+    left_bound_deg: int
+    right_bound_deg: int
+    spare: int
 
     def __init__(
         self,
-        lon=None,
-        lat=None,
-        radius=0,
-        left_bound_deg=0,
-        right_bound_deg=0,
-        precision=4,
-        scale_factor=None,
-        bits=None,
-    ):
+        lon: float | None = None,
+        lat: float | None = None,
+        radius: float = 0,
+        left_bound_deg: int = 0,
+        right_bound_deg: int = 0,
+        precision: int = 4,
+        scale_factor: int | None = None,
+        bits: BitVector | None = None,
+    ) -> None:
         if lon is not None:
             self.area_shape = SHAPES["SECTOR"]
             self.lon = lon
@@ -352,7 +460,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
         elif bits is not None:
             self.decode_bits(bits)
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits: BitVector) -> None:
         """Unpack sector subarea shape fields from a BitVector.
 
         Args:
@@ -372,7 +480,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
         self.spare = db.GetInt(3)
         db.Verify(SUB_AREA_SIZE)
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
         """Pack sector subarea shape fields into a BitVector.
 
         Returns:
@@ -397,24 +505,40 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
 
 class AreaNoticePoly(AreaNoticeSubArea):
-    """Line or point."""
+    """Line or point.
+
+    Attributes:
+        area_shape: Shape identifier code.
+        lon: Longitude in degrees.
+        lat: Latitude in degrees.
+        points: List of (angle, distance) tuples.
+        scale_factor: Multiplier scale factor.
+        spare: Spare bits.
+    """
+
+    area_shape: int
+    lon: float | None
+    lat: float | None
+    points: list[tuple[float, float]]
+    scale_factor: int
+    spare: int
 
     def __init__(
         self,
-        area_shape=None,
-        points=None,
-        scale_factor=None,
-        lon=None,
-        lat=None,
-        bits=None,
-    ):
+        area_shape: int | None = None,
+        points: Sequence[tuple[float, float]] | None = None,
+        scale_factor: int | None = None,
+        lon: float | None = None,
+        lat: float | None = None,
+        bits: BitVector | None = None,
+    ) -> None:
         if area_shape:
             self.area_shape = area_shape
         if lon is not None:
             self.lon = lon
             self.lat = lat
         if points:
-            self.points = points
+            self.points = list(points)
             max_dist = max(pt[1] for pt in points)
             if not scale_factor:
                 self.scale_factor = self.getScaleFactor(max_dist)
@@ -423,7 +547,7 @@ class AreaNoticePoly(AreaNoticeSubArea):
         elif bits is not None:
             self.decode_bits(bits)
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits: BitVector) -> None:
         """Unpack polyline/polygon subarea shape fields from a BitVector.
 
         Args:
@@ -446,13 +570,13 @@ class AreaNoticePoly(AreaNoticeSubArea):
                 # Despite the specs, Greg W. Johnson uses 0, 0 to denote no point.
                 done = True
             if not done:
-                angle *= 0.5
+                angle_deg = angle * 0.5
                 dist = dist_scaled * self.scale_factor
-                self.points.append((angle, dist))
+                self.points.append((angle_deg, dist))
         self.spare = db.GetInt(7)
         db.Verify(SUB_AREA_SIZE)
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
         """Pack polyline/polygon subarea shape fields into a BitVector.
 
         Returns:
@@ -478,15 +602,25 @@ class AreaNoticePoly(AreaNoticeSubArea):
 
 
 class AreaNoticeText(AreaNoticeSubArea):
-    """Free text subarea shape for USCG 8:367:22 Area Notices."""
+    """Free text subarea shape for USCG 8:367:22 Area Notices.
 
-    def __init__(self, text=None, bits=None):
+    Attributes:
+        area_shape: Shape identifier code.
+        text: Free text content.
+        spare: Spare bits.
+    """
+
+    area_shape: int
+    text: str
+    spare: int
+
+    def __init__(self, text: str | None = None, bits: BitVector | None = None) -> None:
         if text is not None:
             self.text = text
         elif bits is not None:
             self.decode_bits(bits)
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits: BitVector) -> None:
         """Unpack free text subarea shape fields from a BitVector.
 
         Args:
@@ -498,7 +632,7 @@ class AreaNoticeText(AreaNoticeSubArea):
         self.spare = db.GetInt(3)
         db.Verify(SUB_AREA_SIZE)
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
         """Pack free text subarea shape fields into a BitVector.
 
         Returns:
@@ -513,24 +647,54 @@ class AreaNoticeText(AreaNoticeSubArea):
 
 
 class AreaNotice(BBM):
-    """USCG specific Area Notice (8:367:22)."""
+    """USCG specific Area Notice (8:367:22).
 
-    version = 1
-    max_areas = 9
-    max_bits = 984
-    message_id = 8
-    dac = 367
-    fi = 22
+    Attributes:
+        version: Message version.
+        max_areas: Maximum subareas allowed.
+        max_bits: Maximum bits allowed in message.
+        message_id: AIS message ID (8).
+        dac: Designated Area Code (367).
+        fi: Function Identifier (22).
+        areas: List of subarea shapes.
+        area_type: Area type code.
+        when: Start datetime (UTC).
+        duration_min: Duration in minutes.
+        link_id: Notice link ID.
+        mmsi: MMSI number.
+        source_mmsi: Source MMSI number.
+        repeat_indicator: Repeat indicator value.
+        spare: Spare bits.
+        spare2: Spare bits 2.
+    """
+
+    version: int = 1
+    max_areas: int = 9
+    max_bits: int = 984
+    message_id: int = 8
+    dac: int = 367
+    fi: int = 22
+
+    areas: list[AreaNoticeSubArea]
+    area_type: int
+    when: datetime.datetime
+    duration_min: int
+    link_id: int
+    mmsi: int
+    source_mmsi: int
+    repeat_indicator: int
+    spare: int
+    spare2: int
 
     def __init__(
         self,
-        area_type=None,
-        when=None,
-        duration_min=None,
-        link_id=None,
-        mmsi=None,
-        nmea_strings=None,
-    ):
+        area_type: int | None = None,
+        when: datetime.datetime | None = None,
+        duration_min: int | None = None,
+        link_id: int | None = None,
+        mmsi: int | None = None,
+        nmea_strings: Sequence[str] | None = None,
+    ) -> None:
         super().__init__()
         self.areas = []
         if nmea_strings:
@@ -542,12 +706,15 @@ class AreaNotice(BBM):
             self.when = datetime.datetime(
                 when.year, when.month, when.day, when.hour, when.minute
             )
+            assert duration_min is not None
             self.duration_min = duration_min
+            assert link_id is not None
             self.link_id = link_id
+            assert mmsi is not None
             self.mmsi = mmsi
             self.source_mmsi = self.mmsi  # TODO(schwehr): Make all just mmsi.
 
-    def add_subarea(self, area):
+    def add_subarea(self, area: AreaNoticeSubArea) -> None:
         """Add a subarea shape to the Area Notice message.
 
         Args:
@@ -564,7 +731,13 @@ class AreaNotice(BBM):
             )
         self.areas.append(area)
 
-    def get_bits(self, include_bin_hdr=False, include_dac_fi=True):
+    def get_bits(
+        self,
+        include_bin_hdr: bool = False,
+        mmsi: int | None = None,
+        include_dac_fi: bool = True,
+        **kwargs: Any,
+    ) -> BitVector:
         """Pack Area Notice message fields and subareas into a BitVector.
 
         Args:
@@ -611,7 +784,7 @@ class AreaNotice(BBM):
             raise AisPackingException(f"Message to large:  {len(bv)} > {self.max_bits}")
         return bv
 
-    def decode_nmea(self, strings):
+    def decode_nmea(self, strings: Sequence[str]) -> None:
         """Decode NMEA 0183 AIVDM sentence strings into this Area Notice message.
 
         Args:
@@ -637,17 +810,19 @@ class AreaNotice(BBM):
         except (AttributeError, TypeError):
             raise AisUnpackingException("One or more NMEA lines were malformed (1)")
 
-        bits = []
-        for msg in msgs:
-            msg["fill_bits"] = int(msg["fill_bits"])
-            bv = binary.ais6tobitvec(msg["body"])
-            if int(msg["fill_bits"]) > 0:
-                bv = bv[: -msg["fill_bits"]]
-            bits.append(bv)
-        bits = binary.joinBV(bits)
+        bits_list = []
+        for parsed_msg in msgs:
+            assert parsed_msg["fill_bits"] is not None
+            assert parsed_msg["body"] is not None
+            fill_bits = int(parsed_msg["fill_bits"])
+            bv = binary.ais6tobitvec(parsed_msg["body"])
+            if fill_bits > 0:
+                bv = bv[:-fill_bits]
+            bits_list.append(bv)
+        bits = binary.joinBV(bits_list)
         self.decode_bits(bits)
 
-    def decode_bits(self, bits):
+    def decode_bits(self, bits: BitVector) -> None:
         """Unpack Area Notice fields from a BitVector payload.
 
         Args:
@@ -684,11 +859,11 @@ class AreaNotice(BBM):
         for area_num in range(num_sub_areas):
             start = area_num * SUB_AREA_SIZE
             end = start + SUB_AREA_SIZE
-            bits = sub_areas_bits[start:end]
-            subarea = self.subarea_factory(bits)
+            area_bits = sub_areas_bits[start:end]
+            subarea = self.subarea_factory(area_bits)
             self.add_subarea(subarea)
 
-    def subarea_factory(self, bits):
+    def subarea_factory(self, bits: BitVector) -> AreaNoticeSubArea:
         """Instantiate appropriate subarea shape object from raw bit slice.
 
         Args:
@@ -708,6 +883,12 @@ class AreaNotice(BBM):
         if shape == 2:
             return AreaNoticeSector(bits=bits)
         if shape in (3, 4):
+            if not self.areas:
+                raise AisPackingException(
+                    "Point or another polyline must precede a polyline"
+                )
+            lon: float | None = None
+            lat: float | None = None
             if isinstance(self.areas[-1], AreaNoticeCircle):
                 lon = self.areas[-1].lon
                 lat = self.areas[-1].lat
@@ -724,3 +905,4 @@ class AreaNotice(BBM):
             return AreaNoticePoly(bits=bits, lon=lon, lat=lat)
         if shape == 5:
             return AreaNoticeText(bits=bits)
+        raise AisPackingException(f"Unsupported shape type: {shape}")

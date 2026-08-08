@@ -2,13 +2,14 @@
 """Generate sample data for Area Notice / Zone msg."""
 
 import datetime
+from typing import TextIO
 
 import geojson
 from ais_area_notice import imo_001_22_area_notice as an
 from ais_area_notice import imo_001_26_environment as env
 
 
-def env_dump(e, description):
+def env_dump(e: env.Environment, description: str) -> None:
     """Print details, bit representations, and NMEA sentences for an environmental report.
 
     Args:
@@ -23,7 +24,7 @@ def env_dump(e, description):
         print(line)
 
 
-def env_samples():
+def env_samples() -> None:
     """Generate and dump various sample environmental report messages."""
     # env each with 1 sensor report
     year = 2011
@@ -42,7 +43,7 @@ def env_samples():
     x = -70.864399
     y = 43.092136
 
-    sr_list = []
+    sr_list: list[env.SensorReport] = []
 
     e = env.Environment(source_mmsi=366001)
     e.append(
@@ -60,7 +61,7 @@ def env_samples():
     env_dump(e, "No location")
 
     e = env.Environment(source_mmsi=mmsi)
-    sr = env.SensorReportLocation(
+    sr: env.SensorReport = env.SensorReportLocation(
         year=year,
         month=month,
         day=day,
@@ -303,7 +304,9 @@ def env_samples():
     # TODO(schwehr): Create more combinations of Env messages.
 
 
-def dump_all(area_notice, kmlfile, byte_align=False):
+def dump_all(
+    area_notice: an.AreaNotice, kmlfile: TextIO, byte_align: bool = False
+) -> None:
     """Print representations of an Area Notice and write its KML output.
 
     Args:
@@ -330,7 +333,7 @@ def dump_all(area_notice, kmlfile, byte_align=False):
     kmlfile.write("\n")
 
 
-def point(lon, lat, zone_type, kmlfile):
+def point(lon: float, lat: float, zone_type: int, kmlfile: TextIO) -> None:
     """Generate a single point Area Notice sample and output KML.
 
     Args:
@@ -367,7 +370,7 @@ def point(lon, lat, zone_type, kmlfile):
     kmlfile.write(pt1.kml(with_style=True))
 
 
-def main():
+def main() -> None:
     """Simple one offs of all but the free text.
 
     Free text which requires something for position.
@@ -397,6 +400,7 @@ def main():
         zone_type=an.notice_type["cau_mammals_reduce_speed"],
         kmlfile=kmlfile,
     )
+
     lat += delta
 
     zone_type = 2
@@ -614,7 +618,7 @@ def main():
     dump_all(full1, kmlfile)
     del full1
 
-    lon_off = 0
+    lon_off: float = 0
     rr = an.AreaNotice(
         zone_type,
         datetime.datetime(2010, 9, 8, 17, 0, 0),
@@ -703,7 +707,7 @@ def main():
     rect1.add_subarea(an.AreaNoticeRectangle(-69.5, lat, 3000, 15000, 0))
     rect1.add_subarea(an.AreaNoticeRectangle(-69.4, lat, 3000, 25000, 0))
     rect1.add_subarea(an.AreaNoticeRectangle(-69.3, lat, 3000, 250000, 0))
-    print("scale:", [r.scale_factor for r in rect1.areas])
+    print("scale:", [getattr(r, "scale_factor", 1) for r in rect1.areas])
 
     rect1.name = "rect-mult-scale"
     dump_all(rect1, kmlfile)
@@ -711,7 +715,7 @@ def main():
     del rect1
     lat += delta
 
-    sbnms_boundary = (
+    sbnms_boundary: tuple[tuple[float, float], ...] = (
         (-70.21843022378545, 42.76615489511191),
         (-70.50115721630971, 42.65050054498564),
         (-70.51967876543651, 42.60272606451101),
@@ -743,6 +747,7 @@ def main():
             zone_type=an.notice_type["cau_mammals_reduce_speed"],
             kmlfile=kmlfile,
         )
+
         lat += delta
 
         zone_type = 2

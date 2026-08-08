@@ -13,7 +13,9 @@ Be aware that year and month are not a part of the timestamps send
 through the binary AIS messages.
 """
 
+from collections.abc import Sequence
 import datetime
+from typing import NoReturn, TypedDict
 
 from BitVector import BitVector
 
@@ -25,10 +27,10 @@ from .imo_001_22_area_notice import AisUnpackingException
 from .imo_001_22_area_notice import BBM
 from .imo_001_22_area_notice import nmea_checksum_hex
 
-SENSOR_REPORT_HDR_SIZE = 27
-SENSOR_REPORT_SIZE = 112
+SENSOR_REPORT_HDR_SIZE: int = 27
+SENSOR_REPORT_SIZE: int = 112
 
-sensor_report_lut = {
+sensor_report_lut: dict[int, str] = {
     0: "Site Location",
     1: "Station ID",
     2: "Wind",
@@ -43,7 +45,7 @@ sensor_report_lut = {
 }
 
 # SensorReportWaterLevel, SensorReport Wx.
-trend_lut = {
+trend_lut: dict[int, str] = {
     0: "steady",
     1: "rising",
     2: "falling",
@@ -51,7 +53,7 @@ trend_lut = {
 }
 
 # Used in many of the messages - data_descr.
-sensor_type_lut = {
+sensor_type_lut: dict[int, str] = {
     0: "no data = default",
     1: "raw real time",
     2: "real time with quality control",
@@ -63,7 +65,7 @@ sensor_type_lut = {
 }
 
 # SensorReportWaterLevel.
-vdatum_lut = {
+vdatum_lut: dict[int, str] = {
     0: "MLLW",  # Mean Lower Low Water (MLLW)
     1: "IGLD-85",  # International Great Lakes Datum (IGLD-85)
     2: "Local river datum",
@@ -83,7 +85,7 @@ vdatum_lut = {
 }
 
 # SensorReportSeaState.
-beaufort_scale = {
+beaufort_scale: dict[int, str] = {
     0: "Flat",
     1: "Ripples without crests",
     2: "Small wavelets",  # Crests of glassy appearance, not breaking.
@@ -104,15 +106,14 @@ beaufort_scale = {
 }
 
 # SensorReportSalinity
-salinity_type_lut = {
+salinity_type_lut: dict[int, str] = {
     0: "measured",
     1: "calculated using PSS-78",
     2: "calculated using other method",
 }
 
 # Used in the Location report
-
-sensor_owner_lut = {
+sensor_owner_lut: dict[int, str] = {
     0: "unknown",
     1: "hydrographic office",
     2: "inland waterway authority",
@@ -123,7 +124,7 @@ sensor_owner_lut = {
 }
 
 # Used in the Location report
-data_timeout_hrs_lut = {
+data_timeout_hrs_lut: dict[int, float | None] = {
     0: None,  # No time-out period = default.
     1: 1 / 6.0,  # 10 minuntes.
     2: 1,
@@ -133,7 +134,7 @@ data_timeout_hrs_lut = {
 }
 
 
-def almost_equal(a, b, epsilon=0.001):
+def almost_equal(a: float, b: float, epsilon: float = 0.001) -> bool:
     """Check if two numbers are equal within a specified epsilon tolerance.
 
     Args:
@@ -142,26 +143,60 @@ def almost_equal(a, b, epsilon=0.001):
         epsilon: Maximum allowed absolute difference between a and b.
 
     Returns:
-        True if the absolute difference is less than epsilon, None otherwise.
+        True if the absolute difference is less than epsilon, False otherwise.
     """
-    if b - epsilon < a < b + epsilon:
-        return True
+    return b - epsilon < a < b + epsilon
+
+
+class Current2dEntry(TypedDict):
+    """TypedDict representing a single level entry for 2D current flow."""
+
+    speed: float
+    dir: int
+    level: int
+
+
+class Current3dEntry(TypedDict):
+    """TypedDict representing a single level entry for 3D current flow."""
+
+    n: float
+    e: float
+    z: float
+    level: int
+
+
+class CurrentHorzEntry(TypedDict):
+    """TypedDict representing a single location entry for horizontal current flow."""
+
+    bearing: int
+    dist: int
+    speed: float
+    dir: int
+    level: int
 
 
 class SensorReport:
     """Base class for Environmental sensor reports (BBM 8:1:26)."""
 
+    report_type: int
+    year: int
+    month: int
+    day: int
+    hour: int
+    minute: int
+    site_id: int
+
     def __init__(
         self,
-        report_type=None,
-        year=None,
-        month=None,  # Not a part of the message
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        bits=None,
-    ):
+        report_type: int | None = None,
+        year: int | None = None,
+        month: int | None = None,  # Not a part of the message
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        bits: BitVector | None = None,
+    ) -> None:
         """Base class for stuff common to all messages.
 
         If the caller provides bits, ignore any other input and decode
@@ -169,6 +204,16 @@ class SensorReport:
 
         Year and month are not a part of the message, but it is nice
         to have for get_date.
+
+        Args:
+            report_type: Sensor report type identifier.
+            year: Year (2010-2100). Defaults to current UTC year if None.
+            month: Month (1-12). Defaults to current UTC month if None.
+            day: Day of month (1-31). Defaults to current UTC day if None.
+            hour: Hour of day (0-23). Defaults to current UTC hour if None.
+            minute: Minute of hour (0-59). Defaults to current UTC minute if None.
+            site_id: Station or site identifier (0-127).
+            bits: BitVector containing encoded sensor report bits.
         """
         if bits is not None:
             self.decode_bits(bits, year=year, month=month)
@@ -183,7 +228,7 @@ class SensorReport:
             or hour is None
             or minute is None
         ):
-            now = datetime.datetime.utcnow()
+            now = datetime.datetime.now(datetime.timezone.utc)
             # TODO(schwehr): Switch to year = year or now.year.
             if year is None:
                 year = now.year
@@ -196,13 +241,13 @@ class SensorReport:
             if minute is None:
                 minute = now.minute
 
-        assert report_type in sensor_report_lut
-        assert 2010 <= year <= 2100
-        assert 1 <= month <= 12
-        assert 1 <= day <= 31
-        assert 0 <= hour <= 23
-        assert 0 <= minute <= 59
-        assert 0 <= site_id <= 127
+        assert report_type is not None and report_type in sensor_report_lut
+        assert year is not None and 2010 <= year <= 2100
+        assert month is not None and 1 <= month <= 12
+        assert day is not None and 1 <= day <= 31
+        assert hour is not None and 0 <= hour <= 23
+        assert minute is not None and 0 <= minute <= 59
+        assert site_id is not None and 0 <= site_id <= 127
 
         self.report_type = report_type
         self.year = year
@@ -212,12 +257,14 @@ class SensorReport:
         self.minute = minute
         self.site_id = site_id
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if self is other:
             return True
+        if not isinstance(other, SensorReport):
+            return False
         if len(self.__dict__) != len(other.__dict__):
             return False
         for key, val in self.__dict__.items():
@@ -228,14 +275,14 @@ class SensorReport:
             if key not in other.__dict__:
                 return False
             if isinstance(val, float):
-                if not almost_equal(val, other.__dict__[key]):
+                if not almost_equal(val, getattr(other, key)):
                     return False
             else:
-                if val != other.__dict__[key]:
+                if val != getattr(other, key):
                     return False
         return True
 
-    def get_date(self):
+    def get_date(self) -> datetime.datetime:
         """Construct a datetime object from report timestamp fields.
 
         Returns:
@@ -246,7 +293,7 @@ class SensorReport:
             self.year, self.month, self.day, self.hour, self.minute
         )
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         msg = (
             "SensorReport: site_id={site_id} type={report_type} day={day} "
             "hour={hour} min={minute}"
@@ -256,10 +303,16 @@ class SensorReport:
             **self.__dict__
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.__unicode__()
 
-    def decode_bits(self, bits, year=None, month=None, **_kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **_kwargs: object,
+    ) -> None:
         """Unpack common sensor report header fields from a BitVector.
 
         Args:
@@ -278,22 +331,22 @@ class SensorReport:
         self.site_id = int(bits[20:27])
 
         if year is None:
-            now = datetime.datetime.utcnow()
+            now = datetime.datetime.now(datetime.timezone.utc)
             year = now.year
             month = now.month
 
-        assert 2010 <= year <= 2100
-        assert 1 <= month <= 12
+        assert year is not None and 2010 <= year <= 2100
+        assert month is not None and 1 <= month <= 12
         self.year = year
         self.month = month
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
         """Encode common sensor report header fields into a BitVector.
 
         Returns:
             A BitVector containing header bits (report type, day, hour, minute, site ID).
         """
-        bv_list = []
+        bv_list: list[BitVector] = []
         bv_list.append(BitVector.from_int(self.report_type, size=4))
         bv_list.append(BitVector.from_int(self.day, size=5))
         bv_list.append(BitVector.from_int(self.hour, size=5))
@@ -308,24 +361,44 @@ class SensorReport:
 class SensorReportLocation(SensorReport):
     """Sensor report for site location and status (Report 0)."""
 
-    report_type = 0
+    report_type: int = 0
+    lon: float
+    lat: float
+    alt: float
+    owner: int
+    timeout: int
 
     def __init__(
         self,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        year=None,
-        month=None,
-        lon=181,
-        lat=91,
-        alt=200.2,
-        owner=0,
-        timeout=0,
-        bits=None,
-    ):
-        """Track where the report was geographically."""
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        year: int | None = None,
+        month: int | None = None,
+        lon: float = 181,
+        lat: float = 91,
+        alt: float = 200.2,
+        owner: int = 0,
+        timeout: int = 0,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Track where the report was geographically.
+
+        Args:
+            day: Day of month (1-31).
+            hour: Hour of day (0-23).
+            minute: Minute of hour (0-59).
+            site_id: Station or site identifier (0-127).
+            year: Year (2010-2100).
+            month: Month (1-12).
+            lon: Longitude in degrees (-180.0 to 180.0, or 181 for N/A).
+            lat: Latitude in degrees (-90.0 to 90.0, or 91 for N/A).
+            alt: Altitude in meters.
+            owner: Sensor owner identifier (0-6, 14).
+            timeout: Data timeout period code (0-5).
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -353,7 +426,24 @@ class SensorReportLocation(SensorReport):
         self.owner = owner
         self.timeout = timeout
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack site location fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
         assert self.report_type == int(bits[:4])
@@ -365,7 +455,12 @@ class SensorReportLocation(SensorReport):
         self.timeout = int(bits[97:100])
         # 12 spare
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode site location fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+        """
         bv_list = [
             SensorReport.get_bits(self),
             binary.bvFromSignedInt(int(self.lon * 600000), 28),
@@ -379,7 +474,7 @@ class SensorReportLocation(SensorReport):
         assert len(bits) == SENSOR_REPORT_SIZE
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         msg = (
             "SensorReport Location: site_id={site_id} type={report_type} "
             "d={day} hr={hour} m={minute} x={lon} y={lat} z={alt} "
@@ -398,19 +493,32 @@ class SensorReportId(SensorReport):
     """Sensor report for station identification (Report 1)."""
 
     # TODO(schwehr): How to handle@ padding?
-    report_type = 1
+    report_type: int = 1
+    id_str: str
 
     def __init__(
         self,
-        year=None,
-        month=None,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        id_str="",
-        bits=None,
-    ):
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        id_str: str = "",
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize a station ID sensor report (Report 1).
+
+        Args:
+            year: Year (2010-2100).
+            month: Month (1-12).
+            day: Day of month (1-31).
+            hour: Hour of day (0-23).
+            minute: Minute of hour (0-59).
+            site_id: Station or site identifier (0-127).
+            id_str: Station identification string (up to 14 characters).
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -427,7 +535,24 @@ class SensorReportId(SensorReport):
         )
         self.id_str = id_str.ljust(14, "@")
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack station ID fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
         assert self.report_type == int(bits[:4])
@@ -435,7 +560,15 @@ class SensorReportId(SensorReport):
         self.id_str = ais_string.Decode(bits[27:-1])
         # 1 spare bit
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode station ID fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+
+        Raises:
+            AisPackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         bv_list = [
             SensorReport.get_bits(self),
             ais_string.Encode(self.id_str.ljust(14, "@")),
@@ -447,7 +580,7 @@ class SensorReportId(SensorReport):
             raise AisPackingException(msg)
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         msg = (
             "SensorReport Id: site_id={site_id} type={report_type} "
             'd={day} hr={hour} m={minute} id="{id_str}"'
@@ -458,30 +591,65 @@ class SensorReportId(SensorReport):
 class SensorReportWind(SensorReport):
     """Sensor report for wind speed, direction, and gust (Report 2)."""
 
-    report_type = 2
+    report_type: int = 2
+    speed: int
+    gust: int
+    dir: int
+    gust_dir: int
+    data_descr: int
+    forecast_speed: int
+    forecast_gust: int
+    forecast_dir: int
+    forecast_day: int
+    forecast_hour: int
+    forecast_minute: int
+    duration_min: int
 
     def __init__(
         self,
-        year=None,
-        month=None,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        speed=122,
-        gust=122,
-        dir=360,  # pylint: disable=redefined-builtin
-        gust_dir=360,
-        data_descr=0,
-        forecast_speed=122,
-        forecast_gust=122,
-        forecast_dir=360,
-        forecast_day=0,
-        forecast_hour=24,
-        forecast_minute=60,
-        duration_min=0,
-        bits=None,
-    ):
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        speed: int = 122,
+        gust: int = 122,
+        dir: int = 360,  # pylint: disable=redefined-builtin
+        gust_dir: int = 360,
+        data_descr: int = 0,
+        forecast_speed: int = 122,
+        forecast_gust: int = 122,
+        forecast_dir: int = 360,
+        forecast_day: int = 0,
+        forecast_hour: int = 24,
+        forecast_minute: int = 60,
+        duration_min: int = 0,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize a wind sensor report (Report 2).
+
+        Args:
+            year: Year.
+            month: Month.
+            day: Day of month.
+            hour: Hour of day.
+            minute: Minute of hour.
+            site_id: Station or site identifier.
+            speed: Average wind speed in knots (0-122).
+            gust: Peak wind gust speed in knots (0-122).
+            dir: Wind direction in degrees (0-360).
+            gust_dir: Peak gust direction in degrees (0-360).
+            data_descr: Sensor data description code (0-7).
+            forecast_speed: Forecast wind speed in knots (0-122).
+            forecast_gust: Forecast gust speed in knots (0-122).
+            forecast_dir: Forecast wind direction in degrees (0-360).
+            forecast_day: Forecast day of month (0-31).
+            forecast_hour: Forecast hour of day (0-24).
+            forecast_minute: Forecast minute of hour (0-60).
+            duration_min: Forecast duration in minutes (0-255).
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -523,7 +691,24 @@ class SensorReportWind(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack wind report fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
         assert self.report_type == int(bits[:4])
@@ -544,7 +729,15 @@ class SensorReportWind(SensorReport):
         self.duration_min = int(bits[101:109])
         # 3 spare bits
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode wind report fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+
+        Raises:
+            AisPackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         bv_list = [
             SensorReport.get_bits(self),
             BitVector.from_int(self.speed, size=7),
@@ -568,7 +761,7 @@ class SensorReportWind(SensorReport):
             )
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         r = [
             "SensorReport Wind: site_id={site_id} type={report_type} d={day} "
             "hr={hour} m={minute}".format(**self.__dict__)
@@ -600,29 +793,62 @@ class SensorReportWind(SensorReport):
 class SensorReportWaterLevel(SensorReport):
     """Sensor report for water level and tide (Report 3)."""
 
-    report_type = 3
+    report_type: int = 3
+    wl_type: int
+    wl: float
+    trend: int
+    vdatum: int
+    data_descr: int
+    forecast_type: int
+    forecast_wl: float
+    forecast_day: int
+    forecast_hour: int
+    forecast_minute: int
+    duration_min: int
 
     def __init__(
         self,
-        year=None,
-        month=None,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        wl_type=0,
-        wl=-327.68,
-        trend=3,
-        vdatum=14,
-        data_descr=0,
-        forecast_type=0,
-        forecast_wl=-327.68,
-        forecast_day=0,
-        forecast_hour=24,
-        forecast_minute=60,
-        duration_min=0,
-        bits=None,
-    ):
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        wl_type: int = 0,
+        wl: float = -327.68,
+        trend: int = 3,
+        vdatum: int = 14,
+        data_descr: int = 0,
+        forecast_type: int = 0,
+        forecast_wl: float = -327.68,
+        forecast_day: int = 0,
+        forecast_hour: int = 24,
+        forecast_minute: int = 60,
+        duration_min: int = 0,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize a water level sensor report (Report 3).
+
+        Args:
+            year: Year.
+            month: Month.
+            day: Day of month.
+            hour: Hour of day.
+            minute: Minute of hour.
+            site_id: Station or site identifier.
+            wl_type: Water level type (0=height, 1=depth).
+            wl: Water level in meters (-327.68 to 327.68).
+            trend: Water level trend code (0-3).
+            vdatum: Vertical datum code (0-14).
+            data_descr: Sensor data description code (0-7).
+            forecast_type: Forecast water level type (0=height, 1=depth).
+            forecast_wl: Forecast water level in meters (-327.68 to 327.68).
+            forecast_day: Forecast day of month (0-31).
+            forecast_hour: Forecast hour of day (0-24).
+            forecast_minute: Forecast minute of hour (0-60).
+            duration_min: Forecast duration in minutes (0-255).
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -664,7 +890,24 @@ class SensorReportWaterLevel(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack water level fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
 
@@ -685,7 +928,15 @@ class SensorReportWaterLevel(SensorReport):
         self.duration_min = int(bits[87:95])
         # 17 spare bits.
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode water level fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+
+        Raises:
+            AisPackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         bv_list = [
             SensorReport.get_bits(self),
             BitVector.from_int(self.wl_type, size=1),
@@ -708,7 +959,7 @@ class SensorReportWaterLevel(SensorReport):
             raise AisPackingException(msg)
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         r = [
             "SensorReport WaterLevel: site_id={site_id} type={report_type} "
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
@@ -742,28 +993,51 @@ class SensorReportCurrent2d(SensorReport):
     """Sensor report for 2D current flow (Report 4)."""
 
     # TODO(schwehr): Helper methods to validate velocity entries.
-    report_type = 4
+    report_type: int = 4
+    cur: list[Current2dEntry]
+    data_descr: int
 
     def __init__(
         self,
-        year=None,
-        month=None,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        speed_1=24.7,
-        dir_1=360,
-        level_1=362,
-        speed_2=24.7,
-        dir_2=360,
-        level_2=362,
-        speed_3=24.7,
-        dir_3=360,
-        level_3=362,
-        data_descr=0,
-        bits=None,
-    ):
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        speed_1: float = 24.7,
+        dir_1: int = 360,
+        level_1: int = 362,
+        speed_2: float = 24.7,
+        dir_2: int = 360,
+        level_2: int = 362,
+        speed_3: float = 24.7,
+        dir_3: int = 360,
+        level_3: int = 362,
+        data_descr: int = 0,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize a 2D current flow sensor report (Report 4).
+
+        Args:
+            year: Year.
+            month: Month.
+            day: Day of month.
+            hour: Hour of day.
+            minute: Minute of hour.
+            site_id: Station or site identifier.
+            speed_1: Level 1 current speed in knots.
+            dir_1: Level 1 current direction in degrees.
+            level_1: Level 1 measurement depth in meters.
+            speed_2: Level 2 current speed in knots.
+            dir_2: Level 2 current direction in degrees.
+            level_2: Level 2 measurement depth in meters.
+            speed_3: Level 3 current speed in knots.
+            dir_3: Level 3 current direction in degrees.
+            level_3: Level 3 measurement depth in meters.
+            data_descr: Sensor data description code (0-7).
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -792,7 +1066,24 @@ class SensorReportCurrent2d(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack 2D current flow fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
@@ -810,7 +1101,15 @@ class SensorReportCurrent2d(SensorReport):
         self.data_descr = int(bits[105:108])
         # 4 spare bits.
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode 2D current flow fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+
+        Raises:
+            AisPackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         bv_list = [SensorReport.get_bits(self)]
         for c in self.cur:
             bv_list.append(BitVector.from_int((int(c["speed"] * 10)), size=8))
@@ -824,7 +1123,7 @@ class SensorReportCurrent2d(SensorReport):
             raise AisPackingException(msg)
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         r = [
             "SensorReport Current2d: site_id={site_id} type={report_type} "
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
@@ -842,27 +1141,49 @@ class SensorReportCurrent3d(SensorReport):
     """Sensor report for 3D current flow (Report 5)."""
 
     # TODO(schwehr): How to specify south, west, and up?
-    report_type = 5
+    report_type: int = 5
+    cur: list[Current3dEntry]
+    data_descr: int
 
     def __init__(
         self,
-        year=None,
-        month=None,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        n_1=24.7,
-        e_1=24.7,
-        z_1=24.7,
-        level_1=361,
-        n_2=24.7,
-        e_2=24.7,
-        z_2=24.7,
-        level_2=361,
-        data_descr=0,
-        bits=None,
-    ):
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        n_1: float = 24.7,
+        e_1: float = 24.7,
+        z_1: float = 24.7,
+        level_1: int = 361,
+        n_2: float = 24.7,
+        e_2: float = 24.7,
+        z_2: float = 24.7,
+        level_2: int = 361,
+        data_descr: int = 0,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize a 3D current flow sensor report (Report 5).
+
+        Args:
+            year: Year.
+            month: Month.
+            day: Day of month.
+            hour: Hour of day.
+            minute: Minute of hour.
+            site_id: Station or site identifier.
+            n_1: Level 1 north component speed in knots.
+            e_1: Level 1 east component speed in knots.
+            z_1: Level 1 vertical component speed in knots.
+            level_1: Level 1 measurement depth in meters.
+            n_2: Level 2 north component speed in knots.
+            e_2: Level 2 east component speed in knots.
+            z_2: Level 2 vertical component speed in knots.
+            level_2: Level 2 measurement depth in meters.
+            data_descr: Sensor data description code (0-7).
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -890,7 +1211,24 @@ class SensorReportCurrent3d(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack 3D current flow fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
@@ -909,7 +1247,15 @@ class SensorReportCurrent3d(SensorReport):
         self.data_descr = int(bits[93:96])
         # 16 spare bits.
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode 3D current flow fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+
+        Raises:
+            AisPackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         bv_list = [SensorReport.get_bits(self)]
         for c in self.cur:
             bv_list.append(BitVector.from_int((int(c["n"] * 10)), size=8))
@@ -924,7 +1270,7 @@ class SensorReportCurrent3d(SensorReport):
             raise AisPackingException(msg)
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         r = [
             "SensorReport Current3d: site_id={site_id} type={report_type} "
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
@@ -941,29 +1287,50 @@ class SensorReportCurrent3d(SensorReport):
 class SensorReportCurrentHorz(SensorReport):
     """Sensor report for horizontal current flow (Report 6)."""
 
-    report_type = 6
+    report_type: int = 6
+    cur: list[CurrentHorzEntry]
 
     def __init__(
         self,
-        year=None,
-        month=None,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        bearing_1=360,
-        dist_1=122,
-        speed_1=24.7,
-        dir_1=360,
-        level_1=361,
-        bearing_2=360,
-        dist_2=122,
-        speed_2=24.7,
-        dir_2=360,
-        level_2=361,
-        bits=None,
-    ):
-        """TODO(schwehr): Is there no data description for type 6?"""
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        bearing_1: int = 360,
+        dist_1: int = 122,
+        speed_1: float = 24.7,
+        dir_1: int = 360,
+        level_1: int = 361,
+        bearing_2: int = 360,
+        dist_2: int = 122,
+        speed_2: float = 24.7,
+        dir_2: int = 360,
+        level_2: int = 361,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize a horizontal current flow sensor report (Report 6).
+
+        Args:
+            year: Year.
+            month: Month.
+            day: Day of month.
+            hour: Hour of day.
+            minute: Minute of hour.
+            site_id: Station or site identifier.
+            bearing_1: Location 1 bearing in degrees.
+            dist_1: Location 1 distance in meters.
+            speed_1: Location 1 current speed in knots.
+            dir_1: Location 1 current direction in degrees.
+            level_1: Location 1 measurement depth in meters.
+            bearing_2: Location 2 bearing in degrees.
+            dist_2: Location 2 distance in meters.
+            speed_2: Location 2 current speed in knots.
+            dir_2: Location 2 current direction in degrees.
+            level_2: Location 2 measurement depth in meters.
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -1001,7 +1368,24 @@ class SensorReportCurrentHorz(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack horizontal current flow fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
@@ -1020,7 +1404,15 @@ class SensorReportCurrentHorz(SensorReport):
             )
         # 1 spare bit.
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode horizontal current flow fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+
+        Raises:
+            AisPackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         bv_list = [SensorReport.get_bits(self)]
         for c in self.cur:
             bv_list.append(BitVector.from_int((int(c["bearing"])), size=9))
@@ -1036,7 +1428,7 @@ class SensorReportCurrentHorz(SensorReport):
             raise AisPackingException(msg)
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         r = [
             f"SensorReport CurrentHorz: site_id={self.site_id} type={self.report_type} "
             f"d={self.day} hr={self.hour} m={self.minute}",
@@ -1053,31 +1445,68 @@ class SensorReportCurrentHorz(SensorReport):
 class SensorReportSeaState(SensorReport):
     """Sensor report for sea state and wave measurements (Report 7)."""
 
-    report_type = 7
+    report_type: int = 7
+    swell_height: float
+    swell_period: int
+    swell_dir: int
+    sea_state: int
+    swell_data_descr: int
+    temp: float
+    temp_depth: float
+    temp_data_descr: int
+    wave_height: float
+    wave_period: int
+    wave_dir: int
+    wave_data_descr: int
+    salinity: float
 
     def __init__(
         self,
-        year=None,
-        month=None,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        swell_height=24.7,
-        swell_period=61,
-        swell_dir=361,
-        sea_state=13,
-        swell_data_descr=0,
-        temp=50.1,
-        temp_depth=12.2,
-        temp_data_descr=0,
-        wave_height=24.7,
-        wave_period=61,
-        wave_dir=361,
-        wave_data_descr=0,
-        salinity=50.2,
-        bits=None,
-    ):
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        swell_height: float = 24.7,
+        swell_period: int = 61,
+        swell_dir: int = 361,
+        sea_state: int = 13,
+        swell_data_descr: int = 0,
+        temp: float = 50.1,
+        temp_depth: float = 12.2,
+        temp_data_descr: int = 0,
+        wave_height: float = 24.7,
+        wave_period: int = 61,
+        wave_dir: int = 361,
+        wave_data_descr: int = 0,
+        salinity: float = 50.2,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize a sea state sensor report (Report 7).
+
+        Args:
+            year: Year.
+            month: Month.
+            day: Day of month.
+            hour: Hour of day.
+            minute: Minute of hour.
+            site_id: Station or site identifier.
+            swell_height: Swell height in meters.
+            swell_period: Swell period in seconds.
+            swell_dir: Swell direction in degrees.
+            sea_state: Beaufort scale sea state code (0-13).
+            swell_data_descr: Swell data description code.
+            temp: Water temperature in degrees C.
+            temp_depth: Temperature depth in meters.
+            temp_data_descr: Temperature data description code.
+            wave_height: Wind wave height in meters.
+            wave_period: Wind wave period in seconds.
+            wave_dir: Wind wave direction in degrees.
+            wave_data_descr: Wave data description code.
+            salinity: Salinity in PSU.
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -1122,7 +1551,24 @@ class SensorReportSeaState(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack sea state fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
@@ -1143,7 +1589,15 @@ class SensorReportSeaState(SensorReport):
         self.wave_data_descr = int(bits[100:103])
         self.salinity = int(bits[103:112]) / 10.0
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode sea state fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+
+        Raises:
+            AisPackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         bv_list = [SensorReport.get_bits(self)]
 
         bv_list.append(BitVector.from_int(int(round(self.swell_height * 10)), size=8))
@@ -1167,7 +1621,7 @@ class SensorReportSeaState(SensorReport):
             raise AisPackingException(msg)
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         r = [
             "SensorReport SeaState: site_id={site_id} type={report_type} "
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
@@ -1205,24 +1659,47 @@ class SensorReportSeaState(SensorReport):
 class SensorReportSalinity(SensorReport):
     """Sensor report for temperature, conductivity, and salinity (Report 8)."""
 
-    report_type = 8
+    report_type: int = 8
+    temp: float
+    cond: float
+    pres: float
+    salinity: float
+    salinity_type: int
+    data_descr: int
 
     def __init__(
         self,
-        year=None,
-        month=None,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        temp=60.2,
-        cond=7.03,
-        pres=6000.3,
-        salinity=50.3,
-        salinity_type=0,
-        data_descr=0,
-        bits=None,
-    ):
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        temp: float = 60.2,
+        cond: float = 7.03,
+        pres: float = 6000.3,
+        salinity: float = 50.3,
+        salinity_type: int = 0,
+        data_descr: int = 0,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize a salinity sensor report (Report 8).
+
+        Args:
+            year: Year.
+            month: Month.
+            day: Day of month.
+            hour: Hour of day.
+            minute: Minute of hour.
+            site_id: Station or site identifier.
+            temp: Temperature in degrees C.
+            cond: Conductivity in S/m.
+            pres: Pressure in decibars.
+            salinity: Salinity in PSU.
+            salinity_type: Salinity calculation type (0-2).
+            data_descr: Sensor data description code.
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -1255,7 +1732,24 @@ class SensorReportSalinity(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack salinity report fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
@@ -1270,7 +1764,15 @@ class SensorReportSalinity(SensorReport):
         self.data_descr = int(bits[74:77])
         # 35 spare bits
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode salinity report fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+
+        Raises:
+            AisPackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         bv_list = [SensorReport.get_bits(self)]
 
         bv_list.append(BitVector.from_int(int(round((self.temp + 10) * 10)), size=10))
@@ -1287,7 +1789,7 @@ class SensorReportSalinity(SensorReport):
             raise AisPackingException(msg)
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         r = [
             "SensorReport Salinity: site_id={site_id} type={report_type} "
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
@@ -1313,29 +1815,60 @@ class SensorReportSalinity(SensorReport):
 class SensorReportWeather(SensorReport):
     """Sensor report for meteorological weather data (Report 9)."""
 
-    report_type = 9
+    report_type: int = 9
+    air_temp: float
+    air_temp_data_descr: int
+    precip: int
+    vis: float
+    dew: float
+    dew_data_descr: int
+    air_pres: int
+    air_pres_trend: int
+    air_pres_data_descr: int
+    salinity: float
 
     def __init__(
         self,
-        year=None,
-        month=None,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        air_temp=-102.4,
-        air_temp_data_descr=0,
-        precip=3,
-        vis=24.3,
-        dew=50.1,
-        dew_data_descr=0,
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        air_temp: float = -102.4,
+        air_temp_data_descr: int = 0,
+        precip: int = 3,
+        vis: float = 24.3,
+        dew: float = 50.1,
+        dew_data_descr: int = 0,
         # Pressure = raw_value + 800 - 1
-        air_pres=403 + 799,
-        air_pres_trend=3,
-        air_pres_data_descr=0,
-        salinity=50.2,
-        bits=None,
-    ):
+        air_pres: int = 403 + 799,
+        air_pres_trend: int = 3,
+        air_pres_data_descr: int = 0,
+        salinity: float = 50.2,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize a weather sensor report (Report 9).
+
+        Args:
+            year: Year.
+            month: Month.
+            day: Day of month.
+            hour: Hour of day.
+            minute: Minute of hour.
+            site_id: Station or site identifier.
+            air_temp: Air temperature in degrees C.
+            air_temp_data_descr: Air temperature data description code.
+            precip: Precipitation code (0-3).
+            vis: Visibility in nautical miles.
+            dew: Dew point in degrees C.
+            dew_data_descr: Dew point data description code.
+            air_pres: Air pressure in hPa.
+            air_pres_trend: Air pressure trend code (0-3).
+            air_pres_data_descr: Air pressure data description code.
+            salinity: Salinity in PSU.
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -1372,7 +1905,24 @@ class SensorReportWeather(SensorReport):
             site_id=site_id,
         )
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack weather report fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
@@ -1392,7 +1942,15 @@ class SensorReportWeather(SensorReport):
         self.salinity = int(bits[78:87]) / 10.0
         # 25 spare bits.
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode weather report fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+
+        Raises:
+            AisPackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         bv_list = [
             SensorReport.get_bits(self),
             # TODO(schwehr): Is this really signed?
@@ -1416,7 +1974,7 @@ class SensorReportWeather(SensorReport):
             raise AisPackingException(msg)
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         r = [
             "SensorReport Wx: site_id={site_id} type={report_type} d={day} "
             "hr={hour} m={minute}".format(**self.__dict__)
@@ -1451,25 +2009,50 @@ class SensorReportWeather(SensorReport):
 class SensorReportAirGap(SensorReport):
     """Mr. President, we must not allow... a mine shaft gap."""
 
-    report_type = 10
+    report_type: int = 10
+    draft: float
+    gap: float
+    gap_trend: int
+    forecast_gap: float
+    forecast_day: int
+    forecast_hour: int
+    forecast_minute: int
 
     def __init__(
         self,
-        year=None,
-        month=None,
-        day=None,
-        hour=None,
-        minute=None,
-        site_id=None,
-        draft=0,
-        gap=0,
-        gap_trend=3,
-        forecast_gap=0,
-        forecast_day=0,
-        forecast_hour=24,
-        forecast_minute=60,
-        bits=None,
-    ):
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int | None = None,
+        minute: int | None = None,
+        site_id: int | None = None,
+        draft: float = 0,
+        gap: float = 0,
+        gap_trend: int = 3,
+        forecast_gap: float = 0,
+        forecast_day: int = 0,
+        forecast_hour: int = 24,
+        forecast_minute: int = 60,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize an air gap sensor report (Report 10).
+
+        Args:
+            year: Year.
+            month: Month.
+            day: Day of month.
+            hour: Hour of day.
+            minute: Minute of hour.
+            site_id: Station or site identifier.
+            draft: Air draft in meters.
+            gap: Air gap in meters.
+            gap_trend: Air gap trend code (0-3).
+            forecast_gap: Forecast air gap in meters.
+            forecast_day: Forecast day of month.
+            forecast_hour: Forecast hour of day.
+            forecast_minute: Forecast minute of hour.
+            bits: BitVector containing encoded report bits.
+        """
         if bits is not None:
             self.decode_bits(bits)
             return
@@ -1502,7 +2085,24 @@ class SensorReportAirGap(SensorReport):
         )
         # TODO(schwehr): No sensor data description like other reports?
 
-    def decode_bits(self, bits, year=None, month=None, **kwargs):
+    def decode_bits(
+        self,
+        bits: BitVector,
+        year: int | None = None,
+        month: int | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Unpack air gap fields from a BitVector.
+
+        Args:
+            bits: BitVector containing encoded sensor report bits.
+            year: Optional year override.
+            month: Optional month override.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            AisUnpackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
         assert self.report_type == int(bits[:4])
@@ -1518,7 +2118,15 @@ class SensorReportAirGap(SensorReport):
         self.forecast_minute = int(bits[78:84])
         # 28 spare bits.
 
-    def get_bits(self):
+    def get_bits(self) -> BitVector:
+        """Encode air gap fields into a BitVector.
+
+        Returns:
+            A BitVector containing encoded sensor report bits.
+
+        Raises:
+            AisPackingException: If bit length does not match SENSOR_REPORT_SIZE.
+        """
         bv_list = [SensorReport.get_bits(self)]
 
         bv_list.append(BitVector.from_int(int(round(self.draft * 100)), size=13))
@@ -1536,7 +2144,7 @@ class SensorReportAirGap(SensorReport):
             raise AisPackingException(msg)
         return bits
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         r = [
             "SensorReport Gap: site_id={site_id} type={report_type} "
             "d={day} hr={hour} m={minute}".format(**self.__dict__)
@@ -1559,19 +2167,25 @@ class SensorReportAirGap(SensorReport):
 class Environment(BBM):
     """IMO SN.1/Circ.289 Environmental Message (BBM 8:1:26)."""
 
-    dac = 1
-    fi = 26
+    dac: int = 1
+    fi: int = 26
+    source_mmsi: int | None
+    sensor_reports: list[SensorReport]
 
     def __init__(
         self,
-        source_mmsi=None,
-        _name=None,
-        nmea_strings=None,
-        bits=None,
-    ):
-        """Initialize an Environmental AIS binary broadcast message (1:8:22).
+        source_mmsi: int | None = None,
+        _name: str | None = None,
+        nmea_strings: Sequence[str] | None = None,
+        bits: BitVector | None = None,
+    ) -> None:
+        """Initialize an Environmental AIS binary broadcast message (8:1:26).
 
-        Can specify source_mmsi & name, nmea_strings, or bits.
+        Args:
+            source_mmsi: Transmitting MMSI number.
+            _name: Optional name for message (unused).
+            nmea_strings: Sequence of NMEA 0183 VDM/VDO strings to decode.
+            bits: BitVector payload to decode.
         """
         BBM.__init__(self, message_id=8)
 
@@ -1590,7 +2204,7 @@ class Environment(BBM):
         self.source_mmsi = source_mmsi
         self.sensor_reports = []
 
-    def __unicode__(self, verbose=False):
+    def __unicode__(self, verbose: bool = False) -> str:
         base_msg = (
             "Environment: mmsi={source_mmsi} sensor_reports: [{num_reports}]".format(
                 num_reports=len(self.sensor_reports), **self.__dict__
@@ -1603,12 +2217,14 @@ class Environment(BBM):
             r.append("\t" + str(rpt))
         return "\n".join(r)
 
-    def __str__(self, verbose=False):
+    def __str__(self, verbose: bool = False) -> str:
         return self.__unicode__(verbose=verbose)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if self is other:
             return True
+        if not isinstance(other, Environment):
+            return False
         if self.source_mmsi != other.source_mmsi:
             return False
         if len(self.sensor_reports) != len(other.sensor_reports):
@@ -1620,14 +2236,14 @@ class Environment(BBM):
             return False
         return True
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
-    def html(self, efactory=False):
+    def html(self, efactory: bool = False) -> NoReturn:
         """Return an embeddable html representation."""
         raise NotImplementedError
 
-    def append(self, report):
+    def append(self, report: SensorReport) -> None:
         """Append a sensor report to the environment message.
 
         Args:
@@ -1635,8 +2251,15 @@ class Environment(BBM):
         """
         self.add_sensor_report(report)
 
-    def add_sensor_report(self, report):
-        """Add another sensor report onto the message."""
+    def add_sensor_report(self, report: SensorReport) -> None:
+        """Add another sensor report onto the message.
+
+        Args:
+            report: The SensorReport object to add.
+
+        Raises:
+            AisPackingException: If maximum number of reports is exceeded.
+        """
         if not hasattr(self, "sensor_reports"):
             self.sensor_reports = [report]
             return
@@ -1644,21 +2267,39 @@ class Environment(BBM):
             raise AisPackingException("Too many sensor reports (8 max).")
         self.sensor_reports.append(report)
 
-    def get_report_types(self):
+    def get_report_types(self) -> list[int]:
         """Get the list of sensor report type IDs in this environment message.
 
         Returns:
             A list of integer report type identifiers.
         """
-        s = []
+        s: list[int] = []
         for sr in self.sensor_reports:
             s.append(sr.report_type)
         return s
 
-    def get_bits(self, include_bin_hdr=False, mmsi=None, include_dac_fi=True):
-        """Child classes must implement this."""
+    def get_bits(
+        self,
+        include_bin_hdr: bool = False,
+        mmsi: int | None = None,
+        include_dac_fi: bool = True,
+        **kwargs: object,
+    ) -> BitVector:
+        """Serialize message to a BitVector.
+
+        Args:
+            include_bin_hdr: Include binary broadcast header.
+            mmsi: Optional MMSI override.
+            include_dac_fi: Include DAC and FI fields.
+
+        Returns:
+            BitVector containing encoded message.
+
+        Raises:
+            AisPackingException: If MMSI missing or encoded length exceeds limit.
+        """
         # TODO(schwehr): include_bin_hdr appears to double the binary header.
-        bv_list = []
+        bv_list: list[BitVector] = []
         if include_bin_hdr:
             bv_list.append(BitVector.from_int(8, size=6))  # Messages ID.
             bv_list.append(BitVector(size=2))  # Repeat Indicator of 0.
@@ -1682,9 +2323,15 @@ class Environment(BBM):
             raise AisPackingException(f"Too large ({len(bv)} bits > 953).")
         return bv
 
-    def decode_nmea(self, strings):
-        """Unpack nmea instrings into objects."""
+    def decode_nmea(self, strings: Sequence[str]) -> None:
+        """Unpack nmea instrings into objects.
 
+        Args:
+            strings: Sequence of NMEA sentence strings to decode.
+
+        Raises:
+            AisUnpackingException: If NMEA lines are malformed or checksum fails.
+        """
         try:
             msgs = []
             for msg in strings:
@@ -1700,9 +2347,16 @@ class Environment(BBM):
         except (AttributeError, TypeError):
             raise AisUnpackingException(f"NMEA line malformed: {strings} ")
 
-    def decode_bits(self, bits, _year=None):
-        """Decode the bits for a message."""
+    def decode_bits(self, bits: BitVector, _year: int | None = None) -> None:
+        """Decode the bits for a message.
 
+        Args:
+            bits: BitVector payload to decode.
+            _year: Optional unused year argument.
+
+        Raises:
+            AisUnpackingException: If bits length or contents are invalid.
+        """
         # TODO(schwehr): Handle the option of without AIS hdr and message 8 hdr.
         r = {}
         r["message_id"] = int(bits[:6])
@@ -1739,9 +2393,18 @@ class Environment(BBM):
             sa_obj = self.sensor_report_factory(bits=rpt_bits)
             self.add_sensor_report(sa_obj)
 
-    def sensor_report_factory(self, bits):
-        """Based on sensor bit reports, return a proper SensorReport instance."""
+    def sensor_report_factory(self, bits: BitVector) -> SensorReport:
+        """Based on sensor bit reports, return a proper SensorReport instance.
 
+        Args:
+            bits: BitVector of length SENSOR_REPORT_SIZE containing report bits.
+
+        Returns:
+            A SensorReport subclass instance.
+
+        Raises:
+            AisUnpackingException: If report type is reserved or invalid.
+        """
         assert len(bits) == SENSOR_REPORT_SIZE
         report_type = int(bits[:4])
         if 0 == report_type:
@@ -1771,12 +2434,12 @@ class Environment(BBM):
         raise AisUnpackingException(msg)
 
     @property
-    def __geo_interface__(self):
+    def __geo_interface__(self) -> dict[str, object]:
         """Provide a Geo Interface for GeoJSON serialization."""
         raise NotImplementedError
 
 
-sensor_report_classes = [
+sensor_report_classes: list[type[SensorReport]] = [
     SensorReportLocation,
     SensorReportId,
     SensorReportWind,

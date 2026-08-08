@@ -9,13 +9,13 @@ from ais_area_notice import binary
 from ais_area_notice import m366_22
 
 
-def test_empty_init():
+def test_empty_init() -> None:
     """Test initializing AreaNotice without arguments raises Error."""
     with pytest.raises(m366_22.Error):
         m366_22.AreaNotice()
 
 
-def test_init_with_area_type():
+def test_init_with_area_type() -> None:
     """Test initializing AreaNotice with area_type and timestamp."""
     area_type = 1
     now = datetime.datetime.utcnow()
@@ -33,7 +33,7 @@ def test_init_with_area_type():
     assert an.mmsi is None
 
 
-def test_circle():
+def test_circle() -> None:
     """Test decoding AreaNotice with a single circle subarea from NMEA sentences."""
     aivdm = "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"
     an = m366_22.AreaNotice(nmea_strings=[aivdm])
@@ -43,7 +43,7 @@ def test_circle():
     assert circle.radius == 1800
 
 
-def test_area_notice_circle_init_and_get_bits():
+def test_area_notice_circle_init_and_get_bits() -> None:
     """Test AreaNoticeCircle initialization, bit packing, and decoding."""
     c1 = m366_22.AreaNoticeCircle(
         lon=-71.935, lat=41.236666667, radius=1800, precision=4, scale_factor=10
@@ -62,7 +62,7 @@ def test_area_notice_circle_init_and_get_bits():
         m366_22.AreaNoticeCircle()
 
 
-def test_add_subarea_no_areas_attr_and_max_areas_exceeded():
+def test_add_subarea_no_areas_attr_and_max_areas_exceeded() -> None:
     """Test adding subareas handles missing areas attribute and enforces maximum limit."""
     when = datetime.datetime(2026, 9, 4, 15, 25)
     an = m366_22.AreaNotice(area_type=1, when=when)
@@ -79,7 +79,7 @@ def test_add_subarea_no_areas_attr_and_max_areas_exceeded():
         an.add_subarea(circle)
 
 
-def test_decode_nmea_errors_and_none_in_msgs(monkeypatch):
+def test_decode_nmea_errors_and_none_in_msgs(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test NMEA decoding error handling and invalid regex matches."""
     with pytest.raises(m366_22.AisUnpackingException, match="Checksum failed"):
         m366_22.AreaNotice(
@@ -92,24 +92,24 @@ def test_decode_nmea_errors_and_none_in_msgs(monkeypatch):
     class FakeMatch1:
         """Fake NMEA regex match with checksum."""
 
-        def groupdict(self):
+        def groupdict(self) -> dict[str, str]:
             """Return groupdict with valid checksum."""
             return {"checksum": "7F"}
 
     class FakeMatch2:
         """Fake NMEA regex match with no groupdict."""
 
-        def groupdict(self):
+        def groupdict(self) -> None:
             """Return None for groupdict."""
             return None
 
     class FakeRegex:
         """Fake regex search implementation for testing NMEA parsing."""
 
-        def __init__(self):
+        def __init__(self) -> None:
             self.calls = 0
 
-        def search(self, _text):
+        def search(self, _text: str) -> FakeMatch1 | FakeMatch2:
             """Simulate regex search calls returning fake matches."""
             self.calls += 1
             if self.calls == 1:
@@ -123,7 +123,7 @@ def test_decode_nmea_errors_and_none_in_msgs(monkeypatch):
         )
 
 
-def test_subarea_factory_overflow_and_unsupported_shape():
+def test_subarea_factory_overflow_and_unsupported_shape() -> None:
     """Test subarea count overflow and unsupported shape error handling."""
     aivdm = "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"
     an = m366_22.AreaNotice(nmea_strings=[aivdm])
@@ -147,7 +147,7 @@ def test_subarea_factory_overflow_and_unsupported_shape():
         an.DecodeBits(invalid_shape_bits)
 
 
-def test_scale_factors_and_del_scale_factor():
+def test_scale_factors_and_del_scale_factor() -> None:
     """Test scale factor computation and lazy evaluation in get_bits."""
     subarea = m366_22.AreaNoticeSubArea()
     assert subarea.getScaleFactor(500000) == 1000
@@ -160,7 +160,7 @@ def test_scale_factors_and_del_scale_factor():
     assert len(bits) == 93
 
 
-def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch):
+def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test subarea factory routing and error handling for all shape types."""
     aivdm = "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"
     an = m366_22.AreaNotice(nmea_strings=[aivdm])
@@ -187,10 +187,15 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch):
         an.SubareaFactory(BitVector.from_bitstring("011" + "0" * 90))
 
     # Shape 3 (Polyline with preceding polyline mock)
-    class FakePoly:
+    class FakePoly(m366_22.AreaNoticeSubArea):
         """Fake poly subarea class for testing subarea factory."""
 
-        def __init__(self, bits=None, lon=0, lat=0):
+        def __init__(
+            self,
+            bits: BitVector | None = None,
+            lon: float = 0,
+            lat: float = 0,
+        ) -> None:
             self.points = [(10.0, 20.0)]
             self.bits = bits
             self.lon = lon
@@ -199,8 +204,8 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch):
     monkeypatch.setattr(m366_22, "AreaNoticePoly", FakePoly, raising=False)
     an.areas = [FakePoly()]
     res = an.SubareaFactory(BitVector.from_bitstring("011" + "0" * 90))
-    assert res.lon == 10.0
-    assert res.lat == 20.0
+    assert res.lon == 10.0  # type: ignore[attr-defined]
+    assert res.lat == 20.0  # type: ignore[attr-defined]
 
     # Shape 5 (Text)
     with pytest.raises(NameError, match="name 'AreaNoticeText' is not defined"):
