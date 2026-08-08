@@ -3,7 +3,6 @@ fail-under = 9.0
 
 [MESSAGES CONTROL]
 disable =
-    abstract-method,
     attribute-defined-outside-init,
     bare-except,
     duplicate-code,

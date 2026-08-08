@@ -905,6 +905,12 @@ def test_area_notice_kml_options(
         def __unicode__(self) -> str:
             return "NoGeomSubArea"
 
+        def get_bits(self) -> BitVector:
+            raise NotImplementedError
+
+        def geom(self) -> None:
+            return None
+
         @property
         def __geo_interface__(self) -> dict[str, int]:
             return {"area_shape": 99}
