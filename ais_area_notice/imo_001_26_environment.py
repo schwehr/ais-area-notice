@@ -1565,8 +1565,7 @@ class Environment(BBM):
             return False
         if len(self.sensor_reports) != len(other.sensor_reports):
             return False
-        for i in range(len(self.sensor_reports)):
-            a = self.sensor_reports[i]
+        for i, a in enumerate(self.sensor_reports):
             b = other.sensor_reports[i]
             if a == b:
                 continue

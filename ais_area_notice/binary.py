@@ -234,8 +234,8 @@ def ais6tobitvec(str6):
     """
     bvtotal = BitVector(size=BITS_PER_VDM_CHARACTER * len(str6))
 
-    for pos in range(len(str6)):
-        bv = decode[str6[pos]]
+    for pos, char in enumerate(str6):
+        bv = decode[char]
         start = pos * BITS_PER_VDM_CHARACTER
         for i in range(BITS_PER_VDM_CHARACTER):
             bvtotal[i + start] = bv[i]

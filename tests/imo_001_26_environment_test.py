@@ -740,10 +740,10 @@ class TestSensorReports:
         )
         sr_b = env.SensorReportCurrent2d(bits=sr.get_bits())
 
-        for i in range(len(sr_b.cur)):
-            assert sr_b.cur[i]["speed"] == pytest.approx(0)
-            assert sr_b.cur[i]["dir"] == pytest.approx(0)
-            assert sr_b.cur[i]["level"] == pytest.approx(0)
+        for cur in sr_b.cur:
+            assert cur["speed"] == pytest.approx(0)
+            assert cur["dir"] == pytest.approx(0)
+            assert cur["level"] == pytest.approx(0)
         assert sr_b.data_descr == 0
 
     def test_SensorReportCurrent2d_max(self):
@@ -1297,10 +1297,10 @@ class TestEnvironment:
             e_instances.append(e)
 
         for i, msg in enumerate(e_instances):
-            for other in range(len(e_instances)):
-                if i == other:
+            for other_i, other_msg in enumerate(e_instances):
+                if i == other_i:
                     continue
-                assert msg != e_instances[other]
+                assert msg != other_msg
 
     def test_wind(self):
         e = env.Environment(source_mmsi=656565)

@@ -359,12 +359,11 @@ class AreaNoticePoly(AreaNoticeSubArea):
             max_dist = max([pt[1] for pt in self.points])
             self.scale_factor = self.getScaleFactor(max_dist)
         bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
-        for i in range(len(self.points)):
-            angle, dist = self.points[i]
+        for angle, dist in self.points:
             bb.AddUInt(int(angle * 2), 10)
             bb.AddUInt(int(dist / self.scale_factor), 11)
         # encode any empty points
-        for i in range(len(self.points), 4):
+        for _ in range(len(self.points), 4):
             bb.AddUInt(720, 10)
             bb.AddUInt(0, 11)
         bb.AddUInt(0, 7)

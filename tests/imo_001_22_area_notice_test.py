@@ -37,8 +37,8 @@ def assert_almost_equal_geojson(g1, g2, delta=1e-4, verbose=False):
         return
 
     if isinstance(g1, list):
-        for i in range(len(g1)):
-            assert_almost_equal_geojson(g1[i], g2[i], delta=delta, verbose=verbose)
+        for item1, item2 in zip(g1, g2):
+            assert_almost_equal_geojson(item1, item2, delta=delta, verbose=verbose)
         return
 
     if not isinstance(g1, dict) or not isinstance(g2, dict):

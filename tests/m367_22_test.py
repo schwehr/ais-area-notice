@@ -137,10 +137,10 @@ class TestAreaNotice:
         if lon is not None:
             assert sub_area.lon == pytest.approx(lon)
             assert sub_area.lat == pytest.approx(lat)
-        for point_num in range(len(sub_area.points)):
+        for point_num, (sub_angle, sub_dist) in enumerate(sub_area.points):
             angle, dist = points[point_num]
-            assert sub_area.points[point_num][0] == pytest.approx(angle)
-            assert sub_area.points[point_num][1] == dist
+            assert sub_angle == pytest.approx(angle)
+            assert sub_dist == dist
         assert sub_area.spare == 0
 
     def checkText(self, sub_area, expected_text):
