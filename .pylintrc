@@ -6,7 +6,6 @@ disable =
     duplicate-code,
     fixme,
     global-statement,
-    inconsistent-return-statements,
     invalid-unary-operand-type,
     no-member,
     potential-index-error,
