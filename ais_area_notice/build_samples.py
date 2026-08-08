@@ -22,7 +22,8 @@ def env_samples():
     year = 2011
     month = 6
     day = 20
-    hour = 15
+    # TODO: Use hour
+    # hour = 15
     minute = 38
     site_id = 11
     mmsi = 123456789

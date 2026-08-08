@@ -344,10 +344,12 @@ class MetHydro31(BBM):
     def decode_bits(self, bits, year=None):
         """Decode the bits for a message."""
 
-        message_id = int(bits[:6])
-        repeat_indicator = int(bits[6:8])
+        # TODO: Pass these through and verify.
+        # message_id = int(bits[:6])
+        # repeat_indicator = int(bits[6:8])
         self.source_mmsi = int(bits[8:38])
-        spare = int(bits[38:40])
+        # TODO: Should we look at the spare bits?
+        # spare = int(bits[38:40])
         dac = int(bits[40:50])
         fi = int(bits[50:56])
         assert dac == 1

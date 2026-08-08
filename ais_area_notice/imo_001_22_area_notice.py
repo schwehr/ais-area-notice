@@ -900,7 +900,8 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
         self.radius = self.radius_scaled * self.scale_factor
 
-        spare = int(bits[69:])
+        # TODO: Does this need spare bits?
+        # spare = int(bits[69:])
         assert 18 == SUB_AREA_SIZE - 69
 
     def get_bits(self):
@@ -1421,7 +1422,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
                 )
                 raise AisPackingException(msg)
 
-        for i in range(4 - len(self.points)):
+        for _unused_i in range(4 - len(self.points)):
             # The marker for no more points
             bv_list.append(binary.setBitVectorSize(BitVector.from_int(720), 10))
             # No marker specified.  Use 0 fill
@@ -1777,7 +1778,7 @@ class AreaNotice(BBM):
 
         bv_list.append(binary.setBitVectorSize(BitVector.from_int(self.duration), 18))
 
-        for i, area in enumerate(self.areas):
+        for area in self.areas:
             bv_list.append(area.get_bits())
 
         bv = binary.joinBV(bv_list)
@@ -2092,7 +2093,7 @@ class NormQueue(Queue.Queue):
 def main():
     parser = optparse.OptionParser(usage="%prog [options]")
 
-    (options, args) = parser.parse_args()
+    _unused_options, args = parser.parse_args()
     norm_queue = NormQueue()
 
     kmlfile = open("out.kml", "w")

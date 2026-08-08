@@ -334,7 +334,8 @@ class AreaNoticePoly(AreaNoticeSubArea):
 
         self.points = []
         done = False  # used to flag when we should have no more points
-        for i in range(4):
+        # TODO: This is probably wrong.
+        for _unused_i in range(4):
             angle = db.GetInt(10)
             if angle == 720:
                 done = True
@@ -462,7 +463,7 @@ class AreaNotice(BBM):
         )
         bv_list.append(binary.setBitVectorSize(BitVector.from_int(0), 3))  # spare
 
-        for i, area in enumerate(self.areas):
+        for area in self.areas:
             bv_list.append(area.get_bits())
         bv = binary.joinBV(bv_list)
         if len(bv) > 984:
