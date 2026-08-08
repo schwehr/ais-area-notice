@@ -144,7 +144,7 @@ def almost_equal(a, b, epsilon=0.001):
     Returns:
         True if the absolute difference is less than epsilon, None otherwise.
     """
-    if (a < b + epsilon) and (a > b - epsilon):
+    if b - epsilon < a < b + epsilon:
         return True
 
 
@@ -197,12 +197,12 @@ class SensorReport:
                 minute = now.minute
 
         assert report_type in sensor_report_lut
-        assert year >= 2010 and year <= 2100
-        assert month >= 1 and month <= 12
-        assert day >= 1 and day <= 31
-        assert hour >= 0 and hour <= 23
-        assert minute >= 0 and minute <= 59
-        assert site_id >= 0 and site_id <= 127
+        assert 2010 <= year <= 2100
+        assert 1 <= month <= 12
+        assert 1 <= day <= 31
+        assert 0 <= hour <= 23
+        assert 0 <= minute <= 59
+        assert 0 <= site_id <= 127
 
         self.report_type = report_type
         self.year = year
@@ -282,8 +282,8 @@ class SensorReport:
             year = now.year
             month = now.month
 
-        assert year >= 2010 and year <= 2100
-        assert month >= 1 and month <= 12
+        assert 2010 <= year <= 2100
+        assert 1 <= month <= 12
         self.year = year
         self.month = month
 
@@ -329,11 +329,11 @@ class SensorReportLocation(SensorReport):
         if bits is not None:
             self.decode_bits(bits)
             return
-        assert (lon >= -180.0 and lon <= 180.0) or lon == 181
-        assert (lat >= -90.0 and lat <= 90.0) or lat == 91
-        assert alt >= 0 and alt < 200.3  # 2002 is not-available
-        assert (owner >= 0 and owner <= 6) or owner == 14
-        assert timeout >= 0 and timeout <= 5
+        assert -180.0 <= lon <= 180.0 or lon == 181
+        assert -90.0 <= lat <= 90.0 or lat == 91
+        assert 0 <= alt < 200.3  # 2002 is not-available
+        assert 0 <= owner <= 6 or owner == 14
+        assert 0 <= timeout <= 5
         assert site_id is not None
 
         SensorReport.__init__(
@@ -628,18 +628,18 @@ class SensorReportWaterLevel(SensorReport):
             return
 
         assert wl_type in (0, 1)
-        assert wl >= -327.68 and wl <= 327.68  # TODO(schwehr): need? + 0.001)
-        assert wl >= -327.68 and wl <= 327.68  # TODO(schwehr): need? + 0.001)
+        assert -327.68 <= wl <= 327.68  # TODO(schwehr): need? + 0.001)
+        assert -327.68 <= wl <= 327.68  # TODO(schwehr): need? + 0.001)
         assert trend in (0, 1, 2, 3)
-        assert vdatum >= 0 and vdatum <= 14
+        assert 0 <= vdatum <= 14
         assert data_descr in sensor_type_lut
         assert forecast_type in (0, 1)
         # TODO(schwehr): Need a buffer for floats? + 0.001)
-        assert forecast_wl >= -327.68 and forecast_wl <= 327.68
-        assert forecast_day >= 0 and forecast_day <= 31
-        assert forecast_hour >= 0 and forecast_hour <= 24
-        assert forecast_minute >= 0 and forecast_minute <= 60
-        assert duration_min >= 0 and duration_min <= 255
+        assert -327.68 <= forecast_wl <= 327.68
+        assert 0 <= forecast_day <= 31
+        assert 0 <= forecast_hour <= 24
+        assert 0 <= forecast_minute <= 60
+        assert 0 <= duration_min <= 255
 
         self.wl_type = wl_type
         self.wl = wl
@@ -776,9 +776,9 @@ class SensorReportCurrent2d(SensorReport):
         self.data_descr = data_descr
 
         for cur in self.cur:
-            assert cur["speed"] >= 0 and cur["speed"] <= 24.7
-            assert cur["dir"] >= 0 and cur["dir"] <= 360
-            assert cur["level"] >= 0 and cur["level"] <= 362
+            assert 0 <= cur["speed"] <= 24.7
+            assert 0 <= cur["dir"] <= 360
+            assert 0 <= cur["level"] <= 362
         assert data_descr in sensor_type_lut
 
         SensorReport.__init__(
@@ -874,9 +874,9 @@ class SensorReportCurrent3d(SensorReport):
         self.data_descr = data_descr
 
         for cur in self.cur:
-            assert cur["level"] >= 0 and cur["level"] <= 362
+            assert 0 <= cur["level"] <= 362
             for x in ("n", "e", "z"):
-                assert cur[x] >= 0 and cur[x] <= 24.7
+                assert 0 <= cur[x] <= 24.7
         assert data_descr in sensor_type_lut
 
         SensorReport.__init__(
@@ -985,10 +985,10 @@ class SensorReportCurrentHorz(SensorReport):
         ]
 
         for cur in self.cur:
-            assert cur["dist"] >= 0 and cur["dist"] <= 122
-            assert cur["level"] >= 0 and cur["level"] <= 361
+            assert 0 <= cur["dist"] <= 122
+            assert 0 <= cur["level"] <= 361
             for field in ("bearing", "dir"):
-                assert cur[field] >= 0 and cur[field] <= 360
+                assert 0 <= cur[field] <= 360
 
         SensorReport.__init__(
             self,
@@ -1082,20 +1082,20 @@ class SensorReportSeaState(SensorReport):
             self.decode_bits(bits)
             return
 
-        assert swell_height >= 0 and swell_height <= 24.7
-        assert swell_period >= 0 and swell_period <= 61
-        assert swell_dir >= 0 and swell_dir <= 361
+        assert 0 <= swell_height <= 24.7
+        assert 0 <= swell_period <= 61
+        assert 0 <= swell_dir <= 361
         assert sea_state in beaufort_scale
         assert swell_data_descr in sensor_type_lut
 
-        assert temp >= -10.0 and temp <= 50.1
-        assert temp_depth >= 0 and temp_depth <= 12.2
+        assert -10.0 <= temp <= 50.1
+        assert 0 <= temp_depth <= 12.2
         assert temp_data_descr in sensor_type_lut
-        assert wave_height >= 0 and wave_height <= 24.7
-        assert wave_period >= 0 and wave_period <= 61
-        assert wave_dir >= 0 and wave_dir <= 361
+        assert 0 <= wave_height <= 24.7
+        assert 0 <= wave_period <= 61
+        assert 0 <= wave_dir <= 361
         assert wave_data_descr in sensor_type_lut
-        assert salinity >= 0 and salinity <= 50.2
+        assert 0 <= salinity <= 50.2
 
         self.swell_height = swell_height
         self.swell_period = swell_period
@@ -1228,13 +1228,13 @@ class SensorReportSalinity(SensorReport):
             return
 
         assert (
-            (temp >= -10.0 and temp <= 50.0)
+            -10.0 <= temp <= 50.0
             or almost_equal(temp, 60.1)
             or almost_equal(temp, 60.2)
         )
-        assert cond >= 0.0 and cond <= 7.03
-        assert pres >= 0.0 and pres <= 6000.3
-        assert salinity >= 0.0 and salinity <= 50.3
+        assert 0.0 <= cond <= 7.03
+        assert 0.0 <= pres <= 6000.3
+        assert 0.0 <= salinity <= 50.3
         assert salinity_type in (0, 1, 2)
         assert data_descr in sensor_type_lut
 
@@ -1340,18 +1340,16 @@ class SensorReportWeather(SensorReport):
             self.decode_bits(bits)
             return
 
-        assert (air_temp >= -60.0 and air_temp <= 60.0) or almost_equal(
-            air_temp, -102.4
-        )
+        assert -60.0 <= air_temp <= 60.0 or almost_equal(air_temp, -102.4)
         assert air_temp_data_descr in sensor_type_lut
         assert precip in (0, 1, 2, 3)
-        assert vis >= 0.0 and vis <= 24.3
-        assert dew >= -20.0 and dew <= 50.1
+        assert 0.0 <= vis <= 24.3
+        assert -20.0 <= dew <= 50.1
         assert dew_data_descr in sensor_type_lut
-        assert air_pres >= 800 and air_pres <= 1202
+        assert 800 <= air_pres <= 1202
         assert air_pres_trend in (0, 1, 2, 3)
         assert air_pres_data_descr in sensor_type_lut
-        assert salinity >= 0.0 and salinity <= 50.2
+        assert 0.0 <= salinity <= 50.2
 
         self.air_temp = air_temp
         self.air_temp_data_descr = air_temp_data_descr
@@ -1477,15 +1475,13 @@ class SensorReportAirGap(SensorReport):
             return
 
         # TODO(schwehr): Are draft and gap are in 0.01 meter incrememts?
-        assert (draft >= 1.0 and draft <= 81.91) or almost_equal(draft, 0)
-        assert (gap >= 1.0 and gap <= 81.91) or almost_equal(gap, 0)
+        assert (1.0 <= draft <= 81.91) or almost_equal(draft, 0)
+        assert (1.0 <= gap <= 81.91) or almost_equal(gap, 0)
         assert gap_trend in (0, 1, 2, 3)
-        assert (forecast_gap >= 1.0 and forecast_gap <= 81.91) or almost_equal(
-            forecast_gap, 0
-        )
-        assert forecast_day >= 0 and forecast_day <= 31
-        assert forecast_hour >= 0 and forecast_hour <= 24
-        assert forecast_minute >= 0 and forecast_minute <= 60
+        assert (1.0 <= forecast_gap <= 81.91) or almost_equal(forecast_gap, 0)
+        assert 0 <= forecast_day <= 31
+        assert 0 <= forecast_hour <= 24
+        assert 0 <= forecast_minute <= 60
 
         self.draft = draft
         self.gap = gap

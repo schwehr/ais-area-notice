@@ -119,48 +119,46 @@ class MetHydro31(BBM):
                 minute = now.minute
 
         assert source_mmsi is not None and 100000 <= source_mmsi <= 999999999
-        assert (lon >= -180.0 and lon <= 180.0) or lon == 181
-        assert (lat >= -90.0 and lat <= 90.0) or lat == 91
-        assert day >= 0 and day <= 31
-        assert hour >= 0 and hour <= 24
-        assert minute >= 0 and minute <= 60
-        assert wind >= 0 and wind <= 127
-        assert gust >= 0 and gust <= 127
-        assert wind_dir >= 0 and wind_dir <= 360
-        assert gust_dir >= 0 and gust_dir <= 360
-        assert (air_temp >= -60.0 and air_temp <= 60.0) or air_temp == -102.4
-        assert humid >= 0 and humid <= 101
+        assert -180.0 <= lon <= 180.0 or lon == 181
+        assert -90.0 <= lat <= 90.0 or lat == 91
+        assert 0 <= day <= 31
+        assert 0 <= hour <= 24
+        assert 0 <= minute <= 60
+        assert 0 <= wind <= 127
+        assert 0 <= gust <= 127
+        assert 0 <= wind_dir <= 360
+        assert 0 <= gust_dir <= 360
+        assert -60.0 <= air_temp <= 60.0 or air_temp == -102.4
+        assert 0 <= humid <= 101
         # Warning: different than air_temp.
-        assert dew >= -20.0 and dew <= 50.1
+        assert -20.0 <= dew <= 50.1
         # TODO(schwehr): Check the last val of air pressure.
-        assert (air_pres >= 800 and air_pres <= 1201) or air_pres == 399 + 510
+        assert 800 <= air_pres <= 1201 or air_pres == 399 + 510
         assert air_pres_trend in (0, 1, 2, 3)
-        assert vis >= 0.0 and vis <= 12.7
-        assert wl >= -10.0 and wl <= 30.1
+        assert 0.0 <= vis <= 12.7
+        assert -10.0 <= wl <= 30.1
         assert wl_trend in (0, 1, 2, 3)
-        assert (cur_1 >= 0 and cur_1 <= 25.1) or cur_1 == 25.5
-        assert cur_dir_1 >= 0 and cur_dir_1 <= 360
+        assert 0 <= cur_1 <= 25.1 or cur_1 == 25.5
+        assert 0 <= cur_dir_1 <= 360
         # Level 1 is 0.
-        assert (cur_2 >= 0 and cur_2 <= 25.1) or cur_2 == 25.5
-        assert cur_dir_2 >= 0 and cur_dir_2 <= 360
-        assert cur_level_2 >= 0 and cur_level_2 <= 31
-        assert (cur_3 >= 0 and cur_3 <= 25.1) or cur_3 == 25.5
-        assert cur_dir_3 >= 0 and cur_dir_3 <= 360
-        assert cur_level_3 >= 0 and cur_level_3 <= 31
+        assert 0 <= cur_2 <= 25.1 or cur_2 == 25.5
+        assert 0 <= cur_dir_2 <= 360
+        assert 0 <= cur_level_2 <= 31
+        assert 0 <= cur_3 <= 25.1 or cur_3 == 25.5
+        assert 0 <= cur_dir_3 <= 360
+        assert 0 <= cur_level_3 <= 31
 
-        assert (wave_height >= 0 and wave_height <= 25.1) or wave_height == 25.5
-        assert (wave_period >= 0 and wave_period <= 60) or wave_period == 63
-        assert wave_dir >= 0 and wave_dir <= 360
-        assert (swell_height >= 0 and swell_height <= 25.1) or swell_height == 25.5
-        assert (swell_period >= 0 and swell_period <= 60) or swell_period == 63
-        assert swell_dir >= 0 and swell_dir <= 360
+        assert 0 <= wave_height <= 25.1 or wave_height == 25.5
+        assert 0 <= wave_period <= 60 or wave_period == 63
+        assert 0 <= wave_dir <= 360
+        assert 0 <= swell_height <= 25.1 or swell_height == 25.5
+        assert 0 <= swell_period <= 60 or swell_period == 63
+        assert 0 <= swell_dir <= 360
         assert sea_state in beaufort_scale
 
-        assert water_temp >= -10.0 and water_temp <= 50.1
+        assert -10.0 <= water_temp <= 50.1
         assert precip in precip_types
-        assert (
-            (salinity >= 0 and salinity <= 50.1) or salinity == 51.0 or salinity == 51.1
-        )
+        assert 0 <= salinity <= 50.1 or salinity == 51.0 or salinity == 51.1
 
         self.source_mmsi = source_mmsi
         self.lon = lon

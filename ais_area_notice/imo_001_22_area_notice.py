@@ -879,15 +879,15 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
         @param precision: unless tracking of significant digits to show on a display
         """
         if lon is not None:
-            assert lon >= -180.0 and lon <= 180.0
+            assert -180.0 <= lon <= 180.0
             self.lon = lon
-            assert lat >= -90.0 and lat <= 90.0
+            assert -90.0 <= lat <= 90.0
             self.lat = lat
 
-            assert precision >= 0 and precision <= 4
+            assert 0 <= precision <= 4
             self.precision = precision
 
-            assert radius >= 0 and radius <= 409500
+            assert 0 <= radius <= 409500
             self.radius = radius
 
             if radius / 100.0 >= 4095:
@@ -1036,12 +1036,12 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
         orientation_deg: degrees CW
         """
         if lon is not None:
-            assert lon >= -180.0 and lon <= 180.0
+            assert -180.0 <= lon <= 180.0
             self.lon = lon
-            assert lat >= -90.0 and lat <= 90.0
+            assert -90.0 <= lat <= 90.0
             self.lat = lat
 
-            assert precision >= 0 and precision <= 4
+            assert 0 <= precision <= 4
             self.precision = precision
 
             if east_dim >= 255000 or north_dim >= 255000:
@@ -1198,18 +1198,18 @@ class AreaNoticeSector(AreaNoticeSubArea):
         TODO(schwehr): Should this be raising a ValueError?
         """
         if lon is not None:
-            assert lon >= -180.0 and lon <= 180.0
+            assert -180.0 <= lon <= 180.0
             self.lon = lon
-            assert lat >= -90.0 and lat <= 90.0
+            assert -90.0 <= lat <= 90.0
             self.lat = lat
 
-            assert precision >= 0 and precision <= 4
+            assert 0 <= precision <= 4
             self.precision = precision
 
-            assert 0 <= radius and radius <= 409500
+            assert 0 <= radius <= 409500
 
-            assert 0 <= left_bound_deg and left_bound_deg < 360
-            assert 0 <= right_bound_deg and right_bound_deg < 360
+            assert 0 <= left_bound_deg < 360
+            assert 0 <= right_bound_deg < 360
 
             assert left_bound_deg <= right_bound_deg
 
@@ -1359,16 +1359,16 @@ class AreaNoticePolyline(AreaNoticeSubArea):
         """
 
         if lon is not None:
-            assert lon >= -180.0 and lon <= 180.0
+            assert -180.0 <= lon <= 180.0
             self.lon = lon
-            assert lat >= -90.0 and lat <= 90.0
+            assert -90.0 <= lat <= 90.0
             self.lat = lat
 
         # TODO(schwehr): Check the number of points to make sure we have room
         # and generate multiple subareas if need be.
 
         if points:
-            assert len(points) > 0 and len(points) < 5
+            assert 0 < len(points) < 5
             self.points = points
 
             max_dist = max(pt[1] for pt in points)
@@ -1667,7 +1667,7 @@ class AreaNotice(BBM):
 
         if area_type is not None and when is not None and duration is not None:
             # We are creating a new message
-            assert area_type >= 0 and area_type <= 127
+            assert 0 <= area_type <= 127
             self.area_type = area_type
             assert isinstance(when, datetime.datetime)
             # Be safe with datetime.  We only have 1 minute precision
