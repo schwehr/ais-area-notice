@@ -1681,7 +1681,7 @@ class Environment(BBM):
 
         sensor_reports_bits = bits[56:]
 
-        if not (8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE):
+        if not 8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE:
             msg = "Environment(BBM) trouble: %d > 8.   for %d %% %d" % (
                 len(sensor_reports_bits) % SENSOR_REPORT_SIZE,
                 len(sensor_reports_bits),
