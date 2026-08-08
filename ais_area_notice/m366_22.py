@@ -342,8 +342,9 @@ class AreaNotice:
                 lon = self.areas[-1].lon
                 lat = self.areas[-1].lat
                 self.areas.pop()
-            elif (
-                self.areas and isinstance(self.areas[-1], AreaNoticePoly)  # type: ignore[name-defined]
+            elif self.areas and isinstance(
+                self.areas[-1],
+                AreaNoticePoly,  # type: ignore[name-defined]
             ):
                 last_pt = self.areas[-1].points[-1]
                 lon = last_pt[0]

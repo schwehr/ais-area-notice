@@ -13,7 +13,6 @@ disable =
     inconsistent-return-statements,
     invalid-unary-operand-type,
     no-member,
-    pointless-string-statement,
     potential-index-error,
     raise-missing-from,
     redefined-outer-name,
