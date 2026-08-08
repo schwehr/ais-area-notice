@@ -303,6 +303,8 @@ def random_sensorreport():
 
 
 class TestSensorReports:
+    """Test suite for sensor report classes and bitstream packing/unpacking."""
+
     def setup_method(self):
         now = datetime.datetime.utcnow()
         self.year = now.year
@@ -1436,14 +1438,20 @@ class TestEnvironment:
             e.decode_nmea(["NOT_AN_NMEA_STRING"])
 
         class FakeMatch1:
+            """Fake NMEA regex match with checksum."""
+
             def groupdict(self):
                 return {"checksum": "19"}
 
         class FakeMatch2:
+            """Fake NMEA regex match with no groupdict."""
+
             def groupdict(self):
                 return None
 
         class FakeRegex:
+            """Fake regex search implementation for testing NMEA parsing."""
+
             def __init__(self):
                 self.calls = 0
 

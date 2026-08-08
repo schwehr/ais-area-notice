@@ -68,6 +68,8 @@ def assert_almost_equal_geojson(g1, g2, delta=1e-4, verbose=False):
 
 
 class TestRegex:
+    """Test NMEA sentence regular expression parsing."""
+
     def testWithoutMetadata(self):
         msg_str = "!AIVDM,1,1,,A,E>b6Kpiacg`0aagRW:JJropqKLpLkD6D8AB;000000VP20,4*4C"
         match = area_notice.ais_nmea_regex.search(msg_str)
@@ -198,6 +200,8 @@ class TestRegex:
 
 
 class Test0Math:
+    """Test vector rotation math helpers."""
+
     def testRotate(self):
         # Rotate about 0.
         p1 = (0, 0)
@@ -250,6 +254,8 @@ class Test0Math:
 
 
 class Test1AIVDM:
+    """Test AIVDM sentence generator base class."""
+
     def testAivdm(self):
         a = area_notice.AIVDM()
         with pytest.raises(area_notice.AisPackingException):
@@ -266,6 +272,8 @@ class Test1AIVDM:
 
 
 class Test3AreaNoticeCirclePt:
+    """Test circle/point subarea geometry and bit packing."""
+
     def testCircleGeom(self):
         pt1 = area_notice.AreaNoticeCirclePt(-73, 43, 0)
         assert pt1.radius == 0
@@ -291,6 +299,8 @@ class Test3AreaNoticeCirclePt:
 
 
 class Test5AreaNoticeSimple:
+    """Test simple Area Notice message encoding and visualization."""
+
     def testSimple(self):
         an1 = area_notice.AreaNotice(0, datetime.datetime.utcnow(), 100)
         assert len(an1.get_bits()) == 2 + 16 + 10 + 7 + 4 + 5 + 5 + 6 + 18
@@ -362,6 +372,8 @@ class Test5AreaNoticeSimple:
 
 
 class TestBitDecoding:
+    """Test Area Notice bit decoding for point subareas."""
+
     def testPoint(self):
         year = datetime.datetime.utcnow().year
         pt1 = area_notice.AreaNotice(
@@ -494,6 +506,8 @@ class TestBitDecoding:
 
 
 class TestBitDecoding2:
+    """Test Area Notice bit decoding for complex mixed subareas."""
+
     def testPoint(self):
         # One of each.
         notice = area_notice.AreaNotice(
@@ -807,6 +821,8 @@ def test_aivdm_header_none_mmsi():
 
 def test_aivdm_get_aivdm_byte_aligned_okay(capsys):
     class MockAIVDM(area_notice.AIVDM):
+        """Mock AIVDM subclass for testing byte alignment logging."""
+
         def get_bits(self):
             return BitVector(size=74)
 
@@ -839,6 +855,8 @@ def test_area_notice_kml_options(monkeypatch, tmp_path):
     assert "</kml>" in full_kml
 
     class NoGeomSubArea(area_notice.AreaNoticeSubArea):
+        """Mock subarea without geometry for KML export testing."""
+
         def __unicode__(self):
             return "NoGeomSubArea"
 
@@ -863,6 +881,8 @@ def test_bbm_errors_and_multisentence():
         bbm.get_bbm(channel=9)
 
     class LongBBM(area_notice.BBM):
+        """Mock long BBM subclass for testing multi-sentence NMEA generation."""
+
         def get_bits(self):
             return BitVector(size=300)
 

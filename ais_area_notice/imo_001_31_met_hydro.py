@@ -45,6 +45,8 @@ ice_types = {
 
 
 class MetHydro31(BBM):
+    """IMO SN.1/Circ.289 Meteorological and Hydrographic Data (BBM 8:1:31)."""
+
     dac = 1
     fi = 31
 

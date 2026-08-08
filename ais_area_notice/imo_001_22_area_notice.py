@@ -485,6 +485,8 @@ def geom2kml(geom_dict):
 
 
 class AisException(Exception):
+    """Base exception for AIS Area Notice operations."""
+
     def __init__(self, msg):
         super().__init__(msg)
         self.msg = msg
@@ -497,11 +499,11 @@ class AisException(Exception):
 
 
 class AisPackingException(AisException):
-    pass
+    """Exception raised during binary packing of Area Notice messages."""
 
 
 class AisUnpackingException(AisException):
-    pass
+    """Exception raised during binary unpacking of Area Notice messages."""
 
 
 def nmea_checksum_hex(sentence):
@@ -791,6 +793,8 @@ class BBM(AIVDM):
 
 
 class AreaNoticeSubArea:
+    """Base class for subarea shapes in IMO Area Notices (8:1:22)."""
+
     def __str__(self):
         return self.__unicode__()
 
@@ -799,6 +803,8 @@ class AreaNoticeSubArea:
 
 
 class AreaNoticeCirclePt(AreaNoticeSubArea):
+    """Circle or point subarea shape for IMO Area Notices (8:1:22)."""
+
     area_shape = 0
 
     def __init__(self, lon=None, lat=None, radius=0, precision=4, bits=None):
@@ -932,6 +938,8 @@ class AreaNoticeCirclePt(AreaNoticeSubArea):
 
 
 class AreaNoticeRectangle(AreaNoticeSubArea):
+    """Rectangle subarea shape for IMO Area Notices (8:1:22)."""
+
     area_shape = 1
 
     def __init__(
@@ -1071,6 +1079,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
 
 class AreaNoticeSector(AreaNoticeSubArea):
+    """Sector subarea shape for IMO Area Notices (8:1:22)."""
+
     area_shape = 2
 
     def __init__(
@@ -1223,6 +1233,8 @@ class AreaNoticeSector(AreaNoticeSubArea):
 
 
 class AreaNoticePolyline(AreaNoticeSubArea):
+    """Polyline subarea shape for IMO Area Notices (8:1:22)."""
+
     area_shape = 3
 
     def __init__(self, points=None, lon=None, lat=None, bits=None):
@@ -1456,6 +1468,8 @@ class AreaNoticePolygon(AreaNoticePolyline):
 
 
 class AreaNoticeFreeText(AreaNoticeSubArea):
+    """Free text subarea shape for IMO Area Notices (8:1:22)."""
+
     area_shape = 5
     area_name = "freetext"
 
@@ -1522,6 +1536,8 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
 
 
 class AreaNotice(BBM):
+    """IMO SN.1/Circ.289 Area Notice (BBM 8:1:22)."""
+
     # dac = 1
     # fi = 22
 

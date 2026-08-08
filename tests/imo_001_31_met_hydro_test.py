@@ -110,14 +110,20 @@ def test_decode_nmea_errors():
 
 def test_decode_nmea_none_in_msgs(monkeypatch):
     class FakeMatch1:
+        """Fake NMEA regex match with checksum."""
+
         def groupdict(self):
             return {"checksum": "19"}
 
     class FakeMatch2:
+        """Fake NMEA regex match with no groupdict."""
+
         def groupdict(self):
             return None
 
     class FakeRegex:
+        """Fake regex search implementation for testing NMEA parsing."""
+
         def __init__(self):
             self.calls = 0
 

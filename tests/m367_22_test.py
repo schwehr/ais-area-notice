@@ -21,6 +21,8 @@ from ais_area_notice.m367_22 import SHAPES
 
 
 class DiffAreaNotice:
+    """Utility class for comparing two AreaNotice instances."""
+
     def __init__(self, an1, an2):
         self.an1 = an1
         self.an2 = an2
@@ -44,6 +46,8 @@ class DiffAreaNotice:
 
 
 class TestAreaNotice:
+    """Tests for AreaNotice (8:367:22) encoding, decoding, and subareas."""
+
     def checkHeader(self, area_notice, mmsi=366123456):
         assert area_notice.message_id == 8
         assert area_notice.repeat_indicator == 0
@@ -603,14 +607,20 @@ class TestAreaNotice:
 
     def test_decode_nmea_none_in_msgs(self, monkeypatch):
         class FakeMatch1:
+            """Fake NMEA regex match with checksum."""
+
             def groupdict(self):
                 return {"checksum": "06"}
 
         class FakeMatch2:
+            """Fake NMEA regex match with no groupdict."""
+
             def groupdict(self):
                 return None
 
         class FakeRegex:
+            """Fake regex search implementation for testing NMEA parsing."""
+
             def __init__(self):
                 self.calls = 0
 

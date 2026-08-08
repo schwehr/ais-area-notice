@@ -139,6 +139,8 @@ def almost_equal(a, b, epsilon=0.001):
 
 
 class SensorReport:
+    """Base class for Environmental sensor reports (BBM 8:1:26)."""
+
     def __init__(
         self,
         report_type=None,
@@ -276,6 +278,8 @@ class SensorReport:
 
 
 class SensorReportLocation(SensorReport):
+    """Sensor report for site location and status (Report 0)."""
+
     report_type = 0
 
     def __init__(
@@ -363,6 +367,8 @@ class SensorReportLocation(SensorReport):
 
 
 class SensorReportId(SensorReport):
+    """Sensor report for station identification (Report 1)."""
+
     # TODO(schwehr): How to handle@ padding?
     report_type = 1
 
@@ -422,6 +428,8 @@ class SensorReportId(SensorReport):
 
 
 class SensorReportWind(SensorReport):
+    """Sensor report for wind speed, direction, and gust (Report 2)."""
+
     report_type = 2
 
     def __init__(
@@ -562,6 +570,8 @@ class SensorReportWind(SensorReport):
 
 
 class SensorReportWaterLevel(SensorReport):
+    """Sensor report for water level and tide (Report 3)."""
+
     report_type = 3
 
     def __init__(
@@ -701,6 +711,8 @@ class SensorReportWaterLevel(SensorReport):
 
 
 class SensorReportCurrent2d(SensorReport):
+    """Sensor report for 2D current flow (Report 4)."""
+
     # TODO(schwehr): Helper methods to validate velocity entries.
     report_type = 4
 
@@ -799,6 +811,8 @@ class SensorReportCurrent2d(SensorReport):
 
 
 class SensorReportCurrent3d(SensorReport):
+    """Sensor report for 3D current flow (Report 5)."""
+
     # TODO(schwehr): How to specify south, west, and up?
     report_type = 5
 
@@ -897,6 +911,8 @@ class SensorReportCurrent3d(SensorReport):
 
 
 class SensorReportCurrentHorz(SensorReport):
+    """Sensor report for horizontal current flow (Report 6)."""
+
     report_type = 6
 
     def __init__(
@@ -1007,6 +1023,8 @@ class SensorReportCurrentHorz(SensorReport):
 
 
 class SensorReportSeaState(SensorReport):
+    """Sensor report for sea state and wave measurements (Report 7)."""
+
     report_type = 7
 
     def __init__(
@@ -1157,6 +1175,8 @@ class SensorReportSeaState(SensorReport):
 
 
 class SensorReportSalinity(SensorReport):
+    """Sensor report for temperature, conductivity, and salinity (Report 8)."""
+
     report_type = 8
 
     def __init__(
@@ -1263,6 +1283,8 @@ class SensorReportSalinity(SensorReport):
 
 
 class SensorReportWeather(SensorReport):
+    """Sensor report for meteorological weather data (Report 9)."""
+
     report_type = 9
 
     def __init__(
@@ -1511,6 +1533,8 @@ class SensorReportAirGap(SensorReport):
 
 
 class Environment(BBM):
+    """IMO SN.1/Circ.289 Environmental Message (BBM 8:1:26)."""
+
     dac = 1
     fi = 26
 

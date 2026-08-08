@@ -7,10 +7,12 @@ from . import binary
 
 
 class Error(Exception):
-    pass
+    """Base exception for bit packing and unpacking utilities."""
 
 
 class DecodeBits:
+    """Sequential bitstream reader for unpacking integer and text fields."""
+
     def __init__(self, bits):
         self.bits = bits
         self.pos = 0
@@ -46,6 +48,8 @@ class DecodeBits:
 
 
 class BuildBits:
+    """Sequential bitstream writer for packing integer and text fields."""
+
     def __init__(self):
         self.bv_list = []
         self.bits_expected = 0

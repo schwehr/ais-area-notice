@@ -31,10 +31,12 @@ SHAPES = {
 
 
 class Error(Exception):
-    pass
+    """Base exception for USCG 8:366:22 Area Notice messages."""
 
 
 class AreaNoticeSubArea:
+    """Base class for subarea shapes in USCG 8:366:22 Area Notices."""
+
     def getScaleFactor(self, value):
         if value / 100.0 >= 4095:
             return 1000
@@ -53,6 +55,8 @@ class AreaNoticeSubArea:
 
 
 class AreaNoticeCircle(AreaNoticeSubArea):
+    """Circle subarea shape for USCG 8:366:22 Area Notices."""
+
     def __init__(
         self, lon=None, lat=None, radius=0, precision=4, scale_factor=None, bits=None
     ):
@@ -104,6 +108,8 @@ class AreaNoticeCircle(AreaNoticeSubArea):
 
 
 class AreaNotice:
+    """USCG specific Area Notice Version 23 (8:366:22)."""
+
     version = 1
     max_areas = 9
     max_bits = 984

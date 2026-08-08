@@ -31,6 +31,8 @@ SHAPES = {
 
 
 class DecodeBits:
+    """Sequential bitstream reader for unpacking integer and text fields."""
+
     def __init__(self, bits):
         self.bits = bits
         self.pos = 0
@@ -66,6 +68,8 @@ class DecodeBits:
 
 
 class BuildBits:
+    """Sequential bitstream writer for packing integer and text fields."""
+
     def __init__(self):
         self.bv_list = []
         self.bits_expected = 0
@@ -105,6 +109,8 @@ class BuildBits:
 
 
 class AreaNoticeSubArea:
+    """Base class for subarea shapes in USCG 8:367:22 Area Notices."""
+
     def getScaleFactor(self, value):
         """The scale factor value for the network."""
         if value / 100.0 >= 4095:
@@ -125,6 +131,8 @@ class AreaNoticeSubArea:
 
 
 class AreaNoticeCircle(AreaNoticeSubArea):
+    """Circle subarea shape for USCG 8:367:22 Area Notices."""
+
     def __init__(
         self, lon=None, lat=None, radius=0, precision=4, scale_factor=None, bits=None
     ):
@@ -175,6 +183,8 @@ class AreaNoticeCircle(AreaNoticeSubArea):
 
 
 class AreaNoticeRectangle(AreaNoticeSubArea):
+    """Rectangle subarea shape for USCG 8:367:22 Area Notices."""
+
     def __init__(
         self,
         lon=None,
@@ -239,6 +249,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
 
 class AreaNoticeSector(AreaNoticeSubArea):
+    """Sector subarea shape for USCG 8:367:22 Area Notices."""
+
     def __init__(
         self,
         lon=None,
@@ -372,6 +384,8 @@ class AreaNoticePoly(AreaNoticeSubArea):
 
 
 class AreaNoticeText(AreaNoticeSubArea):
+    """Free text subarea shape for USCG 8:367:22 Area Notices."""
+
     def __init__(self, text=None, bits=None):
         if text is not None:
             self.text = text
@@ -395,6 +409,8 @@ class AreaNoticeText(AreaNoticeSubArea):
 
 
 class AreaNotice(BBM):
+    """USCG specific Area Notice (8:367:22)."""
+
     version = 1
     max_areas = 9
     max_bits = 984

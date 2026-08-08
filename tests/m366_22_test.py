@@ -84,14 +84,20 @@ def test_decode_nmea_errors_and_none_in_msgs(monkeypatch):
         m366_22.AreaNotice(nmea_strings=["NOT_AN_NMEA_STRING"])
 
     class FakeMatch1:
+        """Fake NMEA regex match with checksum."""
+
         def groupdict(self):
             return {"checksum": "7F"}
 
     class FakeMatch2:
+        """Fake NMEA regex match with no groupdict."""
+
         def groupdict(self):
             return None
 
     class FakeRegex:
+        """Fake regex search implementation for testing NMEA parsing."""
+
         def __init__(self):
             self.calls = 0
 
@@ -170,6 +176,8 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch):
 
     # Shape 3 (Polyline with preceding polyline mock)
     class FakePoly:
+        """Fake poly subarea class for testing subarea factory."""
+
         def __init__(self, bits=None, lon=0, lat=0):
             self.points = [(10.0, 20.0)]
             self.bits = bits
