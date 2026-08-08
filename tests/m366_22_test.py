@@ -1,8 +1,12 @@
 """Test USCG specific 8:366:22 area notice message Version 23 samples."""
 
 import datetime
-from ais_area_notice import m366_22
+
+from BitVector import BitVector
 import pytest
+
+from ais_area_notice import binary
+from ais_area_notice import m366_22
 
 
 def test_empty_init():
@@ -80,14 +84,20 @@ def test_decode_nmea_errors_and_none_in_msgs(monkeypatch):
         m366_22.AreaNotice(nmea_strings=["NOT_AN_NMEA_STRING"])
 
     class FakeMatch1:
+        """Fake NMEA regex match with checksum."""
+
         def groupdict(self):
             return {"checksum": "7F"}
 
     class FakeMatch2:
+        """Fake NMEA regex match with no groupdict."""
+
         def groupdict(self):
             return None
 
     class FakeRegex:
+        """Fake regex search implementation for testing NMEA parsing."""
+
         def __init__(self):
             self.calls = 0
 
@@ -114,9 +124,6 @@ def test_subarea_factory_overflow_and_unsupported_shape():
     valid_bits = m366_22.binary.ais6tobitvec(msg_dict["body"])[:-2]
     header_bits = valid_bits[:111]
     subarea_bits = valid_bits[111:204]
-
-    from ais_area_notice import binary
-    from BitVector import BitVector
 
     too_many_subareas = binary.joinBV([subarea_bits for _ in range(11)])
     full_bits = header_bits + too_many_subareas
@@ -146,8 +153,6 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch):
     aivdm = "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"
     an = m366_22.AreaNotice(nmea_strings=[aivdm])
 
-    from BitVector import BitVector
-
     # Shape 1 (Rectangle)
     with pytest.raises(NameError, match="name 'AreaNoticeRectangle' is not defined"):
         an.SubareaFactory(BitVector.from_bitstring("001" + "0" * 90))
@@ -171,6 +176,8 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch):
 
     # Shape 3 (Polyline with preceding polyline mock)
     class FakePoly:
+        """Fake poly subarea class for testing subarea factory."""
+
         def __init__(self, bits=None, lon=0, lat=0):
             self.points = [(10.0, 20.0)]
             self.bits = bits

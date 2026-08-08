@@ -3,18 +3,26 @@
 
 import datetime
 
+from BitVector import BitVector
+import pytest
+
 from ais_area_notice import binary
+from ais_area_notice import m367_22
+from ais_area_notice.imo_001_22_area_notice import AisPackingException
+from ais_area_notice.imo_001_22_area_notice import AisUnpackingException
 from ais_area_notice.m367_22 import AreaNotice
 from ais_area_notice.m367_22 import AreaNoticeCircle
 from ais_area_notice.m367_22 import AreaNoticePoly
 from ais_area_notice.m367_22 import AreaNoticeRectangle
 from ais_area_notice.m367_22 import AreaNoticeSector
 from ais_area_notice.m367_22 import AreaNoticeText
+from ais_area_notice.m367_22 import DecodeBits
 from ais_area_notice.m367_22 import SHAPES
-import pytest
 
 
 class DiffAreaNotice:
+    """Utility class for comparing two AreaNotice instances."""
+
     def __init__(self, an1, an2):
         self.an1 = an1
         self.an2 = an2
@@ -38,6 +46,8 @@ class DiffAreaNotice:
 
 
 class TestAreaNotice:
+    """Tests for AreaNotice (8:367:22) encoding, decoding, and subareas."""
+
     def checkHeader(self, area_notice, mmsi=366123456):
         assert area_notice.message_id == 8
         assert area_notice.repeat_indicator == 0
@@ -131,10 +141,10 @@ class TestAreaNotice:
         if lon is not None:
             assert sub_area.lon == pytest.approx(lon)
             assert sub_area.lat == pytest.approx(lat)
-        for point_num in range(len(sub_area.points)):
+        for point_num, (sub_angle, sub_dist) in enumerate(sub_area.points):
             angle, dist = points[point_num]
-            assert sub_area.points[point_num][0] == pytest.approx(angle)
-            assert sub_area.points[point_num][1] == dist
+            assert sub_angle == pytest.approx(angle)
+            assert sub_dist == dist
         assert sub_area.spare == 0
 
     def checkText(self, sub_area, expected_text):
@@ -423,7 +433,7 @@ class TestAreaNotice:
             ),
             "!AIVDM,2,2,0,A,00000000bPbJT1Q9hd680000,0*03",
         ]
-        body = "".join([sentence.split(",")[5] for sentence in msg])
+        body = "".join(sentence.split(",")[5] for sentence in msg)
         sub_area_msg = body[-32:-16]
         assert len(sub_area_msg) == 16
         sa1_bits = binary.ais6tobitvec(sub_area_msg)
@@ -483,8 +493,6 @@ class TestAreaNotice:
         assert len(bits) == 96
 
     def test_add_subarea_no_areas_attr_and_max_areas_exceeded(self):
-        from ais_area_notice.imo_001_22_area_notice import AisPackingException
-
         when = datetime.datetime(2026, 9, 4, 15, 25)
         an = AreaNotice(
             area_type=13, when=when, duration_min=60, link_id=1, mmsi=366123456
@@ -503,8 +511,6 @@ class TestAreaNotice:
             an.add_subarea(circle)
 
     def test_get_bits_include_bin_hdr_and_too_large_error(self):
-        from ais_area_notice.imo_001_22_area_notice import AisPackingException
-
         when = datetime.datetime(2026, 9, 4, 15, 25)
         an = AreaNotice(
             area_type=13, when=when, duration_min=60, link_id=1, mmsi=366123456
@@ -522,8 +528,6 @@ class TestAreaNotice:
             an.get_bits()
 
     def test_decode_nmea_errors_and_fill_bits(self):
-        from ais_area_notice.imo_001_22_area_notice import AisUnpackingException
-
         with pytest.raises(AisUnpackingException, match="Checksum failed"):
             AreaNotice(
                 nmea_strings=[
@@ -542,8 +546,6 @@ class TestAreaNotice:
         assert len(an_fill.areas) == 1
 
     def test_subarea_factory_invalid_preceding_shape(self):
-        from ais_area_notice.imo_001_22_area_notice import AisPackingException
-
         when = datetime.datetime(2026, 9, 4, 15, 25)
         an = AreaNotice(
             area_type=13, when=when, duration_min=60, link_id=1, mmsi=366123456
@@ -565,9 +567,6 @@ class TestAreaNotice:
             AreaNotice(nmea_strings=None).decode_bits(invalid_bits)
 
     def test_decode_bits_verify_log(self):
-        from ais_area_notice.m367_22 import DecodeBits
-        from BitVector import BitVector
-
         db = DecodeBits(BitVector.from_bitstring("0000"))
         with pytest.raises(AssertionError):
             db.Verify(10)
@@ -607,18 +606,21 @@ class TestAreaNotice:
         assert len(poly.get_bits()) == 96
 
     def test_decode_nmea_none_in_msgs(self, monkeypatch):
-        from ais_area_notice import m367_22
-        from ais_area_notice.imo_001_22_area_notice import AisUnpackingException
-
         class FakeMatch1:
+            """Fake NMEA regex match with checksum."""
+
             def groupdict(self):
                 return {"checksum": "06"}
 
         class FakeMatch2:
+            """Fake NMEA regex match with no groupdict."""
+
             def groupdict(self):
                 return None
 
         class FakeRegex:
+            """Fake regex search implementation for testing NMEA parsing."""
+
             def __init__(self):
                 self.calls = 0
 

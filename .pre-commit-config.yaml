@@ -48,7 +48,6 @@ repos:
     rev: v3.3.4
     hooks:
       - id: pylint
-        args: ["--fail-under=8.0"]
         additional_dependencies:
           - bitvector-modern
           - geojson

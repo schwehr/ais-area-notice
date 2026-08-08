@@ -2,6 +2,8 @@
 
 """Tests for ais_string."""
 
+import pytest
+
 from ais_area_notice import ais_string
 
 
@@ -44,7 +46,5 @@ def test_encode_bit_size_padding():
 
 
 def test_encode_bit_size_too_small():
-    import pytest
-
     with pytest.raises(AssertionError):
         ais_string.Encode("AB", bit_size=6)

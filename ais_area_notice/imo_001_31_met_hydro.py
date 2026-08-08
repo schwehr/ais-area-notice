@@ -11,8 +11,9 @@ Be aware of:
 import datetime
 import sys
 
-from . import binary
 from BitVector import BitVector
+
+from . import binary
 from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
 from .imo_001_22_area_notice import AisUnpackingException
@@ -44,6 +45,8 @@ ice_types = {
 
 
 class MetHydro31(BBM):
+    """IMO SN.1/Circ.289 Meteorological and Hydrographic Data (BBM 8:1:31)."""
+
     dac = 1
     fi = 31
 
@@ -197,10 +200,10 @@ class MetHydro31(BBM):
 
     def __unicode__(self, verbose=False):
         r = []
-        r.append("MetHydro31: ".format(**self.__dict__))
+        r.append("MetHydro31: ")
         if not verbose:
             return r[0]
-        r.append("\t".format(**self.__dict__))
+        r.append("\t")
         return "\n".join(r)
 
     def __str__(self, verbose=False):
@@ -213,15 +216,15 @@ class MetHydro31(BBM):
             return False
         if len(self.__dict__) != len(other.__dict__):
             return False
-        for key in self.__dict__:
+        for key, val in self.__dict__.items():
             # TODO(schwehr): Should we skip checking the year and month?
             #   They are not really part of the message?
             if key not in other.__dict__:
                 return False
-            if isinstance(self.__dict__[key], float):
-                if not almost_equal(self.__dict__[key], other.__dict__[key]):
+            if isinstance(val, float):
+                if not almost_equal(val, other.__dict__[key]):
                     return False
-            elif self.__dict__[key] != other.__dict__[key]:
+            elif val != other.__dict__[key]:
                 return False
         return True
 
@@ -307,12 +310,10 @@ class MetHydro31(BBM):
 
         bv = binary.joinBV(bv_list)
         if len(bv) != MSG_SIZE:
-            sys.stderr.write(
-                "MetHydro31 wrong size: %d  WANT: %d\n" % (len(bv), MSG_SIZE)
-            )
+            sys.stderr.write(f"MetHydro31 wrong size: {len(bv)}  WANT: {MSG_SIZE}\n")
             raise AisPackingException(
-                "message wrong size.  Need %d bits, "
-                "but can only use %d bits" % (MSG_SIZE, len(bv))
+                f"message wrong size.  Need {MSG_SIZE} bits, "
+                f"but can only use {len(bv)} bits"
             )
         return bv
 
@@ -344,10 +345,12 @@ class MetHydro31(BBM):
     def decode_bits(self, bits, year=None):
         """Decode the bits for a message."""
 
-        message_id = int(bits[:6])
-        repeat_indicator = int(bits[6:8])
+        # TODO: Pass these through and verify.
+        # message_id = int(bits[:6])
+        # repeat_indicator = int(bits[6:8])
         self.source_mmsi = int(bits[8:38])
-        spare = int(bits[38:40])
+        # TODO: Should we look at the spare bits?
+        # spare = int(bits[38:40])
         dac = int(bits[40:50])
         fi = int(bits[50:56])
         assert dac == 1

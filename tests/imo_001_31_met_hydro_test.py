@@ -7,6 +7,9 @@ since: Mon Feb 14 15:55:02 2011 -0500
 import random
 import sys
 
+from BitVector import BitVector
+import pytest
+
 import ais_area_notice.imo_001_31_met_hydro as met_hydro
 from .imo_001_26_environment_test import random_date
 
@@ -16,7 +19,7 @@ FUZZ_COUNT = 30
 
 def random_msg():
     date = random_date()
-    sys.stderr.write("date: %s\n" % date)
+    sys.stderr.write(f"date: {date}\n")
     return met_hydro.MetHydro31(
         source_mmsi=random.randint(100000, 999999999),
         lon=random.randint(-180000, 180000) / 1000.0,
@@ -61,7 +64,7 @@ def random_msg():
 
 def test_empty():
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
-    assert mh == mh
+    assert mh == mh  # pylint: disable=comparison-with-itself
     mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
     assert mh == mh_b
 
@@ -70,12 +73,9 @@ def test_random():
     """fuzz test"""
     for _ in range(FUZZ_COUNT):
         mh = met_hydro.MetHydro31(source_mmsi=123456789)
-        assert mh == mh
+        assert mh == mh  # pylint: disable=comparison-with-itself
         mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
         assert mh == mh_b
-
-
-import pytest
 
 
 def test_ne_and_html_and_geo_interface():
@@ -90,7 +90,6 @@ def test_ne_and_html_and_geo_interface():
 
 def test_get_bits_wrong_size_error(monkeypatch):
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
-    from BitVector import BitVector
 
     monkeypatch.setattr(met_hydro.binary, "joinBV", lambda bv_list: BitVector(size=100))
     with pytest.raises(met_hydro.AisPackingException, match="message wrong size"):
@@ -111,14 +110,20 @@ def test_decode_nmea_errors():
 
 def test_decode_nmea_none_in_msgs(monkeypatch):
     class FakeMatch1:
+        """Fake NMEA regex match with checksum."""
+
         def groupdict(self):
             return {"checksum": "19"}
 
     class FakeMatch2:
+        """Fake NMEA regex match with no groupdict."""
+
         def groupdict(self):
             return None
 
     class FakeRegex:
+        """Fake regex search implementation for testing NMEA parsing."""
+
         def __init__(self):
             self.calls = 0
 

@@ -14,12 +14,11 @@ through the binary AIS messages.
 """
 
 import datetime
-import sys
+
+from BitVector import BitVector
 
 from . import ais_string
 from . import binary
-from BitVector import BitVector
-
 from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
 from .imo_001_22_area_notice import AisUnpackingException
@@ -140,6 +139,8 @@ def almost_equal(a, b, epsilon=0.001):
 
 
 class SensorReport:
+    """Base class for Environmental sensor reports (BBM 8:1:26)."""
+
     def __init__(
         self,
         report_type=None,
@@ -209,18 +210,18 @@ class SensorReport:
             return True
         if len(self.__dict__) != len(other.__dict__):
             return False
-        for key in self.__dict__:
+        for key, val in self.__dict__.items():
             # TODO(schwehr): Should we skip checking the year and month as they are
             # not really part of the message?
             if key in ("year", "month"):
                 continue
             if key not in other.__dict__:
                 return False
-            if isinstance(self.__dict__[key], float):
-                if not almost_equal(self.__dict__[key], other.__dict__[key]):
+            if isinstance(val, float):
+                if not almost_equal(val, other.__dict__[key]):
                     return False
             else:
-                if self.__dict__[key] != other.__dict__[key]:
+                if val != other.__dict__[key]:
                     return False
         return True
 
@@ -277,6 +278,8 @@ class SensorReport:
 
 
 class SensorReportLocation(SensorReport):
+    """Sensor report for site location and status (Report 0)."""
+
     report_type = 0
 
     def __init__(
@@ -364,6 +367,8 @@ class SensorReportLocation(SensorReport):
 
 
 class SensorReportId(SensorReport):
+    """Sensor report for station identification (Report 1)."""
+
     # TODO(schwehr): How to handle@ padding?
     report_type = 1
 
@@ -410,7 +415,7 @@ class SensorReportId(SensorReport):
         ]
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
-            msg = "Bit length %d not equal to %d" % (len(bits), SENSOR_REPORT_SIZE)
+            msg = f"Bit length {len(bits)} not equal to {SENSOR_REPORT_SIZE}"
             raise AisPackingException(msg)
         return bits
 
@@ -423,6 +428,8 @@ class SensorReportId(SensorReport):
 
 
 class SensorReportWind(SensorReport):
+    """Sensor report for wind speed, direction, and gust (Report 2)."""
+
     report_type = 2
 
     def __init__(
@@ -540,10 +547,7 @@ class SensorReportWind(SensorReport):
         ]
 
         r.append(
-            '\tsensor data description: {data_descr} - "{data_descr_str}"'.format(
-                data_descr=self.data_descr,
-                data_descr_str=sensor_type_lut[self.data_descr],
-            )
+            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut[self.data_descr]}"'
         )
 
         if not (self.speed == 122 and self.dir == 360):
@@ -566,6 +570,8 @@ class SensorReportWind(SensorReport):
 
 
 class SensorReportWaterLevel(SensorReport):
+    """Sensor report for water level and tide (Report 3)."""
+
     report_type = 3
 
     def __init__(
@@ -670,7 +676,7 @@ class SensorReportWaterLevel(SensorReport):
         ]
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
-            msg = "bit length %d not equal to %d" % (len(bits), SENSOR_REPORT_SIZE)
+            msg = f"bit length {len(bits)} not equal to {SENSOR_REPORT_SIZE}"
             raise AisPackingException(msg)
         return bits
 
@@ -680,10 +686,7 @@ class SensorReportWaterLevel(SensorReport):
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
         ]
         r.append(
-            '\tsensor data description: {data_descr} - "{data_descr_str}"'.format(
-                data_descr=self.data_descr,
-                data_descr_str=sensor_type_lut[self.data_descr],
-            )
+            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut[self.data_descr]}"'
         )
 
         if not almost_equal(self.wl, -327.68):
@@ -708,6 +711,8 @@ class SensorReportWaterLevel(SensorReport):
 
 
 class SensorReportCurrent2d(SensorReport):
+    """Sensor report for 2D current flow (Report 4)."""
+
     # TODO(schwehr): Helper methods to validate velocity entries.
     report_type = 4
 
@@ -787,7 +792,7 @@ class SensorReportCurrent2d(SensorReport):
         bv_list.append(BitVector(size=4))  # spare
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
-            msg = "bit length %d not equal to %d" % (len(bits), SENSOR_REPORT_SIZE)
+            msg = f"bit length {len(bits)} not equal to {SENSOR_REPORT_SIZE}"
             raise AisPackingException(msg)
         return bits
 
@@ -797,10 +802,7 @@ class SensorReportCurrent2d(SensorReport):
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
         ]
         r.append(
-            '\tsensor data description: {data_descr} - "{data_descr_str}"'.format(
-                data_descr=self.data_descr,
-                data_descr_str=sensor_type_lut[self.data_descr],
-            )
+            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut[self.data_descr]}"'
         )
         for c in self.cur:
             if not almost_equal(c["speed"], 24.7):
@@ -809,6 +811,8 @@ class SensorReportCurrent2d(SensorReport):
 
 
 class SensorReportCurrent3d(SensorReport):
+    """Sensor report for 3D current flow (Report 5)."""
+
     # TODO(schwehr): How to specify south, west, and up?
     report_type = 5
 
@@ -888,7 +892,7 @@ class SensorReportCurrent3d(SensorReport):
         bv_list.append(BitVector(size=16))  # Spare bits.
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
-            msg = "bit length %d not equal to %d" % (len(bits), SENSOR_REPORT_SIZE)
+            msg = f"bit length {len(bits)} not equal to {SENSOR_REPORT_SIZE}"
             raise AisPackingException(msg)
         return bits
 
@@ -898,10 +902,7 @@ class SensorReportCurrent3d(SensorReport):
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
         ]
         r.append(
-            '\tsensor data description: {data_descr} - "{data_descr_str}"'.format(
-                data_descr=self.data_descr,
-                data_descr_str=sensor_type_lut[self.data_descr],
-            )
+            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut[self.data_descr]}"'
         )
         for c in self.cur:
             if not almost_equal(c["n"], 24.7) or not almost_equal(c["level"], 361):
@@ -910,6 +911,8 @@ class SensorReportCurrent3d(SensorReport):
 
 
 class SensorReportCurrentHorz(SensorReport):
+    """Sensor report for horizontal current flow (Report 6)."""
+
     report_type = 6
 
     def __init__(
@@ -1001,14 +1004,14 @@ class SensorReportCurrentHorz(SensorReport):
         bv_list.append(BitVector(size=1))  # Spare bit.
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
-            msg = "bit length %d not equal to %d" % (len(bits), SENSOR_REPORT_SIZE)
+            msg = f"bit length {len(bits)} not equal to {SENSOR_REPORT_SIZE}"
             raise AisPackingException(msg)
         return bits
 
     def __unicode__(self):
         r = [
-            "SensorReport CurrentHorz: site_id={site_id} type={report_type} "
-            "d={day} hr={hour} m={minute}".format(**self.__dict__),
+            f"SensorReport CurrentHorz: site_id={self.site_id} type={self.report_type} "
+            f"d={self.day} hr={self.hour} m={self.minute}",
         ]
         for c in self.cur:
             if c["bearing"] != 361:
@@ -1020,6 +1023,8 @@ class SensorReportCurrentHorz(SensorReport):
 
 
 class SensorReportSeaState(SensorReport):
+    """Sensor report for sea state and wave measurements (Report 7)."""
+
     report_type = 7
 
     def __init__(
@@ -1130,7 +1135,7 @@ class SensorReportSeaState(SensorReport):
         # bv_list.append(BitVector(size=0)) # no spare
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
-            msg = "bit length %d not equal to %d" % (len(bits), SENSOR_REPORT_SIZE)
+            msg = f"bit length {len(bits)} not equal to {SENSOR_REPORT_SIZE}"
             raise AisPackingException(msg)
         return bits
 
@@ -1165,11 +1170,13 @@ class SensorReportSeaState(SensorReport):
             "\twave_period={wave_period} wave_dir={wave_dir} "
             "wave_data_descr={wave_data_descr}".format(**self.__dict__)
         )
-        r.append("\tsalinity={salinity}".format(**self.__dict__))
+        r.append(f"\tsalinity={self.salinity}")
         return "\n".join(r)
 
 
 class SensorReportSalinity(SensorReport):
+    """Sensor report for temperature, conductivity, and salinity (Report 8)."""
+
     report_type = 8
 
     def __init__(
@@ -1248,7 +1255,7 @@ class SensorReportSalinity(SensorReport):
         bv_list.append(BitVector(size=35))  # Spare bits.
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
-            msg = "bit length %d not equal to %d" % (len(bits), SENSOR_REPORT_SIZE)
+            msg = f"bit length {len(bits)} not equal to {SENSOR_REPORT_SIZE}"
             raise AisPackingException(msg)
         return bits
 
@@ -1276,6 +1283,8 @@ class SensorReportSalinity(SensorReport):
 
 
 class SensorReportWeather(SensorReport):
+    """Sensor report for meteorological weather data (Report 9)."""
+
     report_type = 9
 
     def __init__(
@@ -1377,7 +1386,7 @@ class SensorReportWeather(SensorReport):
         ]
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
-            msg = "bit length %d not equal to %d" % (len(bits), SENSOR_REPORT_SIZE)
+            msg = f"bit length {len(bits)} not equal to {SENSOR_REPORT_SIZE}"
             raise AisPackingException(msg)
         return bits
 
@@ -1409,7 +1418,7 @@ class SensorReportWeather(SensorReport):
                 air_pres_data_descr_str=air_pres_data_descr_str, **self.__dict__
             )
         )
-        r.append("\tsalinity={salinity}".format(**self.__dict__))
+        r.append(f"\tsalinity={self.salinity}")
         return "\n".join(r)
 
 
@@ -1499,7 +1508,7 @@ class SensorReportAirGap(SensorReport):
         bv_list.append(BitVector(size=28))  # Spare bits.
         bits = binary.joinBV(bv_list)
         if len(bits) != SENSOR_REPORT_SIZE:
-            msg = "bit length %d not equal to %d" % (len(bits), SENSOR_REPORT_SIZE)
+            msg = f"bit length {len(bits)} not equal to {SENSOR_REPORT_SIZE}"
             raise AisPackingException(msg)
         return bits
 
@@ -1524,6 +1533,8 @@ class SensorReportAirGap(SensorReport):
 
 
 class Environment(BBM):
+    """IMO SN.1/Circ.289 Environmental Message (BBM 8:1:26)."""
+
     dac = 1
     fi = 26
 
@@ -1578,8 +1589,7 @@ class Environment(BBM):
             return False
         if len(self.sensor_reports) != len(other.sensor_reports):
             return False
-        for i in range(len(self.sensor_reports)):
-            a = self.sensor_reports[i]
+        for i, a in enumerate(self.sensor_reports):
             b = other.sensor_reports[i]
             if a == b:
                 continue
@@ -1635,7 +1645,7 @@ class Environment(BBM):
         bv = binary.joinBV(bv_list)
 
         if len(bv) > 953:
-            raise AisPackingException("Too large (%d bits > 953)." % len(bv))
+            raise AisPackingException(f"Too large ({len(bv)} bits > 953).")
         return bv
 
     def decode_nmea(self, strings):
@@ -1646,15 +1656,15 @@ class Environment(BBM):
             for msg in strings:
                 match = ais_nmea_regex.search(msg)
                 if match is None:
-                    raise AisUnpackingException("NMEA line malformed: %s " % strings)
+                    raise AisUnpackingException(f"NMEA line malformed: {strings} ")
                 msg_dict = match.groupdict()
                 if msg_dict is None or "body" not in msg_dict:
-                    raise AisUnpackingException("Nothing decoded from: %s" % strings)
+                    raise AisUnpackingException(f"Nothing decoded from: {strings}")
                 if msg_dict["checksum"] != nmea_checksum_hex(msg):
                     raise AisUnpackingException("Checksum failed")
                 msgs.append(msg_dict)
         except (AttributeError, TypeError):
-            raise AisUnpackingException("NMEA line malformed: %s " % strings)
+            raise AisUnpackingException(f"NMEA line malformed: {strings} ")
 
     def decode_bits(self, bits, year=None):
         """Decode the bits for a message."""
@@ -1681,11 +1691,10 @@ class Environment(BBM):
 
         sensor_reports_bits = bits[56:]
 
-        if not (8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE):
-            msg = "Environment(BBM) trouble: %d > 8.   for %d %% %d" % (
-                len(sensor_reports_bits) % SENSOR_REPORT_SIZE,
-                len(sensor_reports_bits),
-                SENSOR_REPORT_SIZE,
+        if not 8 > len(sensor_reports_bits) % SENSOR_REPORT_SIZE:
+            msg = (
+                f"Environment(BBM) trouble: {len(sensor_reports_bits) % SENSOR_REPORT_SIZE} > 8.   for "
+                f"{len(sensor_reports_bits)} % {SENSOR_REPORT_SIZE}"
             )
             raise AisUnpackingException(msg)
 
@@ -1703,29 +1712,29 @@ class Environment(BBM):
         report_type = int(bits[:4])
         if 0 == report_type:
             return SensorReportLocation(bits=bits)
-        elif 1 == report_type:
+        if 1 == report_type:
             return SensorReportId(bits=bits)
-        elif 2 == report_type:
+        if 2 == report_type:
             return SensorReportWind(bits=bits)
-        elif 3 == report_type:
+        if 3 == report_type:
             return SensorReportWaterLevel(bits=bits)
-        elif 4 == report_type:
+        if 4 == report_type:
             return SensorReportCurrent2d(bits=bits)
-        elif 5 == report_type:
+        if 5 == report_type:
             return SensorReportCurrent3d(bits=bits)
-        elif 6 == report_type:
+        if 6 == report_type:
             return SensorReportCurrentHorz(bits=bits)
-        elif 7 == report_type:
+        if 7 == report_type:
             return SensorReportSeaState(bits=bits)
-        elif 8 == report_type:
+        if 8 == report_type:
             return SensorReportSalinity(bits=bits)
-        elif 9 == report_type:
+        if 9 == report_type:
             return SensorReportWeather(bits=bits)
-        elif 10 == report_type:
+        if 10 == report_type:
             return SensorReportAirGap(bits=bits)
-        else:
-            msg = "Reports 11-15 reserved for future use.  Found: %d"
-            raise AisUnpackingException(msg % report_type)
+
+        msg = f"Reports 11-15 reserved for future use.  Found: {report_type}"
+        raise AisUnpackingException(msg)
 
     @property
     def __geo_interface__(self):

@@ -9,8 +9,6 @@ character_bits: dict, lookup table for going from a single character to
 import logging
 import re
 
-
-from . import binary
 from BitVector import BitVector
 
 
@@ -197,8 +195,8 @@ def Encode(string, bit_size=None):
     if bit_size:
         assert bit_size % 6 == 0
     bv = BitVector(size=0)
-    for i in range(len(string)):
-        bv += character_bits[string[i]]
+    for char in string:
+        bv += character_bits[char]
     if bit_size:
         if bit_size < len(bv):
             logging.error(

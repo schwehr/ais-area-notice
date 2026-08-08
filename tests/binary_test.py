@@ -2,8 +2,10 @@
 
 """Tests for ais_area_notice.binary."""
 
-from ais_area_notice import binary
 from BitVector import BitVector
+import pytest
+
+from ais_area_notice import binary
 
 # TODO(schwehr): Test joinBV.
 # TODO(schwehr): Test setBitVectorSize.
@@ -92,14 +94,10 @@ def test_bv_from_signed_int_no_bitsize():
 
 
 def test_bv_from_signed_int_invalid_bitsize():
-    import pytest
-
     with pytest.raises(ValueError, match="incorrect bit size"):
         binary.bvFromSignedInt(251, bitSize=8)
 
 
 def test_bitvec_to_ais6_no_padding_error():
-    import pytest
-
     with pytest.raises(ValueError, match="Results would not be 6-bit aligned."):
         binary.bitvectoais6(BitVector.from_bitstring("101"), doPadding=False)

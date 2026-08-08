@@ -1,15 +1,18 @@
 """Utilities for Area Notice messages."""
 
+from BitVector import BitVector
+
 from . import ais_string
 from . import binary
-from BitVector import BitVector
 
 
 class Error(Exception):
-    pass
+    """Base exception for bit packing and unpacking utilities."""
 
 
 class DecodeBits:
+    """Sequential bitstream reader for unpacking integer and text fields."""
+
     def __init__(self, bits):
         self.bits = bits
         self.pos = 0
@@ -41,10 +44,12 @@ class DecodeBits:
 
     def Verify(self, offset):
         if self.pos != offset:
-            raise Error("Decode verify failed.  %d != %d" % (self.pos, offset))
+            raise Error(f"Decode verify failed.  {self.pos} != {offset}")
 
 
 class BuildBits:
+    """Sequential bitstream writer for packing integer and text fields."""
+
     def __init__(self):
         self.bv_list = []
         self.bits_expected = 0
@@ -73,9 +78,7 @@ class BuildBits:
 
     def Verify(self, num_bits):
         if self.bits_expected != num_bits:
-            raise Error(
-                "BuildBits did not verify: %d != %d" % (self.bits_expected, num_bits)
-            )
+            raise Error(f"BuildBits did not verify: {self.bits_expected} != {num_bits}")
 
     def GetBits(self):
         bits = binary.joinBV(self.bv_list)

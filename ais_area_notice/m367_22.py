@@ -8,9 +8,10 @@ http://en.wikipedia.org/wiki/Rhumb_line
 import datetime
 import logging
 
+from BitVector import BitVector
+
 from . import ais_string
 from . import binary
-from BitVector import BitVector
 from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
 from .imo_001_22_area_notice import AisUnpackingException
@@ -30,6 +31,8 @@ SHAPES = {
 
 
 class DecodeBits:
+    """Sequential bitstream reader for unpacking integer and text fields."""
+
     def __init__(self, bits):
         self.bits = bits
         self.pos = 0
@@ -65,6 +68,8 @@ class DecodeBits:
 
 
 class BuildBits:
+    """Sequential bitstream writer for packing integer and text fields."""
+
     def __init__(self):
         self.bv_list = []
         self.bits_expected = 0
@@ -104,13 +109,15 @@ class BuildBits:
 
 
 class AreaNoticeSubArea:
+    """Base class for subarea shapes in USCG 8:367:22 Area Notices."""
+
     def getScaleFactor(self, value):
         """The scale factor value for the network."""
         if value / 100.0 >= 4095:
             return 1000
-        elif value / 10.0 > 4095:
+        if value / 10.0 > 4095:
             return 100
-        elif value > 4095:
+        if value > 4095:
             return 10
         return 1
 
@@ -124,6 +131,8 @@ class AreaNoticeSubArea:
 
 
 class AreaNoticeCircle(AreaNoticeSubArea):
+    """Circle subarea shape for USCG 8:367:22 Area Notices."""
+
     def __init__(
         self, lon=None, lat=None, radius=0, precision=4, scale_factor=None, bits=None
     ):
@@ -141,8 +150,6 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         elif bits is not None:
             self.decode_bits(bits)
         # TODO(schwehr): Warn for else.
-
-        return  # Return an empty object
 
     def decode_bits(self, bits):
         assert len(bits) == SUB_AREA_SIZE
@@ -176,6 +183,8 @@ class AreaNoticeCircle(AreaNoticeSubArea):
 
 
 class AreaNoticeRectangle(AreaNoticeSubArea):
+    """Rectangle subarea shape for USCG 8:367:22 Area Notices."""
+
     def __init__(
         self,
         lon=None,
@@ -240,6 +249,8 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
 
 
 class AreaNoticeSector(AreaNoticeSubArea):
+    """Sector subarea shape for USCG 8:367:22 Area Notices."""
+
     def __init__(
         self,
         lon=None,
@@ -320,7 +331,7 @@ class AreaNoticePoly(AreaNoticeSubArea):
             self.lat = lat
         if points:
             self.points = points
-            max_dist = max([pt[1] for pt in points])
+            max_dist = max(pt[1] for pt in points)
             if not scale_factor:
                 self.scale_factor = self.getScaleFactor(max_dist)
         if scale_factor:
@@ -336,7 +347,8 @@ class AreaNoticePoly(AreaNoticeSubArea):
 
         self.points = []
         done = False  # used to flag when we should have no more points
-        for i in range(4):
+        # TODO: This is probably wrong.
+        for _unused_i in range(4):
             angle = db.GetInt(10)
             if angle == 720:
                 done = True
@@ -356,15 +368,14 @@ class AreaNoticePoly(AreaNoticeSubArea):
         assert self.area_shape in (SHAPES["POLYLINE"], SHAPES["POLYGON"])
         bb.AddUInt(self.area_shape, 3)
         if "scale_factor" not in self.__dict__:
-            max_dist = max([pt[1] for pt in self.points])
+            max_dist = max(pt[1] for pt in self.points)
             self.scale_factor = self.getScaleFactor(max_dist)
         bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
-        for i in range(len(self.points)):
-            angle, dist = self.points[i]
+        for angle, dist in self.points:
             bb.AddUInt(int(angle * 2), 10)
             bb.AddUInt(int(dist / self.scale_factor), 11)
         # encode any empty points
-        for i in range(len(self.points), 4):
+        for _ in range(len(self.points), 4):
             bb.AddUInt(720, 10)
             bb.AddUInt(0, 11)
         bb.AddUInt(0, 7)
@@ -373,6 +384,8 @@ class AreaNoticePoly(AreaNoticeSubArea):
 
 
 class AreaNoticeText(AreaNoticeSubArea):
+    """Free text subarea shape for USCG 8:367:22 Area Notices."""
+
     def __init__(self, text=None, bits=None):
         if text is not None:
             self.text = text
@@ -396,6 +409,8 @@ class AreaNoticeText(AreaNoticeSubArea):
 
 
 class AreaNotice(BBM):
+    """USCG specific Area Notice (8:367:22)."""
+
     version = 1
     max_areas = 9
     max_bits = 984
@@ -412,6 +427,7 @@ class AreaNotice(BBM):
         mmsi=None,
         nmea_strings=None,
     ):
+        super().__init__()
         self.areas = []
         if nmea_strings:
             self.decode_nmea(nmea_strings)
@@ -464,13 +480,11 @@ class AreaNotice(BBM):
         )
         bv_list.append(binary.setBitVectorSize(BitVector.from_int(0), 3))  # spare
 
-        for i, area in enumerate(self.areas):
+        for area in self.areas:
             bv_list.append(area.get_bits())
         bv = binary.joinBV(bv_list)
         if len(bv) > 984:
-            raise AisPackingException(
-                "Message to large:  %d > %d" % (len(bv), self.max_bits)
-            )
+            raise AisPackingException(f"Message to large:  {len(bv)} > {self.max_bits}")
         return bv
 
     def decode_nmea(self, strings):
@@ -541,11 +555,11 @@ class AreaNotice(BBM):
         shape = int(bits[:3])
         if shape == 0:
             return AreaNoticeCircle(bits=bits)
-        elif shape == 1:
+        if shape == 1:
             return AreaNoticeRectangle(bits=bits)
-        elif shape == 2:
+        if shape == 2:
             return AreaNoticeSector(bits=bits)
-        elif shape in (3, 4):
+        if shape in (3, 4):
             if isinstance(self.areas[-1], AreaNoticeCircle):
                 lon = self.areas[-1].lon
                 lat = self.areas[-1].lat
@@ -560,5 +574,5 @@ class AreaNotice(BBM):
                 )
 
             return AreaNoticePoly(bits=bits, lon=lon, lat=lat)
-        elif shape == 5:
+        if shape == 5:
             return AreaNoticeText(bits=bits)

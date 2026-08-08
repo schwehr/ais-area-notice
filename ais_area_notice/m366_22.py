@@ -13,9 +13,7 @@ from . import binary
 from .imo_001_22_area_notice import ais_nmea_regex
 from .imo_001_22_area_notice import AisPackingException
 from .imo_001_22_area_notice import AisUnpackingException
-from .imo_001_22_area_notice import BBM
 from .imo_001_22_area_notice import nmea_checksum_hex
-from .imo_001_22_area_notice import notice_type
 
 DAC = 366
 FI = 22
@@ -33,16 +31,18 @@ SHAPES = {
 
 
 class Error(Exception):
-    pass
+    """Base exception for USCG 8:366:22 Area Notice messages."""
 
 
 class AreaNoticeSubArea:
+    """Base class for subarea shapes in USCG 8:366:22 Area Notices."""
+
     def getScaleFactor(self, value):
         if value / 100.0 >= 4095:
             return 1000
-        elif value / 10.0 > 4095:
+        if value / 10.0 > 4095:
             return 100
-        elif value > 4095:
+        if value > 4095:
             return 10
         return 1
 
@@ -55,6 +55,8 @@ class AreaNoticeSubArea:
 
 
 class AreaNoticeCircle(AreaNoticeSubArea):
+    """Circle subarea shape for USCG 8:366:22 Area Notices."""
+
     def __init__(
         self, lon=None, lat=None, radius=0, precision=4, scale_factor=None, bits=None
     ):
@@ -106,6 +108,8 @@ class AreaNoticeCircle(AreaNoticeSubArea):
 
 
 class AreaNotice:
+    """USCG specific Area Notice Version 23 (8:366:22)."""
+
     version = 1
     max_areas = 9
     max_bits = 984
@@ -206,7 +210,7 @@ class AreaNotice:
         #               len(sub_areas_bits), SUB_AREA_BIT_SIZE,
         #               len(sub_areas_bits) / SUB_AREA_BIT_SIZE)
         if num_sub_areas > MAX_SUB_AREAS:
-            raise Error("Sub area overflow: %d %d" % (MAX_SUB_AREAS, num_sub_areas))
+            raise Error(f"Sub area overflow: {MAX_SUB_AREAS} {num_sub_areas}")
 
         for area_num in range(num_sub_areas):
             start = area_num * SUB_AREA_BIT_SIZE
@@ -220,11 +224,11 @@ class AreaNotice:
         shape = int(bits[:3])
         if shape == 0:
             return AreaNoticeCircle(bits=bits)
-        elif shape == 1:
+        if shape == 1:
             return AreaNoticeRectangle(bits=bits)
-        elif shape == 2:
+        if shape == 2:
             return AreaNoticeSector(bits=bits)
-        elif shape in (3, 4):
+        if shape in (3, 4):
             if self.areas and isinstance(self.areas[-1], AreaNoticeCircle):
                 lon = self.areas[-1].lon
                 lat = self.areas[-1].lat
@@ -238,6 +242,6 @@ class AreaNotice:
                     "Point or another polyline must precede a polyline"
                 )
             return AreaNoticePoly(bits=bits, lon=lon, lat=lat)
-        elif shape == 5:
+        if shape == 5:
             return AreaNoticeText(bits=bits)
-        raise Error("Unsupported area shape: %d" % shape)
+        raise Error(f"Unsupported area shape: {shape}")

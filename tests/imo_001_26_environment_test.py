@@ -9,9 +9,11 @@ import math
 import random
 import sys
 
+from BitVector import BitVector
+import pytest
+
 from ais_area_notice import ais_string
 import ais_area_notice.imo_001_26_environment as env
-import pytest
 
 # How many loops to do on fuzz testing
 FUZZ_COUNT = 30
@@ -22,7 +24,7 @@ def random_date():
     j_day = random.randint(1, 355)
     hour = random.randint(0, 23)
     minute = random.randint(0, 59)
-    date_str = "%4d-%03dT%02d:%02d" % (year, j_day, hour, minute)
+    date_str = f"{year:4d}-{j_day:03d}T{hour:02d}:{minute:02d}"
     return datetime.datetime.strptime(date_str, "%Y-%jT%H:%M")
 
 
@@ -301,6 +303,8 @@ def random_sensorreport():
 
 
 class TestSensorReports:
+    """Test suite for sensor report classes and bitstream packing/unpacking."""
+
     def setup_method(self):
         now = datetime.datetime.utcnow()
         self.year = now.year
@@ -364,7 +368,7 @@ class TestSensorReports:
         """SensorReport equality operator"""
         sr_0 = env.SensorReport(0, 2010, 1, 1, 1, 1, site_id=0)
         sr_0b = env.SensorReport(bits=sr_0.get_bits())
-        assert sr_0 == sr_0
+        assert sr_0 == sr_0  # pylint: disable=comparison-with-itself
         assert sr_0 == sr_0b
 
         sr_0c = env.SensorReport(0, 2010, 1, 1, 1, 2, site_id=0)
@@ -375,7 +379,7 @@ class TestSensorReports:
         assert sr_0 != sr_0e
 
         sr_1 = env.SensorReport(1, site_id=11)
-        assert sr_1 == sr_1
+        assert sr_1 == sr_1  # pylint: disable=comparison-with-itself
         assert sr_0 != sr_1
 
     def test_Sr_not_eq(self):
@@ -738,10 +742,10 @@ class TestSensorReports:
         )
         sr_b = env.SensorReportCurrent2d(bits=sr.get_bits())
 
-        for i in range(len(sr_b.cur)):
-            assert sr_b.cur[i]["speed"] == pytest.approx(0)
-            assert sr_b.cur[i]["dir"] == pytest.approx(0)
-            assert sr_b.cur[i]["level"] == pytest.approx(0)
+        for cur in sr_b.cur:
+            assert cur["speed"] == pytest.approx(0)
+            assert cur["dir"] == pytest.approx(0)
+            assert cur["level"] == pytest.approx(0)
         assert sr_b.data_descr == 0
 
     def test_SensorReportCurrent2d_max(self):
@@ -890,8 +894,8 @@ class TestSensorReports:
         sr_b = env.SensorReportCurrentHorz(bits=sr.get_bits())
 
         for cur in sr_b.cur:
-            for field in cur:
-                assert cur[field] == pytest.approx(0.0)
+            for val in cur.values():
+                assert val == pytest.approx(0.0)
 
     def test_SensorReportCurrentHorz_max(self):
         """SensorReport CurrentHorz maximum"""
@@ -1262,7 +1266,7 @@ class TestEnvironment:
 
     def test_empty(self):
         e = env.Environment(source_mmsi=123456)
-        assert e == e
+        assert e == e  # pylint: disable=comparison-with-itself
         assert len(e.sensor_reports) == 0
         assert "sensor_reports" in str(e)
         # Just one line with an empty env msg.
@@ -1279,11 +1283,11 @@ class TestEnvironment:
         e_instances = []
         for sr_class in env.sensor_report_classes:
             e = env.Environment(source_mmsi=123456)
-            assert e == e
+            assert e == e  # pylint: disable=comparison-with-itself
             site_id = int(math.floor(random.random() * 128))
             sr = sr_class(site_id=site_id)
             e.add_sensor_report(sr)
-            assert e == e
+            assert e == e  # pylint: disable=comparison-with-itself
 
             sr_bits = sr.get_bits()
             assert len(sr_bits) == 112  # 85 + report header.
@@ -1295,10 +1299,10 @@ class TestEnvironment:
             e_instances.append(e)
 
         for i, msg in enumerate(e_instances):
-            for other in range(len(e_instances)):
-                if i == other:
+            for other_i, other_msg in enumerate(e_instances):
+                if i == other_i:
                     continue
-                assert msg != e_instances[other]
+                assert msg != other_msg
 
     def test_wind(self):
         e = env.Environment(source_mmsi=656565)
@@ -1434,14 +1438,20 @@ class TestEnvironment:
             e.decode_nmea(["NOT_AN_NMEA_STRING"])
 
         class FakeMatch1:
+            """Fake NMEA regex match with checksum."""
+
             def groupdict(self):
                 return {"checksum": "19"}
 
         class FakeMatch2:
+            """Fake NMEA regex match with no groupdict."""
+
             def groupdict(self):
                 return None
 
         class FakeRegex:
+            """Fake regex search implementation for testing NMEA parsing."""
+
             def __init__(self):
                 self.calls = 0
 
@@ -1457,7 +1467,6 @@ class TestEnvironment:
 
     def test_decode_bits_fill_bits_trouble(self):
         e = env.Environment(source_mmsi=123456)
-        from BitVector import BitVector
 
         invalid_bits = BitVector(size=56 + 112 + 10)
         with pytest.raises(
@@ -1467,7 +1476,6 @@ class TestEnvironment:
 
     def test_sensor_report_factory_reserved_type(self):
         e = env.Environment(source_mmsi=123456)
-        from BitVector import BitVector
 
         reserved_bits = BitVector.from_bitstring("1011" + "0" * 108)
         with pytest.raises(
@@ -1483,7 +1491,6 @@ class TestEnvironment:
 
     def test_air_gap_decode_bits_size_and_get_bits_size(self, monkeypatch):
         sr = env.SensorReportAirGap(site_id=1, gap=10.0, draft=5.0)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1539,7 +1546,6 @@ class TestEnvironment:
 
     def test_current_horz_coverage(self, monkeypatch):
         sr = env.SensorReportCurrentHorz(site_id=1)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1564,7 +1570,6 @@ class TestEnvironment:
 
     def test_sea_state_coverage(self, monkeypatch):
         sr = env.SensorReportSeaState(site_id=1)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1589,7 +1594,6 @@ class TestEnvironment:
 
     def test_salinity_coverage(self, monkeypatch):
         sr = env.SensorReportSalinity(site_id=1)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1614,7 +1618,6 @@ class TestEnvironment:
 
     def test_weather_coverage(self, monkeypatch):
         sr = env.SensorReportWeather(site_id=1)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1646,7 +1649,6 @@ class TestEnvironment:
             forecast_speed=12,
             forecast_dir=190,
         )
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1673,7 +1675,6 @@ class TestEnvironment:
 
     def test_water_level_coverage(self, monkeypatch):
         sr = env.SensorReportWaterLevel(site_id=1, wl=1.5, forecast_wl=2.0)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1700,7 +1701,6 @@ class TestEnvironment:
 
     def test_current_2d_coverage(self, monkeypatch):
         sr = env.SensorReportCurrent2d(site_id=1, speed_1=5.0)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1726,7 +1726,6 @@ class TestEnvironment:
 
     def test_current_3d_coverage(self, monkeypatch):
         sr = env.SensorReportCurrent3d(site_id=1, n_1=5.0, level_1=10)
-        from BitVector import BitVector
 
         with pytest.raises(env.AisUnpackingException, match="bit length"):
             sr.decode_bits(BitVector(size=100))
@@ -1758,8 +1757,6 @@ class TestEnvironment:
         base_sr = env.SensorReport(report_type=0, day=1, hour=2, minute=3, site_id=4)
         assert "SensorReport: site_id=4" in base_sr.__unicode__()
         assert "SensorReport: site_id=4" in str(base_sr)
-
-        from BitVector import BitVector
 
         loc_sr = env.SensorReportLocation(site_id=1)
         with pytest.raises(env.AisUnpackingException, match="bit length"):

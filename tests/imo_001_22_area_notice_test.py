@@ -6,11 +6,14 @@ TODO(schwehr): Need to test the year and month roll overs in time.
 
 import datetime
 import math
+import runpy
 import sys
 
-import ais_area_notice.imo_001_22_area_notice as area_notice
+from BitVector import BitVector
 import geojson
 import pytest
+
+import ais_area_notice.imo_001_22_area_notice as area_notice
 
 PI_2 = math.pi / 2
 PI_4 = math.pi / 4
@@ -34,13 +37,13 @@ def assert_almost_equal_geojson(g1, g2, delta=1e-4, verbose=False):
         return
 
     if isinstance(g1, list):
-        for i in range(len(g1)):
-            assert_almost_equal_geojson(g1[i], g2[i], delta=delta, verbose=verbose)
+        for item1, item2 in zip(g1, g2):
+            assert_almost_equal_geojson(item1, item2, delta=delta, verbose=verbose)
         return
 
     if not isinstance(g1, dict) or not isinstance(g2, dict):
         if verbose:
-            sys.stderr.write("cp1: %s\n" % type(g1))
+            sys.stderr.write(f"cp1: {type(g1)}\n")
         if isinstance(g1, (float, int)):
             assert g1 == pytest.approx(g2, abs=delta)
         else:
@@ -65,6 +68,8 @@ def assert_almost_equal_geojson(g1, g2, delta=1e-4, verbose=False):
 
 
 class TestRegex:
+    """Test NMEA sentence regular expression parsing."""
+
     def testWithoutMetadata(self):
         msg_str = "!AIVDM,1,1,,A,E>b6Kpiacg`0aagRW:JJropqKLpLkD6D8AB;000000VP20,4*4C"
         match = area_notice.ais_nmea_regex.search(msg_str)
@@ -195,6 +200,8 @@ class TestRegex:
 
 
 class Test0Math:
+    """Test vector rotation math helpers."""
+
     def testRotate(self):
         # Rotate about 0.
         p1 = (0, 0)
@@ -247,6 +254,8 @@ class Test0Math:
 
 
 class Test1AIVDM:
+    """Test AIVDM sentence generator base class."""
+
     def testAivdm(self):
         a = area_notice.AIVDM()
         with pytest.raises(area_notice.AisPackingException):
@@ -263,6 +272,8 @@ class Test1AIVDM:
 
 
 class Test3AreaNoticeCirclePt:
+    """Test circle/point subarea geometry and bit packing."""
+
     def testCircleGeom(self):
         pt1 = area_notice.AreaNoticeCirclePt(-73, 43, 0)
         assert pt1.radius == 0
@@ -288,6 +299,8 @@ class Test3AreaNoticeCirclePt:
 
 
 class Test5AreaNoticeSimple:
+    """Test simple Area Notice message encoding and visualization."""
+
     def testSimple(self):
         an1 = area_notice.AreaNotice(0, datetime.datetime.utcnow(), 100)
         assert len(an1.get_bits()) == 2 + 16 + 10 + 7 + 4 + 5 + 5 + 6 + 18
@@ -359,6 +372,8 @@ class Test5AreaNoticeSimple:
 
 
 class TestBitDecoding:
+    """Test Area Notice bit decoding for point subareas."""
+
     def testPoint(self):
         year = datetime.datetime.utcnow().year
         pt1 = area_notice.AreaNotice(
@@ -491,6 +506,8 @@ class TestBitDecoding:
 
 
 class TestBitDecoding2:
+    """Test Area Notice bit decoding for complex mixed subareas."""
+
     def testPoint(self):
         # One of each.
         notice = area_notice.AreaNotice(
@@ -749,8 +766,6 @@ def test_get_bits_header_errors_and_override(monkeypatch):
     bv = aivdm.get_bits_header(source_mmsi=987654321)
     assert len(bv) == 38
 
-    from BitVector import BitVector
-
     monkeypatch.setattr(
         area_notice.binary, "joinBV", lambda bv_list: BitVector(size=30)
     )
@@ -806,9 +821,9 @@ def test_aivdm_header_none_mmsi():
 
 def test_aivdm_get_aivdm_byte_aligned_okay(capsys):
     class MockAIVDM(area_notice.AIVDM):
-        def get_bits(self):
-            from BitVector import BitVector
+        """Mock AIVDM subclass for testing byte alignment logging."""
 
+        def get_bits(self):
             return BitVector(size=74)
 
     m = MockAIVDM(message_id=8, repeat_indicator=0, source_mmsi=123456789)
@@ -840,6 +855,8 @@ def test_area_notice_kml_options(monkeypatch, tmp_path):
     assert "</kml>" in full_kml
 
     class NoGeomSubArea(area_notice.AreaNoticeSubArea):
+        """Mock subarea without geometry for KML export testing."""
+
         def __unicode__(self):
             return "NoGeomSubArea"
 
@@ -864,9 +881,9 @@ def test_bbm_errors_and_multisentence():
         bbm.get_bbm(channel=9)
 
     class LongBBM(area_notice.BBM):
-        def get_bits(self):
-            from BitVector import BitVector
+        """Mock long BBM subclass for testing multi-sentence NMEA generation."""
 
+        def get_bits(self):
             return BitVector(size=300)
 
     lbbm = LongBBM(message_id=8)
@@ -905,8 +922,6 @@ def test_circle_pt_scale_factors_and_decoding():
     assert cd_tuple.radius == pytest.approx(c1.radius, abs=1000)
 
     def mock_join_short(bv_list):
-        from BitVector import BitVector
-
         return BitVector(size=50)
 
     with pytest.raises(area_notice.AisPackingException, match="area not 87 bits"):
@@ -1003,8 +1018,6 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
     orig_join = area_notice.binary.joinBV
 
     def mock_join_short_poly(bv_list):
-        from BitVector import BitVector
-
         if len(bv_list) == 11:
             return BitVector(size=50)
         return orig_join(bv_list)
@@ -1024,8 +1037,6 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
     p_dec_tup = area_notice.AreaNoticePolyline(bits=bits_tuple, lon=-122.0, lat=37.0)
     assert len(p_dec_tup.points) == 1
 
-    from BitVector import BitVector
-
     bad_poly_bits = (
         BitVector.from_bitstring("01100")
         + BitVector.from_int(90, size=10)
@@ -1038,7 +1049,7 @@ def test_polyline_scale_factors_decoding_errors_unicode(capsys):
         + BitVector.from_int(0, size=10)
         + BitVector(size=2)
     )
-    p_bad = area_notice.AreaNoticePolyline(bits=bad_poly_bits, lon=-122.0, lat=37.0)
+    _ = area_notice.AreaNoticePolyline(bits=bad_poly_bits, lon=-122.0, lat=37.0)
     captured = capsys.readouterr()
     assert "ERROR: bad polyline" in captured.err
 
@@ -1082,8 +1093,6 @@ def test_polygon_unicode_and_freetext_methods():
     assert ft_tup.text == "TEST"
 
     def mock_join_short(bv_list):
-        from BitVector import BitVector
-
         return BitVector(size=50)
 
     with pytest.raises(
@@ -1146,7 +1155,8 @@ def test_area_notice_init_and_methods_and_errors():
     an_max = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )
-    for i in range(9):
+    # TODO: Make each subarea different.
+    for _unused_i in range(9):
         an_max.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
 
     with pytest.raises(
@@ -1164,8 +1174,6 @@ def test_area_notice_init_and_methods_and_errors():
     orig_join = area_notice.binary.joinBV
 
     def mock_join_large(bv_list):
-        from BitVector import BitVector
-
         if len(bv_list) >= 9:
             return BitVector(size=1000)
         return orig_join(bv_list)
@@ -1215,8 +1223,6 @@ def test_subarea_factory_and_get_shapes():
     an.add_subarea(sa_poly)
     sa_polygon = an.subarea_factory(bits=polygon_bits)
     assert isinstance(sa_polygon, area_notice.AreaNoticePolygon)
-
-    from BitVector import BitVector
 
     unk_bits = BitVector.from_int(6, size=3) + BitVector(size=87)
     assert an.subarea_factory(bits=unk_bits) is None
@@ -1301,9 +1307,6 @@ def test_main_cli(monkeypatch, tmp_path):
     styles_file = tmp_path / "areanotice_styles.kml"
     styles_file.write_text('<Style id="test"></Style>')
     monkeypatch.chdir(tmp_path)
-
-    import runpy
-    import sys
 
     monkeypatch.setattr(sys, "argv", ["main", sentence])
     area_notice.main()

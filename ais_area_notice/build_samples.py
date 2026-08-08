@@ -22,7 +22,8 @@ def env_samples():
     year = 2011
     month = 6
     day = 20
-    hour = 15
+    # TODO: Use hour
+    # hour = 15
     minute = 38
     site_id = 11
     mmsi = 123456789
@@ -352,12 +353,13 @@ def main():
     print("# Building sample set on", datetime.datetime.utcnow())
     print("# ais-areanotice-py")
 
-    kmlfile = open("samples.kml", "w")
-    kmlfile.write(an.kml_head)
-    kmlfile.write(open("areanotice_styles.kml").read())
+    with open("samples.kml", "w", encoding="utf-8") as kmlfile:
+        kmlfile.write(an.kml_head)
+        with open("areanotice_styles.kml", encoding="utf-8") as f:
+            kmlfile.write(f.read())
 
-    lat = 42.0
-    delta = 0.05
+        lat = 42.0
+        delta = 0.05
 
     point(
         -69.8,
@@ -695,30 +697,178 @@ def main():
         (-70.59648154279975, 42.54931636682287),
         (-70.47022780667521, 42.12880495859612),
         (-70.27963801765786, 42.11493035173643),
-        (-70.21841922873237, 42.13078851361118),
-        (-70.15414112337952, 42.1322179530808),
-        (-70.03638677586507, 42.09377754051238),
     )
 
-    angles_and_offsets = an.ll_to_polyline(sbnms_boundary[:5])
-    start = sbnms_boundary[0]
-    sbnms1 = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2010, 9, 8, 20, 0, 17),
-        60,
-        10,
-        source_mmsi=369871000,
-    )
-    sbnms1.add_subarea(an.AreaNoticePolyline((angles_and_offsets), start[0], start[1]))
-    sbnms1.name = "sbnms_part1"
+    with open("samples.kml", "w", encoding="utf-8") as kmlfile:
+        kmlfile.write(an.kml_head)
+        with open("areanotice_styles.kml", encoding="utf-8") as f:
+            kmlfile.write(f.read())
 
-    dump_all(sbnms1, kmlfile)
+        lat = 42.0
+        delta = 0.05
 
-    # TODO(schwehr): Add a polyline that takes multiple subareas.
-    # TODO(schwehr): Add a polygon that takes multiple subareas.
-    # TODO(schwehr): Add case with more than 4 points in lines and polygons.
+        point(
+            -69.8,
+            lat,
+            zone_type=an.notice_type["cau_mammals_not_obs"],
+            kmlfile=kmlfile,
+        )
+        lat += delta
 
-    kmlfile.write(an.kml_tail)
+        point(
+            -69.7,
+            lat,
+            zone_type=an.notice_type["cau_mammals_reduce_speed"],
+            kmlfile=kmlfile,
+        )
+        lat += delta
+
+        zone_type = 2
+        circle1 = an.AreaNotice(
+            an.notice_type["cau_mammals_not_obs"],
+            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
+        circle1.name = "circle-1-no-whales-obs"
+
+        dump_all(circle1, kmlfile)
+        lat += delta
+
+        circle2 = an.AreaNotice(
+            an.notice_type["cau_mammals_reduce_speed"],
+            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        circle2.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
+        circle2.name = "circle-2-whales-obs-reduce-speed"
+
+        dump_all(circle2, kmlfile)
+        lat += delta
+
+        rec1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        rec1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 2000, 1000, 45))
+        rec1.name = "rectangle-1"
+
+        dump_all(rec1, kmlfile)
+        lat += delta
+
+        poly1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        poly1.add_subarea(
+            an.AreaNoticePolygon(
+                [(45, 1000), (90, 500), (180, 800)],
+                -69.8,
+                lat,
+            )
+        )
+        poly1.name = "polygon-1"
+
+        dump_all(poly1, kmlfile)
+
+        line1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        line1.add_subarea(
+            an.AreaNoticePolyline(
+                [(45, 1000), (90, 500), (180, 800)],
+                -69.8,
+                lat,
+            )
+        )
+        line1.name = "polyline-1"
+
+        dump_all(line1, kmlfile)
+
+        # Free text in circle notice
+        pt1 = an.AreaNotice(
+            an.notice_type["cau_mammals_not_obs"],
+            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        pt1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
+        pt1.add_subarea(an.AreaNoticeFreeText("RIGHT WHALES"))
+        pt1.name = "circle-text-1"
+
+        dump_all(pt1, kmlfile)
+
+        # Free text in circle notice
+        pt1 = an.AreaNotice(
+            an.notice_type["cau_mammals_not_obs"],
+            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        pt1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
+        pt1.add_subarea(an.AreaNoticeFreeText("WHALES 2 OBS"))
+        pt1.add_subarea(an.AreaNoticeFreeText("SPEED 10 KTS"))
+        pt1.name = "circle-text-2"
+
+        dump_all(pt1, kmlfile)
+
+        # Sector
+        sec1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        sec1.add_subarea(an.AreaNoticeSector(-69.8, lat, 2000, 10, 45))
+        sec1.name = "sector-1"
+
+        dump_all(sec1, kmlfile)
+
+        sbnms_boundary = (
+            (-70.21147779774643, 42.13880479159938),
+            (-70.21841922873237, 42.13078851361118),
+            (-70.15414112337952, 42.1322179530808),
+            (-70.03638677586507, 42.09377754051238),
+        )
+
+        angles_and_offsets = an.ll_to_polyline(sbnms_boundary[:5])
+        start = sbnms_boundary[0]
+        sbnms1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2010, 9, 8, 20, 0, 17),
+            60,
+            10,
+            source_mmsi=369871000,
+        )
+        sbnms1.add_subarea(
+            an.AreaNoticePolyline((angles_and_offsets), start[0], start[1])
+        )
+        sbnms1.name = "sbnms_part1"
+
+        dump_all(sbnms1, kmlfile)
+
+        # TODO(schwehr): Add a polyline that takes multiple subareas.
+        # TODO(schwehr): Add a polygon that takes multiple subareas.
+        # TODO(schwehr): Add case with more than 4 points in lines and polygons.
+
+        kmlfile.write(an.kml_tail)
 
 
 if __name__ == "__main__":
