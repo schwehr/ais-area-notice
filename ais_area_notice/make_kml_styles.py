@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-# Generate random colors and styles for all the areas
+"""Generate random colors and KML styles for AIS area notice types."""
 
 import random
 from ais_area_notice.imo_001_22_area_notice import notice_type
