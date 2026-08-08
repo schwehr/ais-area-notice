@@ -44,6 +44,19 @@ repos:
           - types-lxml
           - types-shapely
 
+  - repo: https://github.com/pylint-dev/pylint
+    rev: v3.3.4
+    hooks:
+      - id: pylint
+        args: ["--fail-under=8.0"]
+        additional_dependencies:
+          - bitvector-modern
+          - geojson
+          - lxml
+          - pyproj
+          - pytest
+          - shapely
+
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.0.0
     hooks:
@@ -60,7 +73,7 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
-        args: ["--ignore-words-list=anc,pres,tht", "--skip=*.pdf"]
+        args: ["--ignore-words-list=anc,astroid,pres,tht", "--skip=*.pdf"]
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
     rev: v1.26.1
