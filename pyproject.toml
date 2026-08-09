@@ -40,6 +40,7 @@ Homepage = "https://github.com/schwehr/ais-area-notice"
 
 [dependency-groups]
 dev = [
+    "bandit>=1.9.4",
     "mypy>=1.15.0",
     "pylint",
     "pyrefly",
@@ -59,6 +60,9 @@ default = true
 [tool.codespell]
 skip = "*.pdf"
 ignore-words-list = "anc,astroid,pres,tht"
+
+[tool.bandit]
+skips = ["B101", "B311"]
 
 [tool.coverage.run]
 source = ["ais_area_notice", "tests"]
