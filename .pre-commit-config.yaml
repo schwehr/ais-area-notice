@@ -85,6 +85,13 @@ repos:
       - id: semgrep
         args: [--config, p/default]
 
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.3
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml"]
+        additional_dependencies: ["bandit[toml]"]
+
   - repo: local
     hooks:
       - id: check-uv-lock-public-index
