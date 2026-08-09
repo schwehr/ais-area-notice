@@ -6,7 +6,8 @@ on:
   pull_request:
     branches: [ main ]
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -35,4 +36,33 @@ jobs:
         run: uv run pre-commit run --all-files
 
       - name: Run tests
-        run: uv run pytest
+        run: uv run pytest --benchmark-skip
+
+      - name: Write coverage report to Job Summary
+        run: |
+          echo "### Test Coverage Report (Python 3.14)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          uv run coverage report --format=markdown --fail-under=95 >> $GITHUB_STEP_SUMMARY
+
+  benchmark:
+    name: "Benchmarks (Linux Python 3.14)"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run benchmark tests
+        run: uv run pytest --benchmark-only --no-cov
