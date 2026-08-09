@@ -654,10 +654,21 @@ class TestAreaNotice:
         ):
             AreaNotice(nmea_strings=["NOT_AN_NMEA_STRING"])
 
+        with pytest.raises(
+            AisUnpackingException, match="One or more NMEA lines were malformed"
+        ):
+            AreaNotice(nmea_strings=[123])  # type: ignore[list-item]
+
         # Sentence with fill bits = 6
         msg_fill = "!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP0000,6*2F"
         an_fill = AreaNotice(nmea_strings=[msg_fill])
         assert len(an_fill.areas) == 1
+
+    def test_subarea_base_get_bits(self) -> None:
+        """Test base AreaNoticeSubArea get_bits raises NotImplementedError."""
+        subarea = m367_22.AreaNoticeSubArea()
+        with pytest.raises(NotImplementedError):
+            subarea.get_bits()
 
     def test_subarea_factory_invalid_preceding_shape(self) -> None:
         """Test subarea factory throws error for invalid shape sequence."""
@@ -665,6 +676,15 @@ class TestAreaNotice:
         an = AreaNotice(
             area_type=13, when=when, duration_min=60, link_id=1, mmsi=366123456
         )
+        poly_bits = BitVector.from_bitstring("011" + "0" * 93)
+
+        # Empty areas preceding polyline should raise AisPackingException
+        with pytest.raises(
+            AisPackingException,
+            match="Point or another polyline must precede a polyline",
+        ):
+            an.subarea_factory(poly_bits)
+
         # AreaNoticeText shape is 5
         an.add_subarea(AreaNoticeText("TEST"))
         bits = an.get_bits(include_bin_hdr=True)
@@ -680,6 +700,11 @@ class TestAreaNotice:
             match="Point or another polyline must precede a polyline",
         ):
             AreaNotice(nmea_strings=None).decode_bits(invalid_bits)
+
+        # Unsupported shape (6) should raise AisPackingException
+        unsupported_bits = BitVector.from_bitstring("110" + "0" * 93)
+        with pytest.raises(AisPackingException, match="Unsupported shape type: 6"):
+            an.subarea_factory(unsupported_bits)
 
     def test_decode_bits_verify_log(self) -> None:
         """Test DecodeBits verification failure logging."""
