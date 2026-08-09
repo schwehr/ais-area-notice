@@ -14,7 +14,6 @@ repos:
       - id: ruff-format
       - id: ruff-check
 
-
   - repo: https://github.com/astral-sh/ty-pre-commit
     rev: v0.0.56
     hooks:
