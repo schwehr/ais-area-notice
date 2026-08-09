@@ -7,7 +7,6 @@ TODO(schwehr): Test NMEA decoding.
 import datetime
 import math
 import random
-import sys
 
 from BitVector import BitVector
 import pytest
@@ -517,10 +516,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_loc()
             sr_b = env.SensorReportLocation(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
     def test_sr_id(self) -> None:
@@ -547,10 +542,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_id()
             sr_b = env.SensorReportId(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
     def test_eq_id_at_padding(self) -> None:
@@ -666,10 +657,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_wind()
             sr_b = env.SensorReportWind(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
     def test_sr_water_level(self) -> None:
@@ -771,10 +758,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_waterlevel()
             sr_b = env.SensorReportWaterLevel(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
     def test_sensor_report_current_2d(self) -> None:
@@ -854,10 +837,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_current2d()
             sr_b = env.SensorReportCurrent2d(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
     def test_sensor_report_current_3d(self) -> None:
@@ -929,10 +908,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_current3d()
             sr_b = env.SensorReportCurrent3d(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
     def test_sensor_report_current_horz(self) -> None:
@@ -1005,10 +980,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_currenthorz()
             sr_b = env.SensorReportCurrentHorz(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
     def test_sensor_report_sea_state(self) -> None:
@@ -1102,10 +1073,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_seastate()
             sr_b = env.SensorReportSeaState(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
     def test_sensor_report_salinity(self) -> None:
@@ -1170,10 +1137,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_salinity()
             sr_b = env.SensorReportSalinity(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
     def test_sensor_report_weather(self) -> None:
@@ -1254,10 +1217,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_weather()
             sr_b = env.SensorReportWeather(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
     def test_sensor_report_air_gap(self) -> None:
@@ -1326,10 +1285,6 @@ class TestSensorReports:
         for _ in range(FUZZ_COUNT):
             sr = random_airgap()
             sr_b = env.SensorReportAirGap(bits=sr.get_bits())
-            if sr != sr_b:
-                sys.stderr.write("EQUAL_FAIL:\n")
-                sys.stderr.write("  " + str(sr) + "\n")
-                sys.stderr.write("  " + str(sr_b) + "\n")
             assert sr == sr_b
 
 
@@ -1538,7 +1493,10 @@ class TestEnvironment:
 
             def groupdict(self) -> dict[str, str]:
                 """Return groupdict with valid checksum."""
-                return {"checksum": "19"}
+                return {
+                    "checksum": "19",
+                    "body": "85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000",
+                }
 
         class FakeMatch2:
             """Fake NMEA regex match with no groupdict."""
@@ -1562,7 +1520,12 @@ class TestEnvironment:
 
         monkeypatch.setattr(env, "ais_nmea_regex", FakeRegex())
         with pytest.raises(env.AisUnpackingException, match="Nothing decoded from"):
-            e.decode_nmea(["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"])
+            e.decode_nmea(
+                [
+                    "!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19",
+                    "!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19",
+                ]
+            )
 
     def test_decode_bits_fill_bits_trouble(self) -> None:
         """Test decoding invalid BitVector size raises exception."""

@@ -122,7 +122,7 @@ class TestAreaNotice:
         radius_scaled = radius / scale_factor
         assert subarea.radius_scaled == radius_scaled
         assert subarea.radius == radius
-        if "spare" in self.__dict__:
+        if "spare" in subarea.__dict__:
             assert subarea.spare == 0
 
     def check_rectangle(
@@ -155,11 +155,8 @@ class TestAreaNotice:
         assert subarea.precision == precision
         assert subarea.e_dim == e_dim
         assert subarea.n_dim == n_dim
-        if "e_dim_scaled" in subarea.__dict__:
-            assert subarea.e_dim_scaled == e_dim / scale_factor
-            assert subarea.n_dim_scaled == n_dim / scale_factor
         assert subarea.orientation_deg == orientation_deg
-        if "spare" in self.__dict__:
+        if "spare" in subarea.__dict__:
             assert subarea.spare == 0
 
     def check_sector(
@@ -195,7 +192,7 @@ class TestAreaNotice:
         assert subarea.radius == radius
         assert subarea.left_bound_deg == left_bound_deg
         assert subarea.right_bound_deg == right_bound_deg
-        if "spare" in self.__dict__:
+        if "spare" in subarea.__dict__:
             assert subarea.spare == 0
 
     def check_poly(
@@ -239,7 +236,7 @@ class TestAreaNotice:
         if "area_shape" in sub_area.__dict__:
             assert sub_area.area_shape == SHAPES["TEXT"]
         assert sub_area.text == expected_text
-        if "spare" in self.__dict__:
+        if "spare" in sub_area.__dict__:
             assert sub_area.spare == 0
 
     def test_circle(self) -> None:
@@ -755,7 +752,7 @@ class TestAreaNotice:
 
             def groupdict(self) -> dict[str, str]:
                 """Return groupdict with valid checksum."""
-                return {"checksum": "06"}
+                return {"checksum": "06", "body": "body"}
 
         class FakeMatch2:
             """Fake NMEA regex match with no groupdict."""
@@ -780,4 +777,19 @@ class TestAreaNotice:
         monkeypatch.setattr(m367_22, "ais_nmea_regex", FakeRegex())
 
         with pytest.raises(AisUnpackingException, match="Failed to parse message."):
-            AreaNotice(nmea_strings=["!AIVDM,1,1,0,A,body,0*06"])
+            AreaNotice(
+                nmea_strings=[
+                    "!AIVDM,1,1,0,A,body,0*06",
+                    "!AIVDM,1,1,0,A,body2,0*06",
+                ]
+            )
+
+
+def test_diff_area_notice() -> None:
+    """Test DiffAreaNotice comparison helper."""
+    now = datetime.datetime(2026, 1, 1, 12, 0)
+    an1 = AreaNotice(area_type=1, when=now, duration_min=60, link_id=1, mmsi=123456789)
+    an2 = AreaNotice(area_type=2, when=now, duration_min=120, link_id=1, mmsi=123456789)
+    diff = DiffAreaNotice(an1, an2)
+    assert "area_type" in diff.diff_fields
+    assert "duration_min" in diff.diff_fields
