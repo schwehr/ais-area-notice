@@ -89,6 +89,9 @@ def test_decode_nmea_errors_and_none_in_msgs(monkeypatch: pytest.MonkeyPatch) ->
     with pytest.raises(m366_22.AisUnpackingException, match="One or more NMEA lines"):
         m366_22.AreaNotice(nmea_strings=["NOT_AN_NMEA_STRING"])
 
+    with pytest.raises(m366_22.AisUnpackingException, match="One or more NMEA lines"):
+        m366_22.AreaNotice(nmea_strings=[123])  # type: ignore[list-item]
+
     class FakeMatch1:
         """Fake NMEA regex match with checksum."""
 
