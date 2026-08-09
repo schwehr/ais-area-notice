@@ -97,7 +97,7 @@ def test_decode_nmea_errors_and_none_in_msgs(monkeypatch: pytest.MonkeyPatch) ->
 
         def groupdict(self) -> dict[str, str]:
             """Return groupdict with valid checksum."""
-            return {"checksum": "7F"}
+            return {"checksum": "7F", "body": "85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000"}
 
     class FakeMatch2:
         """Fake NMEA regex match with no groupdict."""
@@ -122,7 +122,10 @@ def test_decode_nmea_errors_and_none_in_msgs(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setattr(m366_22, "ais_nmea_regex", FakeRegex())
     with pytest.raises(m366_22.AisUnpackingException, match="Failed to parse message."):
         m366_22.AreaNotice(
-            nmea_strings=["!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F"]
+            nmea_strings=[
+                "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F",
+                "!AIVDM,1,1,0,A,85M:Ih1KUQU6jAs85`0MK4lh<7=B42l0000,2*7F",
+            ]
         )
 
 

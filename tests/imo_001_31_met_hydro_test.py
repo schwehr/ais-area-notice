@@ -5,7 +5,6 @@ since: Mon Feb 14 15:55:02 2011 -0500
 """
 
 import random
-import sys
 
 from BitVector import BitVector
 import pytest
@@ -24,7 +23,6 @@ def random_msg() -> met_hydro.MetHydro31:
         A randomized MetHydro31 instance.
     """
     date = random_date()
-    sys.stderr.write(f"date: {date}\n")
     return met_hydro.MetHydro31(
         source_mmsi=random.randint(100000, 999999999),
         lon=random.randint(-180000, 180000) / 1000.0,
@@ -125,7 +123,7 @@ def test_decode_nmea_none_in_msgs(monkeypatch: pytest.MonkeyPatch) -> None:
 
         def groupdict(self) -> dict[str, str]:
             """Return groupdict with valid checksum."""
-            return {"checksum": "19"}
+            return {"checksum": "19", "body": "85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000"}
 
     class FakeMatch2:
         """Fake NMEA regex match with no groupdict."""
@@ -151,7 +149,12 @@ def test_decode_nmea_none_in_msgs(monkeypatch: pytest.MonkeyPatch) -> None:
 
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
     with pytest.raises(met_hydro.AisUnpackingException, match="one or more NMEA lines"):
-        mh.decode_nmea(["!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"])
+        mh.decode_nmea(
+            [
+                "!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19",
+                "!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19",
+            ]
+        )
 
 
 def test_unicode_and_str() -> None:

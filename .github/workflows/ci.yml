@@ -43,7 +43,7 @@ jobs:
         run: |
           echo "### Test Coverage Report (Python 3.14)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          uv run coverage report --format=markdown --fail-under=95 >> $GITHUB_STEP_SUMMARY
+          uv run coverage report --format=markdown --fail-under=99.9 >> $GITHUB_STEP_SUMMARY
 
   benchmark:
     name: "Benchmarks (Linux Python 3.14)"

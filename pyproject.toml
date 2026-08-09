@@ -61,16 +61,17 @@ skip = "*.pdf"
 ignore-words-list = "anc,astroid,pres,tht"
 
 [tool.coverage.run]
-source = ["ais_area_notice"]
+source = ["ais_area_notice", "tests"]
 branch = true
 omit = [
     "ais_area_notice/build_samples.py",
     "ais_area_notice/make_kml_styles.py",
+    "tests/benchmarks_test.py",
 ]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 95
+fail_under = 99.9
 
 [tool.ty.rules]
 deprecated = "ignore"
@@ -86,5 +87,5 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-p no:doctest --cov=ais_area_notice --cov-report=term-missing --cov-report=xml"
+addopts = "-p no:doctest --cov --cov-report=term-missing --cov-report=xml"
 pythonpath = ["."]
