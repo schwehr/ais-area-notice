@@ -43,6 +43,18 @@ def test_circle() -> None:
     assert circle.radius == 1800
 
 
+def test_decode_nmea_zero_fill_bits() -> None:
+    """Test decoding AreaNotice NMEA sentence with zero fill bits."""
+    body_34 = "85M:Ih1KUQU6jAs85`0MK4lh<7=B42l000"
+    sentence_base = f"!AIVDM,1,1,0,A,{body_34},0"
+    checksum = m366_22.nmea_checksum_hex(sentence_base)
+    aivdm = f"{sentence_base}*{checksum}"
+    an = m366_22.AreaNotice(nmea_strings=[aivdm])
+    assert len(an.areas) == 1
+    circle = an.areas[0]
+    assert isinstance(circle, m366_22.AreaNoticeCircle)
+
+
 def test_area_notice_circle_init_and_get_bits() -> None:
     """Test AreaNoticeCircle initialization, bit packing, and decoding."""
     c1 = m366_22.AreaNoticeCircle(
