@@ -78,7 +78,6 @@ show_missing = true
 fail_under = 99.9
 
 [tool.ty.rules]
-deprecated = "ignore"
 invalid-argument-type = "ignore"
 invalid-method-override = "ignore"
 unresolved-attribute = "ignore"
