@@ -345,7 +345,7 @@ class MetHydro31(BBM):
                 if msg_dict["checksum"] != nmea_checksum_hex(msg):
                     raise AisUnpackingException("Checksum failed")
                 msgs.append(msg_dict)
-        except (AttributeError, TypeError):
+        except AttributeError, TypeError:
             raise AisUnpackingException("one or more NMEA lines did were malformed (1)")
 
         # TODO(schwehr): Decode the NMEA.

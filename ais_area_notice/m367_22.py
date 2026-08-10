@@ -831,7 +831,7 @@ class AreaNotice(BBM):
                 if msg_dict["checksum"] != nmea_checksum_hex(msg):
                     raise AisUnpackingException("Checksum failed")
                 msgs.append(msg_dict)
-        except (AttributeError, TypeError):
+        except AttributeError, TypeError:
             raise AisUnpackingException("One or more NMEA lines were malformed (1)")
 
         bits_list = []

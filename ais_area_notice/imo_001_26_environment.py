@@ -2344,7 +2344,7 @@ class Environment(BBM):
                 if msg_dict["checksum"] != nmea_checksum_hex(msg):
                     raise AisUnpackingException("Checksum failed")
                 msgs.append(msg_dict)
-        except (AttributeError, TypeError):
+        except AttributeError, TypeError:
             raise AisUnpackingException(f"NMEA line malformed: {strings} ")
 
     def decode_bits(self, bits: BitVector, _year: int | None = None) -> None:
