@@ -2090,7 +2090,7 @@ class AreaNotice(BBM):
 
         self.area_type = r["area_type"]
 
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         self.when = datetime.datetime(
             year=now.year,
             month=r["utc_month"],

@@ -18,7 +18,7 @@ def test_empty_init() -> None:
 def test_init_with_area_type() -> None:
     """Test initializing AreaNotice with area_type and timestamp."""
     area_type = 1
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     an = m366_22.AreaNotice(area_type=area_type, when=now)
     assert not an.areas
     assert an.area_type == area_type

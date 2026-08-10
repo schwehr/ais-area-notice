@@ -291,7 +291,7 @@ class AreaNotice:
         hour = db.get_int(5)
         minute = db.get_int(6)
         # TODO(schwehr): Handle year boundary.
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         self.when = datetime.datetime(now.year, month, day, hour, minute)
         self.duration_min = db.get_int(18)
         # self.spare2 = db.GetInt(3)

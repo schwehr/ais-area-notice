@@ -336,7 +336,7 @@ class Test5AreaNoticeSimple:
 
     def test_simple(self) -> None:
         """Test basic Area Notice bitstream generation with options."""
-        an1 = area_notice.AreaNotice(0, datetime.datetime.utcnow(), 100)
+        an1 = area_notice.AreaNotice(0, datetime.datetime.now(datetime.UTC), 100)
         assert len(an1.get_bits()) == 2 + 16 + 10 + 7 + 4 + 5 + 5 + 6 + 18
         assert len(an1.get_bits(include_dac_fi=False)) == 10 + 7 + 4 + 5 + 5 + 6 + 18
         assert (
@@ -358,7 +358,7 @@ class Test5AreaNoticeSimple:
         """Test building Area Notice for whale safety subareas."""
         no_whales = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
-            datetime.datetime.utcnow(),
+            datetime.datetime.now(datetime.UTC),
             60,
             10,
         )
@@ -381,7 +381,7 @@ class Test5AreaNoticeSimple:
         """Test HTML rendering of Area Notice."""
         whales = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
-            datetime.datetime.utcnow(),
+            datetime.datetime.now(datetime.UTC),
             60,
             10,
         )
@@ -395,7 +395,7 @@ class Test5AreaNoticeSimple:
         """Test KML markup generation for Area Notice."""
         whales = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
-            datetime.datetime.utcnow(),
+            datetime.datetime.now(datetime.UTC),
             60,
             10,
         )
@@ -414,7 +414,7 @@ class TestBitDecoding:
 
     def test_point(self) -> None:
         """Test Area Notice encoding and decoding roundtrip for point subarea."""
-        year = datetime.datetime.utcnow().year
+        year = datetime.datetime.now(datetime.UTC).year
         pt1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
             datetime.datetime(year, 8, 6, 0, 1, 0),
@@ -435,7 +435,7 @@ class TestBitDecoding:
 
     def test_circle(self) -> None:
         """Test Area Notice encoding and decoding roundtrip for circle subarea."""
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         circle1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
             # Do not use seconds.  Can only use minutes.
@@ -458,7 +458,7 @@ class TestBitDecoding:
         """Test Area Notice encoding and decoding roundtrip for rectangle subarea."""
         rect = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
-            datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
+            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
             60,
             10,
             source_mmsi=123,
@@ -475,7 +475,7 @@ class TestBitDecoding:
         """Test Area Notice encoding and decoding roundtrip for sector subarea."""
         sec1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_habitat_reduce_speed"],
-            datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
+            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
             60,
             10,
             source_mmsi=456,
@@ -491,7 +491,7 @@ class TestBitDecoding:
         """Test Area Notice encoding and decoding roundtrip for polyline subarea."""
         line1 = area_notice.AreaNotice(
             area_notice.notice_type["report_of_icing"],
-            datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
+            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
             60,
             10,
             source_mmsi=123456,
@@ -506,7 +506,7 @@ class TestBitDecoding:
         """Test Area Notice encoding and decoding roundtrip for polygon subarea."""
         poly1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_divers"],
-            datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
+            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
             60,
             10,
             source_mmsi=987123456,
@@ -523,7 +523,7 @@ class TestBitDecoding:
         """Test Area Notice encoding and decoding roundtrip for free text subarea."""
         text1 = area_notice.AreaNotice(
             area_notice.notice_type["res_military_ops"],
-            datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 4, 0),
+            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 4, 0),
             60,
             10,
             source_mmsi=300000000,
@@ -546,7 +546,7 @@ class TestBitDecoding2:
         # One of each.
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
-            datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
+            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
             60,
             10,
             source_mmsi=666555444,
@@ -576,7 +576,7 @@ class TestBitDecoding2:
         """Test Area Notice with multiple sector subareas and max subarea limit."""
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
-            datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
+            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
             60,
             10,
             source_mmsi=1,
@@ -623,7 +623,7 @@ class TestBitDecoding2:
         """Test Area Notice with multi-part text subareas and merged text retrieval."""
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
-            datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
+            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
             60,
             10,
             source_mmsi=2,
@@ -692,7 +692,7 @@ class TestWhaleNotices:
         zone_type = area_notice.notice_type["cau_mammals_not_obs"]
         circle = area_notice.AreaNotice(
             zone_type,
-            datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
+            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
             60,
             10,
             source_mmsi=123456789,
@@ -728,7 +728,7 @@ class TestWhaleNotices:
         zone_type = area_notice.notice_type["cau_mammals_reduce_speed"]
         circle = area_notice.AreaNotice(
             zone_type,
-            datetime.datetime(datetime.datetime.utcnow().year, 7, 6, 0, 0, 4),
+            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
             60,
             10,
             source_mmsi=123456789,
