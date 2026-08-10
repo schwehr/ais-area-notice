@@ -80,6 +80,9 @@ character_lut: list[str] = [
 ]
 
 # Fast lookup for the AIS int code for a character.
+# Note: character_lut contains "-" at both index 31 and index 45. In dictionary
+# comprehension, index 45 overwrites index 31 for "-", which matches previous
+# manual dictionary behavior.
 character_dict: dict[str, int] = {char: i for i, char in enumerate(character_lut)}
 
 character_bits: dict[str, BitVector] = {
