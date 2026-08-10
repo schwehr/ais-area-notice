@@ -84,6 +84,9 @@ unresolved-attribute = "ignore"
 unresolved-reference = "ignore"
 unsupported-operator = "ignore"
 
+[tool.mypy]
+python_version = "3.14"
+
 [[tool.mypy.overrides]]
 module = ["geojson", "geojson.*"]
 ignore_missing_imports = true
@@ -92,3 +95,6 @@ ignore_missing_imports = true
 testpaths = ["tests"]
 addopts = "-p no:doctest --cov --cov-report=term-missing --cov-report=xml"
 pythonpath = ["."]
+
+[tool.pylint.main]
+py-version = "3.14"
