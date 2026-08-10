@@ -88,7 +88,7 @@ class TestAreaNotice:
         assert area_notice.version == 1
         assert area_notice.link_id == link_id
         assert area_notice.area_type == area_type
-        year = datetime.datetime.utcnow().year
+        year = datetime.datetime.now(datetime.UTC).year
         timestamp_dt = datetime.datetime(year, *timestamp)
         assert area_notice.when == timestamp_dt
         assert area_notice.duration_min == duration
@@ -302,7 +302,7 @@ class TestAreaNotice:
     def test_circle_encode(self) -> None:
         """Test AreaNotice with circle subarea encoding and NMEA generation."""
         # Test against 'Sample AN Data RTCMv1.xlsx' circle
-        year = datetime.datetime.utcnow().year
+        year = datetime.datetime.now(datetime.UTC).year
         when = datetime.datetime(year, 9, 4, 15, 25)
 
         # Match the USCG sample
@@ -400,7 +400,7 @@ class TestAreaNotice:
 
     def test_rectangle_encode(self) -> None:
         """Test AreaNotice with rectangle subarea encoding and NMEA generation."""
-        year = datetime.datetime.utcnow().year
+        year = datetime.datetime.now(datetime.UTC).year
         when = datetime.datetime(year, 9, 4, 15, 25)
 
         duration = 360

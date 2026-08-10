@@ -869,7 +869,7 @@ class AreaNotice(BBM):
         hour = db.GetInt(5)
         minute = db.GetInt(6)
         # TODO(schwehr): Handle year boundary.
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         self.when = datetime.datetime(now.year, month, day, hour, minute)
         self.duration_min = db.GetInt(18)
         self.spare2 = db.GetInt(3)
