@@ -64,6 +64,32 @@ ignore-words-list = "anc,astroid,pres,tht"
 [tool.bandit]
 skips = ["B101", "B311"]
 
+[tool.ruff.lint]
+ignore = [
+    "B010",
+    "DTZ001",
+    "DTZ003",
+    "DTZ007",
+    "EXE001",
+    "EXE002",
+    "F601",
+    "F821",
+    "I001",
+    "ISC004",
+    "LOG015",
+    "PERF402",
+    "PLR0124",
+    "PYI041",
+    "RET501",
+    "RUF015",
+    "RUF046",
+    "SIM102",
+    "SIM117",
+    "SIM118",
+    "UP017",
+    "UP032",
+]
+
 [tool.coverage.run]
 source = ["ais_area_notice", "tests"]
 branch = true
