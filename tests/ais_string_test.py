@@ -52,5 +52,11 @@ def test_encode_bit_size_padding() -> None:
 
 def test_encode_bit_size_too_small() -> None:
     """Test encoding AIS strings raises error when bit_size is too small."""
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="Too many bits in string"):
         ais_string.Encode("AB", bit_size=6)
+
+
+def test_encode_bit_size_not_multiple_of_6() -> None:
+    """Test encoding AIS strings raises error when bit_size is not a multiple of 6."""
+    with pytest.raises(ValueError, match="bit_size must be a multiple of 6"):
+        ais_string.Encode("A", bit_size=7)

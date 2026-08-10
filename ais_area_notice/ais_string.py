@@ -6,7 +6,6 @@ character_bits: dict, lookup table for going from a single character to
   a 6 bit BitVector.
 """
 
-import logging
 import re
 
 from BitVector import BitVector
@@ -133,16 +132,17 @@ def encode(string: str, bit_size: int | None = None) -> BitVector:
         BitVector representing the string.
     """
     if bit_size:
-        assert bit_size % 6 == 0
+        if bit_size % 6 != 0:
+            raise ValueError(f"bit_size must be a multiple of 6, got {bit_size}")
     bv = BitVector(size=0)
     for char in string:
         bv += character_bits[char]
     if bit_size:
         if bit_size < len(bv):
-            logging.error(
-                'ERROR:  Too many bits in string: "%s %s %s"', string, bit_size, len(bv)
+            raise ValueError(
+                f'Too many bits in string: "{string}" requires {len(bv)} bits,'
+                f" max allowed is {bit_size}"
             )
-            assert False
         extra = bit_size - len(bv)
         bv += BitVector(size=extra)
 
