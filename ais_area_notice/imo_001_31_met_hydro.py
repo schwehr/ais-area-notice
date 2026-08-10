@@ -112,7 +112,7 @@ class MetHydro31(BBM):
             return
 
         if day is None or hour is None or minute is None:
-            now = datetime.datetime.utcnow()
+            now = datetime.datetime.now(datetime.UTC)
             if day is None:
                 day = now.day
             if hour is None:

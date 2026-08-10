@@ -375,7 +375,7 @@ def main() -> None:
 
     Free text which requires something for position.
     """
-    print("# Building sample set on", datetime.datetime.utcnow())
+    print("# Building sample set on", datetime.datetime.now(datetime.UTC))
     print("# ais-areanotice-py")
 
     with open("samples.kml", "w", encoding="utf-8") as kmlfile:

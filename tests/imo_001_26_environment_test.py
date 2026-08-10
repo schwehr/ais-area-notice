@@ -372,7 +372,7 @@ class TestSensorReports:
 
     def setup_method(self) -> None:
         """Set up current timestamp for test instances."""
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         self.year = now.year
         self.month = now.month
         self.day = now.day
@@ -1299,7 +1299,7 @@ class TestEnvironment:
 
     def setup_method(self) -> None:
         """Set up current timestamp for environment test instances."""
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         self.year = now.year
         self.month = now.month
         self.day = now.day
