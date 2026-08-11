@@ -68,7 +68,6 @@ skips = ["B101", "B311"]
 ignore = [
     "B010",  # Do not call setattr with a constant attribute name
     "DTZ001",  # The use of datetime.datetime() without tzinfo argument is not allowed
-    "DTZ003",  # The use of datetime.datetime.utcnow() is not allowed
     "DTZ007",  # Naive datetime constructed using strptime() without %z format
     "EXE001",  # Shebang is present but file is not executable
     "EXE002",  # The file is executable but no shebang is present
