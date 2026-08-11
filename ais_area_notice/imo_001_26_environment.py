@@ -853,19 +853,28 @@ class SensorReportWaterLevel(SensorReport):
             self.decode_bits(bits)
             return
 
-        assert wl_type in (0, 1)
-        assert -327.68 <= wl <= 327.68  # TODO(schwehr): need? + 0.001)
-        assert -327.68 <= wl <= 327.68  # TODO(schwehr): need? + 0.001)
-        assert trend in (0, 1, 2, 3)
-        assert 0 <= vdatum <= 14
-        assert data_descr in sensor_type_lut
-        assert forecast_type in (0, 1)
-        # TODO(schwehr): Need a buffer for floats? + 0.001)
-        assert -327.68 <= forecast_wl <= 327.68
-        assert 0 <= forecast_day <= 31
-        assert 0 <= forecast_hour <= 24
-        assert 0 <= forecast_minute <= 60
-        assert 0 <= duration_min <= 255
+        if wl_type not in (0, 1):
+            raise ValueError(f"Invalid wl_type: {wl_type}")
+        if not -327.68 <= wl <= 327.68:
+            raise ValueError(f"Invalid wl: {wl}")
+        if trend not in (0, 1, 2, 3):
+            raise ValueError(f"Invalid trend: {trend}")
+        if not 0 <= vdatum <= 14:
+            raise ValueError(f"Invalid vdatum: {vdatum}")
+        if data_descr not in sensor_type_lut:
+            raise ValueError(f"Invalid data_descr: {data_descr}")
+        if forecast_type not in (0, 1):
+            raise ValueError(f"Invalid forecast_type: {forecast_type}")
+        if not -327.68 <= forecast_wl <= 327.68:
+            raise ValueError(f"Invalid forecast_wl: {forecast_wl}")
+        if not 0 <= forecast_day <= 31:
+            raise ValueError(f"Invalid forecast_day: {forecast_day}")
+        if not 0 <= forecast_hour <= 24:
+            raise ValueError(f"Invalid forecast_hour: {forecast_hour}")
+        if not 0 <= forecast_minute <= 60:
+            raise ValueError(f"Invalid forecast_minute: {forecast_minute}")
+        if not 0 <= duration_min <= 255:
+            raise ValueError(f"Invalid duration_min: {duration_min}")
 
         self.wl_type = wl_type
         self.wl = wl
