@@ -16,6 +16,12 @@ exclude = [
     '^file://',
     # Exclude mailto: links
     '^mailto:',
+    # Exclude XML namespace URIs that are identifiers rather than HTML pages
+    '^http://www.google.com/kml/ext/',
+    '^http://www.opengis.net/kml/',
+    '^http://www.w3.org/2005/Atom',
+    # Exclude defunct historical documentation URLs
+    '^http://.*berlios\.de',
 ]
 
 # Accept common HTTP status codes
