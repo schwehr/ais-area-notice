@@ -66,28 +66,28 @@ skips = ["B101", "B311"]
 
 [tool.ruff.lint]
 ignore = [
-    "B010",
-    "DTZ001",
-    "DTZ003",
-    "DTZ007",
-    "EXE001",
-    "EXE002",
-    "F601",
-    "F821",
-    "I001",
-    "ISC004",
-    "LOG015",
-    "PERF402",
-    "PLR0124",
-    "PYI041",
-    "RET501",
-    "RUF015",
-    "RUF046",
-    "SIM102",
-    "SIM117",
-    "SIM118",
-    "UP017",
-    "UP032",
+    "B010",  # Do not call setattr with a constant attribute name
+    "DTZ001",  # The use of datetime.datetime() without tzinfo argument is not allowed
+    "DTZ003",  # The use of datetime.datetime.utcnow() is not allowed
+    "DTZ007",  # Naive datetime constructed using strptime() without %z format
+    "EXE001",  # Shebang is present but file is not executable
+    "EXE002",  # The file is executable but no shebang is present
+    "F601",  # Dictionary key literal repeated
+    "F821",  # Undefined name
+    "I001",  # Import block is unsorted or unformatted
+    "ISC004",  # Implicitly concatenated string literals on multiple lines
+    "LOG015",  # Root logger call (e.g. logging.info) at module level
+    "PERF402",  # Use list copy or list comprehension instead of manual append loop
+    "PLR0124",  # Name compared with itself
+    "PYI041",  # Use float instead of int | float
+    "RET501",  # Do not explicitly return None in function if it can be omitted
+    "RUF015",  # Prefer next(iter(...)) over list(...)[0]
+    "RUF046",  # Unnecessary cast to int
+    "SIM102",  # Use a single if statement instead of nested if statements
+    "SIM117",  # Use a single with statement instead of nested with statements
+    "SIM118",  # Use key in dict instead of key in dict.keys()
+    "UP017",  # Use datetime.UTC alias instead of datetime.timezone.utc
+    "UP032",  # Use f-string instead of format call
 ]
 
 [tool.coverage.run]
