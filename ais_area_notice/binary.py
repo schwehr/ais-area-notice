@@ -16,12 +16,12 @@ ASCII 96 (character "`") representing 40 (binary 101000) through ASCII 119
 (character "w") finishing the sequence representing 63 (binary 111111).
 
 See also:
-  NMEA strings at http://gpsd.berlios.de/NMEA.txt
-  http://en.wikipedia.org/wiki/Automatic_Identification_System
+  NMEA strings at https://gpsd.gitlab.io/gpsd/NMEA.html
+  https://en.wikipedia.org/wiki/Automatic_Identification_System
   IEC-PAS 61162-100 Ed.1 IEC Page 26, Annex C, Table C-1
   http://catb.org/gpsd/AIVDM.html#_aivdm_aivdo_payload_armoring
   man ascii
-  Base 64: https://tools.ietf.org/html/rfc3548#section-3
+  Base 64: https://datatracker.ietf.org/doc/html/rfc4648#section-4
 
 Attributes:
     decode: Dictionary based cache of character to BitVector lookup.
