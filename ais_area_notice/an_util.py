@@ -105,18 +105,40 @@ class BuildBits:
         self.bits_expected = 0
 
     def add_uint(self, val: int, num_bits: int) -> None:
-        """Add an unsigned integer."""
+        """Add an unsigned integer.
+
+        Args:
+            val: Unsigned integer to encode.
+            num_bits: Number of bits to store for this integer.
+
+        Raises:
+            ValueError: If num_bits does not match the resulting BitVector length.
+        """
         bits = binary.set_bit_vector_size(BitVector.from_int(val), num_bits)
-        assert num_bits == len(bits)
+        if num_bits != len(bits):
+            raise ValueError(
+                f"num_bits ({num_bits}) does not match BitVector length ({len(bits)})"
+            )
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
     AddUInt = add_uint
 
     def add_int(self, val: int, num_bits: int) -> None:
-        """Add a signed integer."""
+        """Add a signed integer.
+
+        Args:
+            val: Signed integer to encode.
+            num_bits: Number of bits to store for this integer.
+
+        Raises:
+            ValueError: If num_bits does not match the resulting BitVector length.
+        """
         bits = binary.bv_from_signed_int(int(val), num_bits)
-        assert num_bits == len(bits)
+        if num_bits != len(bits):
+            raise ValueError(
+                f"num_bits ({num_bits}) does not match BitVector length ({len(bits)})"
+            )
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
@@ -128,9 +150,13 @@ class BuildBits:
         Args:
             val: String text to encode.
             num_bits: Total bit length for the text (must be a multiple of 6).
+
+        Raises:
+            ValueError: If num_bits is not a multiple of 6.
         """
+        if num_bits % 6 != 0:
+            raise ValueError(f"num_bits ({num_bits}) must be a multiple of 6")
         num_char = num_bits // 6
-        assert num_bits % 6 == 0
         text = val.ljust(num_char, "@")
         bits = ais_string.encode(text)
         self.bits_expected += num_bits

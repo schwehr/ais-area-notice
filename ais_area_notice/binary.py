@@ -19,7 +19,7 @@ See also:
   NMEA strings at https://gpsd.gitlab.io/gpsd/NMEA.html
   https://en.wikipedia.org/wiki/Automatic_Identification_System
   IEC-PAS 61162-100 Ed.1 IEC Page 26, Annex C, Table C-1
-  http://catb.org/gpsd/AIVDM.html#_aivdm_aivdo_payload_armoring
+  https://gpsd.gitlab.io/gpsd/AIVDM.html#_aivdmaivdo_payload_armoring
   man ascii
   Base 64: https://datatracker.ietf.org/doc/html/rfc4648#section-4
 
