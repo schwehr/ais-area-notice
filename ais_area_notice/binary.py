@@ -87,9 +87,6 @@ def _ais6_to_bitvec_slow(str6: str) -> BitVector:
     return bvtotal
 
 
-_Ais6ToBitvecSlow = _ais6_to_bitvec_slow  # pylint: disable=invalid-name
-
-
 def _build_lookup_table() -> dict[str, BitVector]:
     """Create a dict of character keys with the BitVector repr as the value."""
     key_nums = list(range(BGN_ASCII_BLOCK_1, END_ASCII_BLOCK_1 + 1)) + list(
@@ -98,9 +95,6 @@ def _build_lookup_table() -> dict[str, BitVector]:
     assert len(key_nums) == 64
     key_chars = [chr(key) for key in key_nums]
     return {key_char: _ais6_to_bitvec_slow(key_char) for key_char in key_chars}
-
-
-_BuildLookupTable = _build_lookup_table  # pylint: disable=invalid-name
 
 
 decode: dict[str, BitVector] = _build_lookup_table()
