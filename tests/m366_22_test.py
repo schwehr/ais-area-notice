@@ -156,21 +156,21 @@ def test_subarea_factory_overflow_and_unsupported_shape() -> None:
     too_many_subareas = binary.joinBV([subarea_bits for _ in range(11)])
     full_bits = header_bits + too_many_subareas
     with pytest.raises(m366_22.Error, match="Sub area overflow"):
-        an.DecodeBits(full_bits)
+        an.decode_bits(full_bits)
 
     # Test unsupported area shape (shape 6)
     shape_6_subarea = BitVector.from_bitstring("110" + "0" * 90)
     invalid_shape_bits = header_bits + shape_6_subarea
     with pytest.raises(m366_22.Error, match="Unsupported area shape"):
-        an.DecodeBits(invalid_shape_bits)
+        an.decode_bits(invalid_shape_bits)
 
 
 def test_scale_factors_and_del_scale_factor() -> None:
     """Test scale factor computation and lazy evaluation in get_bits."""
     subarea = m366_22.AreaNoticeSubArea()
-    assert subarea.getScaleFactor(500000) == 1000
-    assert subarea.getScaleFactor(50000) == 100
-    assert subarea.getScaleFactor(5000) == 10
+    assert subarea.get_scale_factor(500000) == 1000
+    assert subarea.get_scale_factor(50000) == 100
+    assert subarea.get_scale_factor(5000) == 10
 
     c = m366_22.AreaNoticeCircle(lon=1.0, lat=2.0, radius=500)
     del c.scale_factor
@@ -185,11 +185,11 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch: pytest.MonkeyPatch) -> No
 
     # Shape 1 (Rectangle)
     with pytest.raises(NameError, match="name 'AreaNoticeRectangle' is not defined"):
-        an.SubareaFactory(BitVector.from_bitstring("001" + "0" * 90))
+        an.subarea_factory(BitVector.from_bitstring("001" + "0" * 90))
 
     # Shape 2 (Sector)
     with pytest.raises(NameError, match="name 'AreaNoticeSector' is not defined"):
-        an.SubareaFactory(BitVector.from_bitstring("010" + "0" * 90))
+        an.subarea_factory(BitVector.from_bitstring("010" + "0" * 90))
 
     # Shape 3 (Polyline with no preceding circle/poly)
     an.areas = []
@@ -197,12 +197,12 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch: pytest.MonkeyPatch) -> No
         m366_22.AisPackingException,
         match="Point or another polyline must precede a polyline",
     ):
-        an.SubareaFactory(BitVector.from_bitstring("011" + "0" * 90))
+        an.subarea_factory(BitVector.from_bitstring("011" + "0" * 90))
 
     # Shape 3 (Polyline with preceding circle)
     an.areas = [m366_22.AreaNoticeCircle(lon=1.0, lat=2.0, radius=50)]
     with pytest.raises(NameError, match="name 'AreaNoticePoly' is not defined"):
-        an.SubareaFactory(BitVector.from_bitstring("011" + "0" * 90))
+        an.subarea_factory(BitVector.from_bitstring("011" + "0" * 90))
 
     # Shape 3 (Polyline with preceding polyline mock)
     class FakePoly(m366_22.AreaNoticeSubArea):
@@ -221,10 +221,10 @@ def test_subarea_factory_shapes_1_2_3_4_5(monkeypatch: pytest.MonkeyPatch) -> No
 
     monkeypatch.setattr(m366_22, "AreaNoticePoly", FakePoly, raising=False)
     an.areas = [FakePoly()]
-    res = an.SubareaFactory(BitVector.from_bitstring("011" + "0" * 90))
+    res = an.subarea_factory(BitVector.from_bitstring("011" + "0" * 90))
     assert res.lon == 10.0  # type: ignore[attr-defined]
     assert res.lat == 20.0  # type: ignore[attr-defined]
 
     # Shape 5 (Text)
     with pytest.raises(NameError, match="name 'AreaNoticeText' is not defined"):
-        an.SubareaFactory(BitVector.from_bitstring("101" + "0" * 90))
+        an.subarea_factory(BitVector.from_bitstring("101" + "0" * 90))
