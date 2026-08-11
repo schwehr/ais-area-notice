@@ -1,0 +1,22 @@
+# Lychee Link Checker Configuration
+# Reference: https://lychee.cli.rs/
+
+# Max number of retries for failed requests
+max_retries = 2
+
+# Timeout per request in seconds
+timeout = 10
+
+# Do not show progress bar (useful in CI / pre-commit)
+no_progress = true
+
+# Exclude URL patterns that should not be checked
+exclude = [
+    # Exclude internal file:// URIs generated in docs or markdown links
+    '^file://',
+    # Exclude mailto: links
+    '^mailto:',
+]
+
+# Accept common HTTP status codes
+accept = [200, 204, 206]

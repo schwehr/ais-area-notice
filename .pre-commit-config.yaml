@@ -93,6 +93,12 @@ repos:
         args: ["-c", "pyproject.toml"]
         additional_dependencies: ["bandit[toml]"]
 
+  - repo: https://github.com/lycheeverse/lychee
+    rev: v0.15.1
+    hooks:
+      - id: lychee
+        args: ["--config", ".lychee.toml"]
+
   - repo: local
     hooks:
       - id: check-uv-lock-public-index
