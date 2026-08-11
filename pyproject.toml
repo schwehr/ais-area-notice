@@ -94,7 +94,6 @@ source = ["ais_area_notice", "tests"]
 branch = true
 omit = [
     "ais_area_notice/build_samples.py",
-    "ais_area_notice/make_kml_styles.py",
     "tests/benchmarks_test.py",
 ]
 
