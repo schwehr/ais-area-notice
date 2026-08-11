@@ -2,7 +2,7 @@
 
 Just different.
 
-http://en.wikipedia.org/wiki/Rhumb_line
+https://en.wikipedia.org/wiki/Rhumb_line
 """
 
 import datetime
