@@ -2,7 +2,7 @@
 
 """Trying to do a more sane design for AIS BBM message.
 
-http://vislab-ccom.unh.edu/~schwehr/papers/2010-IMO-SN.1-Circ.289.pdf
+https://vislab-ccom.unh.edu/~schwehr/papers/2010-IMO-SN.1-Circ.289.pdf
 
 WARNING: The IMO Circ message is not byte-aligned. ITU 1371-3, Annex 2,
 1.2.3.1 says that the message must be byte aligned. And Annex 2,
