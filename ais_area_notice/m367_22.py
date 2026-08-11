@@ -62,8 +62,6 @@ class DecodeBits:
         self.pos += length
         return value
 
-    GetInt = get_int
-
     # TODO(schwehr): This should be get_int.
     def get_signed_int(self, length: int) -> int:
         """Read a signed integer of specified bit length from the bitstream.
@@ -78,8 +76,6 @@ class DecodeBits:
         value = binary.signed_int_from_bv(self.bits[self.pos : end])
         self.pos += length
         return value
-
-    GetSignedInt = get_signed_int
 
     def get_text(self, length: int, strip: bool = True) -> str:
         """Read 6-bit AIS character text of specified bit length from the bitstream.
@@ -100,8 +96,6 @@ class DecodeBits:
         self.pos += length
         return text
 
-    GetText = get_text
-
     def verify(self, offset: int) -> None:
         """Verify that current bit read position matches the expected offset.
 
@@ -111,8 +105,6 @@ class DecodeBits:
         if self.pos != offset:
             logging.info("DecodeBits FAILING!  expect: %s got: %s", offset, self.pos)
         assert self.pos == offset
-
-    Verify = verify
 
 
 class BuildBits:
@@ -137,16 +129,12 @@ class BuildBits:
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    AddUInt = add_uint
-
     def add_int(self, val: int | float, num_bits: int) -> None:
         """Add a signed integer."""
         bits = binary.bv_from_signed_int(int(val), num_bits)
         assert num_bits == len(bits)
         self.bits_expected += num_bits
         self.bv_list.append(bits)
-
-    AddInt = add_int
 
     def add_text(self, val: str, num_bits: int) -> None:
         """Add 6-bit AIS encoded text of specified bit length to the bitstream.
@@ -162,8 +150,6 @@ class BuildBits:
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    AddText = add_text
-
     def verify(self, num_bits: int) -> None:
         """Verify that total packed bits match expected bit count.
 
@@ -171,8 +157,6 @@ class BuildBits:
             num_bits: Expected total bit count.
         """
         assert self.bits_expected == num_bits
-
-    Verify = verify
 
     def get_bits(self) -> BitVector:
         """Concatenate all bit vectors in the list into a single BitVector.
@@ -183,8 +167,6 @@ class BuildBits:
         bits = binary.join_bv(self.bv_list)
         assert len(bits) == self.bits_expected
         return bits
-
-    GetBits = get_bits
 
 
 # TODO(schwehr): Should this import from 1:22?
@@ -209,13 +191,9 @@ class AreaNoticeSubArea:
             return 10
         return 1
 
-    getScaleFactor = get_scale_factor
-
     def get_scale_factor_raw(self, scale_factor: int) -> int:
         """Given a scale factor, give the value to be sent over the network."""
         return {1: 0, 10: 1, 100: 2, 1000: 3}[scale_factor]
-
-    getScaleFactorRaw = get_scale_factor_raw
 
     def decode_scale_factor(self, db: DecodeBits) -> int:
         """Decode 2-bit raw scale factor from bitstream reader into multiplier.
@@ -228,8 +206,6 @@ class AreaNoticeSubArea:
         """
         scale_factor_raw = db.get_int(2)
         return (1, 10, 100, 1000)[scale_factor_raw]
-
-    decodeScaleFactor = decode_scale_factor
 
     def get_bits(self) -> BitVector:
         """Pack subarea shape fields into a BitVector.
@@ -280,7 +256,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
             if scale_factor:
                 self.scale_factor = scale_factor
             else:
-                self.scale_factor = self.getScaleFactor(radius)
+                self.scale_factor = self.get_scale_factor(radius)
             self.radius = radius
             self.radius_scaled = radius / self.scale_factor
         elif bits is not None:
@@ -295,15 +271,15 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         """
         assert len(bits) == SUB_AREA_SIZE
         db = DecodeBits(bits)
-        self.area_shape = db.GetInt(3)
-        self.scale_factor = self.decodeScaleFactor(db)
-        self.lon = db.GetSignedInt(28) / 600000.0
-        self.lat = db.GetSignedInt(27) / 600000.0
-        self.precision = db.GetInt(3)
-        self.radius_scaled = db.GetInt(12)
+        self.area_shape = db.get_int(3)
+        self.scale_factor = self.decode_scale_factor(db)
+        self.lon = db.get_signed_int(28) / 600000.0
+        self.lat = db.get_signed_int(27) / 600000.0
+        self.precision = db.get_int(3)
+        self.radius_scaled = db.get_int(12)
         self.radius = self.radius_scaled * self.scale_factor
-        self.spare = db.GetInt(21)
-        db.Verify(SUB_AREA_SIZE)
+        self.spare = db.get_int(21)
+        db.verify(SUB_AREA_SIZE)
 
     def get_bits(self) -> BitVector:
         """Pack circle subarea shape fields into a BitVector.
@@ -312,18 +288,18 @@ class AreaNoticeCircle(AreaNoticeSubArea):
             A BitVector containing the encoded circle subarea payload.
         """
         bb = BuildBits()
-        bb.AddUInt(SHAPES["CIRCLE"], 3)  # Area shape
+        bb.add_uint(SHAPES["CIRCLE"], 3)  # Area shape
         if "scale_factor" not in self.__dict__:
-            self.scale_factor = self.getScaleFactor(self.radius)
-        bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+            self.scale_factor = self.get_scale_factor(self.radius)
+        bb.add_uint(self.get_scale_factor_raw(self.scale_factor), 2)
         assert self.lon is not None and self.lat is not None
-        bb.AddInt(self.lon * 600000, 28)
-        bb.AddInt(self.lat * 600000, 27)
-        bb.AddUInt(self.precision, 3)
-        bb.AddUInt(int(self.radius / self.scale_factor), 12)
-        bb.AddUInt(0, 21)  # Spare
-        bb.Verify(SUB_AREA_SIZE)
-        bits = bb.GetBits()
+        bb.add_int(self.lon * 600000, 28)
+        bb.add_int(self.lat * 600000, 27)
+        bb.add_uint(self.precision, 3)
+        bb.add_uint(int(self.radius / self.scale_factor), 12)
+        bb.add_uint(0, 21)  # Spare
+        bb.verify(SUB_AREA_SIZE)
+        bits = bb.get_bits()
         assert len(bits) == SUB_AREA_SIZE
         return bits
 
@@ -377,7 +353,7 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
                 self.scale_factor = scale_factor
             else:
                 self.scale_factor = max(
-                    self.getScaleFactor(east_dim), self.getScaleFactor(north_dim)
+                    self.get_scale_factor(east_dim), self.get_scale_factor(north_dim)
                 )
             self.e_dim = east_dim
             self.n_dim = north_dim
@@ -394,18 +370,18 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             bits: BitVector containing encoded subarea bits.
         """
         db = DecodeBits(bits)
-        self.area_shape = db.GetInt(3)
-        self.scale_factor = self.decodeScaleFactor(db)
-        self.lon = db.GetSignedInt(28) / 600000.0
-        self.lat = db.GetSignedInt(27) / 600000.0
-        self.precision = db.GetInt(3)
-        self.e_dim_scaled = db.GetInt(8)
-        self.n_dim_scaled = db.GetInt(8)
+        self.area_shape = db.get_int(3)
+        self.scale_factor = self.decode_scale_factor(db)
+        self.lon = db.get_signed_int(28) / 600000.0
+        self.lat = db.get_signed_int(27) / 600000.0
+        self.precision = db.get_int(3)
+        self.e_dim_scaled = db.get_int(8)
+        self.n_dim_scaled = db.get_int(8)
         self.e_dim = self.e_dim_scaled * self.scale_factor
         self.n_dim = self.n_dim_scaled * self.scale_factor
-        self.orientation_deg = db.GetInt(9)
-        self.spare = db.GetInt(8)
-        db.Verify(SUB_AREA_SIZE)
+        self.orientation_deg = db.get_int(9)
+        self.spare = db.get_int(8)
+        db.verify(SUB_AREA_SIZE)
 
     def get_bits(self) -> BitVector:
         """Pack rectangle subarea shape fields into a BitVector.
@@ -414,20 +390,20 @@ class AreaNoticeRectangle(AreaNoticeSubArea):
             A BitVector containing the encoded rectangle subarea payload.
         """
         bb = BuildBits()
-        bb.AddUInt(SHAPES["RECTANGLE"], 3)
+        bb.add_uint(SHAPES["RECTANGLE"], 3)
         if "scale_factor" not in self.__dict__:
-            self.scale_factor = self.getScaleFactor(max(self.e_dim, self.n_dim))
-        bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+            self.scale_factor = self.get_scale_factor(max(self.e_dim, self.n_dim))
+        bb.add_uint(self.get_scale_factor_raw(self.scale_factor), 2)
         assert self.lon is not None and self.lat is not None
-        bb.AddInt(self.lon * 600000, 28)
-        bb.AddInt(self.lat * 600000, 27)
-        bb.AddUInt(self.precision, 3)
-        bb.AddUInt(int(self.e_dim / self.scale_factor), 8)
-        bb.AddUInt(int(self.n_dim / self.scale_factor), 8)
-        bb.AddUInt(self.orientation_deg, 9)
-        bb.AddUInt(0, 8)
-        bb.Verify(SUB_AREA_SIZE)
-        return bb.GetBits()
+        bb.add_int(self.lon * 600000, 28)
+        bb.add_int(self.lat * 600000, 27)
+        bb.add_uint(self.precision, 3)
+        bb.add_uint(int(self.e_dim / self.scale_factor), 8)
+        bb.add_uint(int(self.n_dim / self.scale_factor), 8)
+        bb.add_uint(self.orientation_deg, 9)
+        bb.add_uint(0, 8)
+        bb.verify(SUB_AREA_SIZE)
+        return bb.get_bits()
 
 
 class AreaNoticeSector(AreaNoticeSubArea):
@@ -476,7 +452,7 @@ class AreaNoticeSector(AreaNoticeSubArea):
             if scale_factor:
                 self.scale_factor = scale_factor
             else:
-                self.scale_factor = self.getScaleFactor(radius)
+                self.scale_factor = self.get_scale_factor(radius)
             self.radius = radius
             self.radius_scaled = int(radius / self.scale_factor)
             self.left_bound_deg = left_bound_deg
@@ -491,18 +467,18 @@ class AreaNoticeSector(AreaNoticeSubArea):
             bits: BitVector containing encoded subarea bits.
         """
         db = DecodeBits(bits)
-        self.area_shape = db.GetInt(3)
-        self.scale_factor = self.decodeScaleFactor(db)
-        self.lon = db.GetSignedInt(28) / 600000.0
-        lat_raw = db.GetSignedInt(27)
+        self.area_shape = db.get_int(3)
+        self.scale_factor = self.decode_scale_factor(db)
+        self.lon = db.get_signed_int(28) / 600000.0
+        lat_raw = db.get_signed_int(27)
         self.lat = lat_raw / 600000.0
-        self.precision = db.GetInt(3)
-        self.radius_scaled = db.GetInt(12)
+        self.precision = db.get_int(3)
+        self.radius_scaled = db.get_int(12)
         self.radius = self.radius_scaled * self.scale_factor
-        self.left_bound_deg = db.GetInt(9)
-        self.right_bound_deg = db.GetInt(9)
-        self.spare = db.GetInt(3)
-        db.Verify(SUB_AREA_SIZE)
+        self.left_bound_deg = db.get_int(9)
+        self.right_bound_deg = db.get_int(9)
+        self.spare = db.get_int(3)
+        db.verify(SUB_AREA_SIZE)
 
     def get_bits(self) -> BitVector:
         """Pack sector subarea shape fields into a BitVector.
@@ -511,21 +487,21 @@ class AreaNoticeSector(AreaNoticeSubArea):
             A BitVector containing the encoded sector subarea payload.
         """
         bb = BuildBits()
-        bb.AddUInt(SHAPES["SECTOR"], 3)
+        bb.add_uint(SHAPES["SECTOR"], 3)
         if "scale_factor" not in self.__dict__:
-            self.scale_factor = self.getScaleFactor(self.radius)
-        bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+            self.scale_factor = self.get_scale_factor(self.radius)
+        bb.add_uint(self.get_scale_factor_raw(self.scale_factor), 2)
         assert self.lon is not None and self.lat is not None
-        bb.AddInt(self.lon * 600000, 28)
+        bb.add_int(self.lon * 600000, 28)
         # TODO(schwehr): Do we round all before encoding?
-        bb.AddInt(round(self.lat * 600000), 27)
-        bb.AddUInt(self.precision, 3)
-        bb.AddUInt(int(self.radius / self.scale_factor), 12)
-        bb.AddUInt(self.left_bound_deg, 9)
-        bb.AddUInt(self.right_bound_deg, 9)
-        bb.AddUInt(0, 3)
-        bb.Verify(SUB_AREA_SIZE)
-        return bb.GetBits()
+        bb.add_int(round(self.lat * 600000), 27)
+        bb.add_uint(self.precision, 3)
+        bb.add_uint(int(self.radius / self.scale_factor), 12)
+        bb.add_uint(self.left_bound_deg, 9)
+        bb.add_uint(self.right_bound_deg, 9)
+        bb.add_uint(0, 3)
+        bb.verify(SUB_AREA_SIZE)
+        return bb.get_bits()
 
 
 class AreaNoticePoly(AreaNoticeSubArea):
@@ -565,7 +541,7 @@ class AreaNoticePoly(AreaNoticeSubArea):
             self.points = list(points)
             max_dist = max(pt[1] for pt in points)
             if not scale_factor:
-                self.scale_factor = self.getScaleFactor(max_dist)
+                self.scale_factor = self.get_scale_factor(max_dist)
         if scale_factor:
             self.scale_factor = scale_factor
         elif bits is not None:
@@ -579,17 +555,17 @@ class AreaNoticePoly(AreaNoticeSubArea):
         """
         assert len(bits) == SUB_AREA_SIZE
         db = DecodeBits(bits)
-        self.area_shape = db.GetInt(3)
-        self.scale_factor = self.decodeScaleFactor(db)
+        self.area_shape = db.get_int(3)
+        self.scale_factor = self.decode_scale_factor(db)
 
         self.points = []
         done = False  # used to flag when we should have no more points
         # TODO: This is probably wrong.
         for _unused_i in range(4):
-            angle = db.GetInt(10)
+            angle = db.get_int(10)
             if angle == 720:
                 done = True
-            dist_scaled = db.GetInt(11)
+            dist_scaled = db.get_int(11)
             if not angle and not dist_scaled:
                 # Despite the specs, Greg W. Johnson uses 0, 0 to denote no point.
                 done = True
@@ -597,8 +573,8 @@ class AreaNoticePoly(AreaNoticeSubArea):
                 angle_deg = angle * 0.5
                 dist = dist_scaled * self.scale_factor
                 self.points.append((angle_deg, dist))
-        self.spare = db.GetInt(7)
-        db.Verify(SUB_AREA_SIZE)
+        self.spare = db.get_int(7)
+        db.verify(SUB_AREA_SIZE)
 
     def get_bits(self) -> BitVector:
         """Pack polyline/polygon subarea shape fields into a BitVector.
@@ -608,21 +584,21 @@ class AreaNoticePoly(AreaNoticeSubArea):
         """
         bb = BuildBits()
         assert self.area_shape in (SHAPES["POLYLINE"], SHAPES["POLYGON"])
-        bb.AddUInt(self.area_shape, 3)
+        bb.add_uint(self.area_shape, 3)
         if "scale_factor" not in self.__dict__:
             max_dist = max(pt[1] for pt in self.points)
-            self.scale_factor = self.getScaleFactor(max_dist)
-        bb.AddUInt(self.getScaleFactorRaw(self.scale_factor), 2)
+            self.scale_factor = self.get_scale_factor(max_dist)
+        bb.add_uint(self.get_scale_factor_raw(self.scale_factor), 2)
         for angle, dist in self.points:
-            bb.AddUInt(int(angle * 2), 10)
-            bb.AddUInt(int(dist / self.scale_factor), 11)
+            bb.add_uint(int(angle * 2), 10)
+            bb.add_uint(int(dist / self.scale_factor), 11)
         # encode any empty points
         for _ in range(len(self.points), 4):
-            bb.AddUInt(720, 10)
-            bb.AddUInt(0, 11)
-        bb.AddUInt(0, 7)
-        bb.Verify(SUB_AREA_SIZE)
-        return bb.GetBits()
+            bb.add_uint(720, 10)
+            bb.add_uint(0, 11)
+        bb.add_uint(0, 7)
+        bb.verify(SUB_AREA_SIZE)
+        return bb.get_bits()
 
 
 class AreaNoticeText(AreaNoticeSubArea):
@@ -651,10 +627,10 @@ class AreaNoticeText(AreaNoticeSubArea):
             bits: BitVector containing encoded subarea bits.
         """
         db = DecodeBits(bits)
-        self.area_shape = db.GetInt(3)
-        self.text = db.GetText(90, strip=True)
-        self.spare = db.GetInt(3)
-        db.Verify(SUB_AREA_SIZE)
+        self.area_shape = db.get_int(3)
+        self.text = db.get_text(90, strip=True)
+        self.spare = db.get_int(3)
+        db.verify(SUB_AREA_SIZE)
 
     def get_bits(self) -> BitVector:
         """Pack free text subarea shape fields into a BitVector.
@@ -663,11 +639,11 @@ class AreaNoticeText(AreaNoticeSubArea):
             A BitVector containing the encoded free text subarea payload.
         """
         bb = BuildBits()
-        bb.AddUInt(SHAPES["TEXT"], 3)
-        bb.AddText(self.text, 90)
-        bb.AddUInt(0, 3)
-        bb.Verify(SUB_AREA_SIZE)
-        return bb.GetBits()
+        bb.add_uint(SHAPES["TEXT"], 3)
+        bb.add_text(self.text, 90)
+        bb.add_uint(0, 3)
+        bb.verify(SUB_AREA_SIZE)
+        return bb.get_bits()
 
 
 class AreaNotice(BBM):
@@ -803,7 +779,7 @@ class AreaNotice(BBM):
 
         for area in self.areas:
             bv_list.append(area.get_bits())
-        bv = binary.joinBV(bv_list)
+        bv = binary.join_bv(bv_list)
         if len(bv) > 984:
             raise AisPackingException(f"Message to large:  {len(bv)} > {self.max_bits}")
         return bv
@@ -843,7 +819,7 @@ class AreaNotice(BBM):
             if fill_bits > 0:
                 bv = bv[:-fill_bits]
             bits_list.append(bv)
-        bits = binary.joinBV(bits_list)
+        bits = binary.join_bv(bits_list)
         self.decode_bits(bits)
 
     def decode_bits(self, bits: BitVector) -> None:
@@ -853,27 +829,27 @@ class AreaNotice(BBM):
             bits: BitVector containing the encoded binary payload.
         """
         db = DecodeBits(bits)
-        self.message_id = db.GetInt(6)
-        self.repeat_indicator = db.GetInt(2)
-        self.mmsi = db.GetInt(30)
-        self.spare = db.GetInt(2)
-        self.dac = db.GetInt(10)
-        self.fi = db.GetInt(6)
-        db.Verify(56)
-        self.version = db.GetInt(6)
-        self.link_id = db.GetInt(10)
-        self.area_type = db.GetInt(7)
+        self.message_id = db.get_int(6)
+        self.repeat_indicator = db.get_int(2)
+        self.mmsi = db.get_int(30)
+        self.spare = db.get_int(2)
+        self.dac = db.get_int(10)
+        self.fi = db.get_int(6)
+        db.verify(56)
+        self.version = db.get_int(6)
+        self.link_id = db.get_int(10)
+        self.area_type = db.get_int(7)
         # UTC
-        month = db.GetInt(4)
-        day = db.GetInt(5)
-        hour = db.GetInt(5)
-        minute = db.GetInt(6)
+        month = db.get_int(4)
+        day = db.get_int(5)
+        hour = db.get_int(5)
+        minute = db.get_int(6)
         # TODO(schwehr): Handle year boundary.
         now = datetime.datetime.now(datetime.UTC)
         self.when = datetime.datetime(now.year, month, day, hour, minute)
-        self.duration_min = db.GetInt(18)
-        self.spare2 = db.GetInt(3)
-        db.Verify(120)
+        self.duration_min = db.get_int(18)
+        self.spare2 = db.get_int(3)
+        db.verify(120)
 
         sub_areas_bits = bits[120:]
         num_sub_areas = len(sub_areas_bits) // SUB_AREA_SIZE

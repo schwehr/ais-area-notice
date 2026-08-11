@@ -707,14 +707,14 @@ class TestAreaNotice:
         """Test DecodeBits verification failure logging."""
         db = DecodeBits(BitVector.from_bitstring("0000"))
         with pytest.raises(AssertionError):
-            db.Verify(10)
+            db.verify(10)
 
     def test_scale_factors_and_defaults(self) -> None:
         """Test scale factor auto-computation and default property evaluation."""
         subarea = AreaNoticeCircle(lon=1.0, lat=2.0, radius=500000, scale_factor=None)
-        assert subarea.getScaleFactor(500000) == 1000
-        assert subarea.getScaleFactor(50000) == 100
-        assert subarea.getScaleFactor(5000) == 10
+        assert subarea.get_scale_factor(500000) == 1000
+        assert subarea.get_scale_factor(50000) == 100
+        assert subarea.get_scale_factor(5000) == 10
 
         # Line 164
         c = AreaNoticeCircle(lon=1.0, lat=2.0, radius=500)
