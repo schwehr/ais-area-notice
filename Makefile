@@ -11,6 +11,7 @@ default:
 	@echo "  AIS Binary Message Reference Implementation"
 	@echo
 	@echo "  test        - run unit tests"
+	@echo "  check-links - run lychee link checker on documentation and codebase"
 	@echo "  samples.txt - create the published test dataset"
 	@echo "  sdist  -  Build a source distribution tar ball"
 	@echo "  clean  -  Remove temporary files"
@@ -18,9 +19,12 @@ default:
 sdist: samples.txt clean
 	uv build --sdist
 
-.PHONY: test
+.PHONY: test check-links
 test:
 	uv run python -m unittest discover -s tests -p "*_test.py"
+
+check-links:
+	uv run pre-commit run lychee --all-files
 
 clean:
 	rm -f *.pyc
