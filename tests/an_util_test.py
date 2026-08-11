@@ -98,3 +98,28 @@ def test_build_bits_get_bits_mismatch_error() -> None:
     bb.bits_expected = 8
     with pytest.raises(an_util.Error, match="BuildBits did not match expected bits."):
         bb.GetBits()
+
+
+def test_build_bits_add_uint_value_error() -> None:
+    """Test BuildBits.AddUInt raises ValueError when num_bits does not match bit length."""
+    bb = an_util.BuildBits()
+    with pytest.raises(
+        ValueError, match=r"num_bits \(4\) does not match BitVector length"
+    ):
+        bb.AddUInt(16, 4)
+
+
+def test_build_bits_add_int_value_error() -> None:
+    """Test BuildBits.AddInt raises ValueError when num_bits does not match bit length."""
+    bb = an_util.BuildBits()
+    with pytest.raises(
+        ValueError, match=r"num_bits \(0\) does not match BitVector length"
+    ):
+        bb.AddInt(0, 0)
+
+
+def test_build_bits_add_text_value_error() -> None:
+    """Test BuildBits.AddText raises ValueError when bit length is not 6-bit aligned."""
+    bb = an_util.BuildBits()
+    with pytest.raises(ValueError, match=r"num_bits \(7\) must be a multiple of 6"):
+        bb.AddText("A", 7)
