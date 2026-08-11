@@ -57,8 +57,6 @@ class AreaNoticeSubArea:
             return 10
         return 1
 
-    getScaleFactor = get_scale_factor
-
     def get_scale_factor_raw(self, scale_factor: int) -> int:
         """Map scale factor multiplier to 2-bit raw integer encoding.
 
@@ -69,8 +67,6 @@ class AreaNoticeSubArea:
             The 2-bit integer encoding (0, 1, 2, or 3).
         """
         return {1: 0, 10: 1, 100: 2, 1000: 3}[scale_factor]
-
-    getScaleFactorRaw = get_scale_factor_raw
 
     def decode_scale_factor(self, db: an_util.DecodeBits) -> int:
         """Decode 2-bit raw scale factor from bitstream reader into multiplier.
@@ -83,8 +79,6 @@ class AreaNoticeSubArea:
         """
         scale_factor_raw = db.get_int(2)
         return {0: 1, 1: 10, 2: 100, 3: 1000}[scale_factor_raw]
-
-    decodeScaleFactor = decode_scale_factor
 
 
 class AreaNoticeCircle(AreaNoticeSubArea):
@@ -116,7 +110,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
             if scale_factor:
                 self.scale_factor = scale_factor
             else:
-                self.scale_factor = self.getScaleFactor(radius)
+                self.scale_factor = self.get_scale_factor(radius)
             self.radius = radius
             self.radius_scaled = int(radius / self.scale_factor)
         elif bits is not None:
@@ -142,8 +136,6 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         self.radius = self.radius_scaled * self.scale_factor
         self.spare = db.get_int(18)
         db.verify(SUB_AREA_BIT_SIZE)
-
-    DecodeBits = decode_bits
 
     def get_bits(self) -> BitVector:
         """Pack circle subarea shape fields into a BitVector.
@@ -315,8 +307,6 @@ class AreaNotice:
             subarea = self.subarea_factory(sub_bits)
             self.add_subarea(subarea)
 
-    DecodeBits = decode_bits
-
     def subarea_factory(self, bits: BitVector) -> AreaNoticeSubArea:
         """Instantiate appropriate subarea shape object from raw bit slice.
 
@@ -357,5 +347,3 @@ class AreaNotice:
         if shape == 5:
             return AreaNoticeText(bits=bits)  # type: ignore[name-defined]
         raise Error(f"Unsupported area shape: {shape}")
-
-    SubareaFactory = subarea_factory

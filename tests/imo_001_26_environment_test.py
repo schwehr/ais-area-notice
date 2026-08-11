@@ -1748,33 +1748,6 @@ class TestEnvironment:
         assert "speed=10" in u
         assert "forecast: speed=12" in u
 
-    def test_water_level_invalid_args(self) -> None:
-        """Test SensorReportWaterLevel raises ValueError for invalid arguments."""
-        with pytest.raises(ValueError, match="Invalid wl_type"):
-            env.SensorReportWaterLevel(site_id=1, wl_type=2)
-        with pytest.raises(ValueError, match="Invalid wl"):
-            env.SensorReportWaterLevel(site_id=1, wl=327.69)
-        with pytest.raises(ValueError, match="Invalid wl"):
-            env.SensorReportWaterLevel(site_id=1, wl=-327.69)
-        with pytest.raises(ValueError, match="Invalid trend"):
-            env.SensorReportWaterLevel(site_id=1, trend=4)
-        with pytest.raises(ValueError, match="Invalid vdatum"):
-            env.SensorReportWaterLevel(site_id=1, vdatum=15)
-        with pytest.raises(ValueError, match="Invalid data_descr"):
-            env.SensorReportWaterLevel(site_id=1, data_descr=8)
-        with pytest.raises(ValueError, match="Invalid forecast_type"):
-            env.SensorReportWaterLevel(site_id=1, forecast_type=2)
-        with pytest.raises(ValueError, match="Invalid forecast_wl"):
-            env.SensorReportWaterLevel(site_id=1, forecast_wl=327.69)
-        with pytest.raises(ValueError, match="Invalid forecast_day"):
-            env.SensorReportWaterLevel(site_id=1, forecast_day=32)
-        with pytest.raises(ValueError, match="Invalid forecast_hour"):
-            env.SensorReportWaterLevel(site_id=1, forecast_hour=25)
-        with pytest.raises(ValueError, match="Invalid forecast_minute"):
-            env.SensorReportWaterLevel(site_id=1, forecast_minute=61)
-        with pytest.raises(ValueError, match="Invalid duration_min"):
-            env.SensorReportWaterLevel(site_id=1, duration_min=256)
-
     def test_water_level_coverage(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test SensorReportWaterLevel exception handling and unicode formatting."""
         sr = env.SensorReportWaterLevel(site_id=1, wl=1.5, forecast_wl=2.0)

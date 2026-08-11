@@ -241,13 +241,20 @@ class SensorReport:
             if minute is None:
                 minute = now.minute
 
-        assert report_type is not None and report_type in sensor_report_lut
-        assert year is not None and 2010 <= year <= 2100
-        assert month is not None and 1 <= month <= 12
-        assert day is not None and 1 <= day <= 31
-        assert hour is not None and 0 <= hour <= 23
-        assert minute is not None and 0 <= minute <= 59
-        assert site_id is not None and 0 <= site_id <= 127
+        if not (report_type is not None and report_type in sensor_report_lut):
+            raise ValueError()
+        if not (year is not None and 2010 <= year <= 2100):
+            raise ValueError()
+        if not (month is not None and 1 <= month <= 12):
+            raise ValueError()
+        if not (day is not None and 1 <= day <= 31):
+            raise ValueError()
+        if not (hour is not None and 0 <= hour <= 23):
+            raise ValueError()
+        if not (minute is not None and 0 <= minute <= 59):
+            raise ValueError()
+        if not (site_id is not None and 0 <= site_id <= 127):
+            raise ValueError()
 
         self.report_type = report_type
         self.year = year
@@ -321,8 +328,10 @@ class SensorReport:
             month: Optional month override. Defaults to current month.
             **_kwargs: Additional unused keyword arguments.
         """
-        assert len(bits) >= SENSOR_REPORT_HDR_SIZE
-        assert len(bits) <= SENSOR_REPORT_SIZE
+        if not (len(bits) >= SENSOR_REPORT_HDR_SIZE):
+            raise ValueError()
+        if not (len(bits) <= SENSOR_REPORT_SIZE):
+            raise ValueError()
 
         self.report_type = int(bits[:4])
         self.day = int(bits[4:9])
@@ -335,8 +344,10 @@ class SensorReport:
             year = now.year
             month = now.month
 
-        assert year is not None and 2010 <= year <= 2100
-        assert month is not None and 1 <= month <= 12
+        if not (year is not None and 2010 <= year <= 2100):
+            raise ValueError()
+        if not (month is not None and 1 <= month <= 12):
+            raise ValueError()
         self.year = year
         self.month = month
 
@@ -353,8 +364,10 @@ class SensorReport:
         bv_list.append(BitVector.from_int(self.minute, size=6))
         bv_list.append(BitVector.from_int(self.site_id, size=7))
         bv = binary.joinBV(bv_list)
-        assert len(bv) == 4 + 5 + 5 + 6 + 7
-        assert SENSOR_REPORT_HDR_SIZE == len(bv)
+        if not (len(bv) == 4 + 5 + 5 + 6 + 7):
+            raise ValueError()
+        if not (SENSOR_REPORT_HDR_SIZE == len(bv)):
+            raise ValueError()
         return bv
 
 
@@ -402,12 +415,18 @@ class SensorReportLocation(SensorReport):
         if bits is not None:
             self.decode_bits(bits)
             return
-        assert -180.0 <= lon <= 180.0 or lon == 181
-        assert -90.0 <= lat <= 90.0 or lat == 91
-        assert 0 <= alt < 200.3  # 2002 is not-available
-        assert 0 <= owner <= 6 or owner == 14
-        assert 0 <= timeout <= 5
-        assert site_id is not None
+        if not (-180.0 <= lon <= 180.0 or lon == 181):
+            raise ValueError()
+        if not (-90.0 <= lat <= 90.0 or lat == 91):
+            raise ValueError()
+        if not (0 <= alt < 200.3):  # 2002 is not-available
+            raise ValueError()
+        if not (0 <= owner <= 6 or owner == 14):
+            raise ValueError()
+        if not (0 <= timeout <= 5):
+            raise ValueError()
+        if not (site_id is not None):
+            raise ValueError()
 
         SensorReport.__init__(
             self,
@@ -446,7 +465,8 @@ class SensorReportLocation(SensorReport):
         """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.lon = binary.signedIntFromBV(bits[27:55]) / 600000.0
         self.lat = binary.signedIntFromBV(bits[55:82]) / 600000.0
@@ -471,7 +491,8 @@ class SensorReportLocation(SensorReport):
             BitVector(size=12),
         ]
         bits = binary.joinBV(bv_list)
-        assert len(bits) == SENSOR_REPORT_SIZE
+        if not (len(bits) == SENSOR_REPORT_SIZE):
+            raise ValueError()
         return bits
 
     def __unicode__(self) -> str:
@@ -522,7 +543,8 @@ class SensorReportId(SensorReport):
         if bits is not None:
             self.decode_bits(bits)
             return
-        assert len(id_str) <= 14
+        if not (len(id_str) <= 14):
+            raise ValueError()
         SensorReport.__init__(
             self,
             report_type=self.report_type,
@@ -555,7 +577,8 @@ class SensorReportId(SensorReport):
         """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.id_str = ais_string.Decode(bits[27:-1])
         # 1 spare bit
@@ -667,18 +690,30 @@ class SensorReportWind(SensorReport):
         self.forecast_minute = forecast_minute
         self.duration_min = duration_min
 
-        assert self.speed >= 0 and self.speed <= 122
-        assert self.gust >= 0 and self.gust <= 122
-        assert self.dir >= 0 and self.dir <= 360
-        assert self.gust_dir >= 0 and self.gust_dir <= 360
-        assert self.data_descr in sensor_type_lut
-        assert self.forecast_speed >= 0 and self.forecast_speed <= 122
-        assert self.forecast_gust >= 0 and self.forecast_gust <= 122
-        assert self.forecast_dir >= 0 and self.forecast_dir <= 360
-        assert self.forecast_day >= 0 and self.forecast_day <= 31
-        assert self.forecast_hour >= 0 and self.forecast_hour <= 24
-        assert self.forecast_minute >= 0 and self.forecast_minute <= 60
-        assert self.duration_min >= 0 and self.duration_min <= 255
+        if not (self.speed >= 0 and self.speed <= 122):
+            raise ValueError()
+        if not (self.gust >= 0 and self.gust <= 122):
+            raise ValueError()
+        if not (self.dir >= 0 and self.dir <= 360):
+            raise ValueError()
+        if not (self.gust_dir >= 0 and self.gust_dir <= 360):
+            raise ValueError()
+        if not (self.data_descr in sensor_type_lut):
+            raise ValueError()
+        if not (self.forecast_speed >= 0 and self.forecast_speed <= 122):
+            raise ValueError()
+        if not (self.forecast_gust >= 0 and self.forecast_gust <= 122):
+            raise ValueError()
+        if not (self.forecast_dir >= 0 and self.forecast_dir <= 360):
+            raise ValueError()
+        if not (self.forecast_day >= 0 and self.forecast_day <= 31):
+            raise ValueError()
+        if not (self.forecast_hour >= 0 and self.forecast_hour <= 24):
+            raise ValueError()
+        if not (self.forecast_minute >= 0 and self.forecast_minute <= 60):
+            raise ValueError()
+        if not (self.duration_min >= 0 and self.duration_min <= 255):
+            raise ValueError()
 
         SensorReport.__init__(
             self,
@@ -711,7 +746,8 @@ class SensorReportWind(SensorReport):
         """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.speed = int(bits[27:34])
         self.gust = int(bits[34:41])
@@ -920,7 +956,8 @@ class SensorReportWaterLevel(SensorReport):
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length " + str(len(bits)))
 
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
 
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
 
@@ -1059,10 +1096,14 @@ class SensorReportCurrent2d(SensorReport):
         self.data_descr = data_descr
 
         for cur in self.cur:
-            assert 0 <= cur["speed"] <= 24.7
-            assert 0 <= cur["dir"] <= 360
-            assert 0 <= cur["level"] <= 362
-        assert data_descr in sensor_type_lut
+            if not (0 <= cur["speed"] <= 24.7):
+                raise ValueError()
+            if not (0 <= cur["dir"] <= 360):
+                raise ValueError()
+            if not (0 <= cur["level"] <= 362):
+                raise ValueError()
+        if not (data_descr in sensor_type_lut):
+            raise ValueError()
 
         SensorReport.__init__(
             self,
@@ -1095,7 +1136,8 @@ class SensorReportCurrent2d(SensorReport):
         """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.cur = []
         for i in range(3):
@@ -1204,10 +1246,13 @@ class SensorReportCurrent3d(SensorReport):
         self.data_descr = data_descr
 
         for cur in self.cur:
-            assert 0 <= cur["level"] <= 362
+            if not (0 <= cur["level"] <= 362):
+                raise ValueError()
             for x in ("n", "e", "z"):
-                assert 0 <= cur[x] <= 24.7
-        assert data_descr in sensor_type_lut
+                if not (0 <= cur[x] <= 24.7):
+                    raise ValueError()
+        if not (data_descr in sensor_type_lut):
+            raise ValueError()
 
         SensorReport.__init__(
             self,
@@ -1240,7 +1285,8 @@ class SensorReportCurrent3d(SensorReport):
         """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.cur = []
         for i in range(2):
@@ -1361,10 +1407,13 @@ class SensorReportCurrentHorz(SensorReport):
         ]
 
         for cur in self.cur:
-            assert 0 <= cur["dist"] <= 122
-            assert 0 <= cur["level"] <= 361
+            if not (0 <= cur["dist"] <= 122):
+                raise ValueError()
+            if not (0 <= cur["level"] <= 361):
+                raise ValueError()
             for field in ("bearing", "dir"):
-                assert 0 <= cur[field] <= 360
+                if not (0 <= cur[field] <= 360):
+                    raise ValueError()
 
         SensorReport.__init__(
             self,
@@ -1397,7 +1446,8 @@ class SensorReportCurrentHorz(SensorReport):
         """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
         self.cur = []
         for i in range(2):
@@ -1520,20 +1570,33 @@ class SensorReportSeaState(SensorReport):
             self.decode_bits(bits)
             return
 
-        assert 0 <= swell_height <= 24.7
-        assert 0 <= swell_period <= 61
-        assert 0 <= swell_dir <= 361
-        assert sea_state in beaufort_scale
-        assert swell_data_descr in sensor_type_lut
+        if not (0 <= swell_height <= 24.7):
+            raise ValueError()
+        if not (0 <= swell_period <= 61):
+            raise ValueError()
+        if not (0 <= swell_dir <= 361):
+            raise ValueError()
+        if not (sea_state in beaufort_scale):
+            raise ValueError()
+        if not (swell_data_descr in sensor_type_lut):
+            raise ValueError()
 
-        assert -10.0 <= temp <= 50.1
-        assert 0 <= temp_depth <= 12.2
-        assert temp_data_descr in sensor_type_lut
-        assert 0 <= wave_height <= 24.7
-        assert 0 <= wave_period <= 61
-        assert 0 <= wave_dir <= 361
-        assert wave_data_descr in sensor_type_lut
-        assert 0 <= salinity <= 50.2
+        if not (-10.0 <= temp <= 50.1):
+            raise ValueError()
+        if not (0 <= temp_depth <= 12.2):
+            raise ValueError()
+        if not (temp_data_descr in sensor_type_lut):
+            raise ValueError()
+        if not (0 <= wave_height <= 24.7):
+            raise ValueError()
+        if not (0 <= wave_period <= 61):
+            raise ValueError()
+        if not (0 <= wave_dir <= 361):
+            raise ValueError()
+        if not (wave_data_descr in sensor_type_lut):
+            raise ValueError()
+        if not (0 <= salinity <= 50.2):
+            raise ValueError()
 
         self.swell_height = swell_height
         self.swell_period = swell_period
@@ -1580,7 +1643,8 @@ class SensorReportSeaState(SensorReport):
         """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
 
         self.swell_height = int(bits[27:35]) / 10.0
@@ -1713,16 +1777,22 @@ class SensorReportSalinity(SensorReport):
             self.decode_bits(bits)
             return
 
-        assert (
+        if not (
             -10.0 <= temp <= 50.0
             or almost_equal(temp, 60.1)
             or almost_equal(temp, 60.2)
-        )
-        assert 0.0 <= cond <= 7.03
-        assert 0.0 <= pres <= 6000.3
-        assert 0.0 <= salinity <= 50.3
-        assert salinity_type in (0, 1, 2)
-        assert data_descr in sensor_type_lut
+        ):
+            raise ValueError()
+        if not (0.0 <= cond <= 7.03):
+            raise ValueError()
+        if not (0.0 <= pres <= 6000.3):
+            raise ValueError()
+        if not (0.0 <= salinity <= 50.3):
+            raise ValueError()
+        if not (salinity_type in (0, 1, 2)):
+            raise ValueError()
+        if not (data_descr in sensor_type_lut):
+            raise ValueError()
 
         self.temp = temp
         self.cond = cond
@@ -1761,7 +1831,8 @@ class SensorReportSalinity(SensorReport):
         """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
 
         self.temp = int(bits[27:37]) / 10.0 - 10
@@ -1882,16 +1953,26 @@ class SensorReportWeather(SensorReport):
             self.decode_bits(bits)
             return
 
-        assert -60.0 <= air_temp <= 60.0 or almost_equal(air_temp, -102.4)
-        assert air_temp_data_descr in sensor_type_lut
-        assert precip in (0, 1, 2, 3)
-        assert 0.0 <= vis <= 24.3
-        assert -20.0 <= dew <= 50.1
-        assert dew_data_descr in sensor_type_lut
-        assert 800 <= air_pres <= 1202
-        assert air_pres_trend in (0, 1, 2, 3)
-        assert air_pres_data_descr in sensor_type_lut
-        assert 0.0 <= salinity <= 50.2
+        if not (-60.0 <= air_temp <= 60.0 or almost_equal(air_temp, -102.4)):
+            raise ValueError()
+        if not (air_temp_data_descr in sensor_type_lut):
+            raise ValueError()
+        if not (precip in (0, 1, 2, 3)):
+            raise ValueError()
+        if not (0.0 <= vis <= 24.3):
+            raise ValueError()
+        if not (-20.0 <= dew <= 50.1):
+            raise ValueError()
+        if not (dew_data_descr in sensor_type_lut):
+            raise ValueError()
+        if not (800 <= air_pres <= 1202):
+            raise ValueError()
+        if not (air_pres_trend in (0, 1, 2, 3)):
+            raise ValueError()
+        if not (air_pres_data_descr in sensor_type_lut):
+            raise ValueError()
+        if not (0.0 <= salinity <= 50.2):
+            raise ValueError()
 
         self.air_temp = air_temp
         self.air_temp_data_descr = air_temp_data_descr
@@ -1934,7 +2015,8 @@ class SensorReportWeather(SensorReport):
         """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
 
         self.air_temp = binary.signedIntFromBV(bits[27:38]) / 10.0
@@ -2067,13 +2149,20 @@ class SensorReportAirGap(SensorReport):
             return
 
         # TODO(schwehr): Are draft and gap are in 0.01 meter incrememts?
-        assert (1.0 <= draft <= 81.91) or almost_equal(draft, 0)
-        assert (1.0 <= gap <= 81.91) or almost_equal(gap, 0)
-        assert gap_trend in (0, 1, 2, 3)
-        assert (1.0 <= forecast_gap <= 81.91) or almost_equal(forecast_gap, 0)
-        assert 0 <= forecast_day <= 31
-        assert 0 <= forecast_hour <= 24
-        assert 0 <= forecast_minute <= 60
+        if not ((1.0 <= draft <= 81.91) or almost_equal(draft, 0)):
+            raise ValueError()
+        if not ((1.0 <= gap <= 81.91) or almost_equal(gap, 0)):
+            raise ValueError()
+        if not (gap_trend in (0, 1, 2, 3)):
+            raise ValueError()
+        if not ((1.0 <= forecast_gap <= 81.91) or almost_equal(forecast_gap, 0)):
+            raise ValueError()
+        if not (0 <= forecast_day <= 31):
+            raise ValueError()
+        if not (0 <= forecast_hour <= 24):
+            raise ValueError()
+        if not (0 <= forecast_minute <= 60):
+            raise ValueError()
 
         self.draft = draft
         self.gap = gap
@@ -2114,7 +2203,8 @@ class SensorReportAirGap(SensorReport):
         """
         if len(bits) != SENSOR_REPORT_SIZE:
             raise AisUnpackingException("bit length" + str(len(bits)))
-        assert self.report_type == int(bits[:4])
+        if not (self.report_type == int(bits[:4])):
+            raise ValueError()
         SensorReport.decode_bits(self, bits, year=year, month=month, **kwargs)
 
         # TODO(schwehr): Spec of 0.1m steps for draft and gap?
@@ -2208,7 +2298,8 @@ class Environment(BBM):
             self.decode_bits(bits)
             return
 
-        assert source_mmsi is not None and 0 < source_mmsi <= 999999999
+        if not (source_mmsi is not None and 0 < source_mmsi <= 999999999):
+            raise ValueError()
 
         self.source_mmsi = source_mmsi
         self.sensor_reports = []
@@ -2415,7 +2506,8 @@ class Environment(BBM):
         Raises:
             AisUnpackingException: If report type is reserved or invalid.
         """
-        assert len(bits) == SENSOR_REPORT_SIZE
+        if not (len(bits) == SENSOR_REPORT_SIZE):
+            raise ValueError()
         report_type = int(bits[:4])
         if 0 == report_type:
             return SensorReportLocation(bits=bits)
