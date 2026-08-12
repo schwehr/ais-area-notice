@@ -183,10 +183,7 @@ def pad(string: str, length: int) -> str:
     Returns:
         str of the require length that is right padded.
     """
-    pad_len = length - len(string)
-    if pad_len > 0:
-        string += "@" * pad_len
-    return string
+    return string.ljust(length, "@")
 
 
 # Backward compatibility alias
