@@ -22,6 +22,7 @@ exclude = [
     '^http://www.w3.org/2005/Atom',
     # Exclude defunct historical documentation URLs
     '^http://.*berlios\.de',
+    'github\.com',
 ]
 
 # Accept common HTTP status codes
