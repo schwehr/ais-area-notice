@@ -71,20 +71,22 @@ def _ais6_to_bitvec_slow(str6: str) -> BitVector:
     Returns:
         BitVector of decoded bits. Pad bits not removed.
     """
-    bvtotal = BitVector(size=0)
+    if not str6:
+        return BitVector(size=0)
 
+    lst = []
     for c in str6:
-        c_ord = ord(c)
-        val = c_ord - BGN_ASCII_BLOCK_1
+        val = ord(c) - BGN_ASCII_BLOCK_1
         if val >= SIZE_ASCII_BLOCK_1:
             val -= GAP_SIZE
-        if val == 0:
-            bv = BitVector(size=BITS_PER_VDM_CHARACTER)
-        else:
-            bv = set_bit_vector_size(BitVector.from_int(val), BITS_PER_VDM_CHARACTER)
+        lst.append(1 if val & 32 else 0)
+        lst.append(1 if val & 16 else 0)
+        lst.append(1 if val & 8 else 0)
+        lst.append(1 if val & 4 else 0)
+        lst.append(1 if val & 2 else 0)
+        lst.append(1 if val & 1 else 0)
 
-        bvtotal += bv
-    return bvtotal
+    return BitVector(bitlist=lst)
 
 
 def _build_lookup_table() -> dict[str, BitVector]:
@@ -121,10 +123,17 @@ def join_bv(bv_seq: Sequence[BitVector]) -> BitVector:
     Returns:
         An aggregated BitVector.
     """
-    bv_total = BitVector(size=0)
+    if not bv_seq:
+        return BitVector(size=0)
+
+    lst = []
     for bv in bv_seq:
-        bv_total += bv
-    return bv_total
+        lst.extend(bv)
+
+    if not lst:
+        return BitVector(size=0)
+
+    return BitVector(bitlist=lst)
 
 
 joinBV = join_bv  # pylint: disable=invalid-name

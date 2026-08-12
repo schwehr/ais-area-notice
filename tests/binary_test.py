@@ -111,3 +111,40 @@ def test_bitvec_to_ais6_no_padding_error() -> None:
     """Test bitvectoais6 raises ValueError when bit length is unaligned and doPadding is False."""
     with pytest.raises(ValueError, match="Results would not be 6-bit aligned."):
         binary.bitvectoais6(BitVector.from_bitstring("101"), doPadding=False)
+
+
+def test_join_bv_empty() -> None:
+    """Test join_bv on empty list."""
+    assert len(binary.join_bv([])) == 0
+
+
+def test_join_bv_simple() -> None:
+    """Test join_bv on some normal inputs."""
+    bv1 = BitVector.from_bitstring("10")
+    bv2 = BitVector.from_bitstring("01")
+    assert str(binary.join_bv([bv1, bv2])) == "1001"
+
+
+def test_ais6_to_bitvec_slow_empty() -> None:
+    """Test _ais6_to_bitvec_slow on empty string."""
+    assert len(binary._ais6_to_bitvec_slow("")) == 0
+
+
+def test_join_bv_empty_bv_in_list() -> None:
+    """Test join_bv with an empty BitVector in the list."""
+    bv1 = BitVector.from_bitstring("10")
+    bv2 = BitVector(size=0)
+    bv3 = BitVector.from_bitstring("01")
+    assert str(binary.join_bv([bv1, bv2, bv3])) == "1001"
+
+
+def test_join_bv_empty_bv_list_of_empty() -> None:
+    """Test join_bv on list of empty BitVectors."""
+    assert len(binary.join_bv([BitVector(size=0), BitVector(size=0)])) == 0
+
+
+def test_bitvectoais6_do_padding() -> None:
+    """Test bitvectoais6 performs padding."""
+    ais_str, pad = binary.bitvectoais6(BitVector.from_bitstring("101"), doPadding=True)
+    assert pad == 3
+    assert ais_str == "`"
