@@ -115,8 +115,6 @@ encode: list[str] = [
 def join_bv(bv_seq: Sequence[BitVector]) -> BitVector:
     """Combined a sequence of bit vectors into one large BitVector.
 
-    TODO(schwehr): Check performance and see if this can be done faster.
-
     Args:
         bv_seq: sequence of bitvectors.
 
@@ -126,9 +124,7 @@ def join_bv(bv_seq: Sequence[BitVector]) -> BitVector:
     if not bv_seq:
         return BitVector(size=0)
 
-    lst = []
-    for bv in bv_seq:
-        lst.extend(bv)
+    lst = [bit for bv in bv_seq for bit in bv]
 
     if not lst:
         return BitVector(size=0)
