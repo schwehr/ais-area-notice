@@ -522,7 +522,7 @@ class TestAreaNotice:
         # (15.5, 550), (0., 0), (0., 0), (0., 0)
         points1 = [(15.5, 550)]
         # TODO: Check the lat, lon are being pulled correctly.
-        lon, lat = None, None
+        lon, lat = line1.lon, line1.lat
         self.check_poly(line1, 3, 1, lon, lat, points1)
 
         assert text_block
