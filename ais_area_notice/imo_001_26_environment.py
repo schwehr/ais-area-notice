@@ -219,15 +219,7 @@ class SensorReport:
             self.decode_bits(bits, year=year, month=month)
             return
 
-        # TODO(schwehr): Switch to not all.
-        # if not all([v is not None for v in (year, month, day, hour, minute)]):
-        if (
-            year is None
-            or month is None
-            or day is None
-            or hour is None
-            or minute is None
-        ):
+        if not all(v is not None for v in (year, month, day, hour, minute)):
             now = datetime.datetime.now(datetime.timezone.utc)
             # TODO(schwehr): Switch to year = year or now.year.
             if year is None:
