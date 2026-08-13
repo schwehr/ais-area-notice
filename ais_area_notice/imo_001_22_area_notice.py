@@ -2121,12 +2121,13 @@ class AreaNotice(BBM):
 
     def get_shapes(self, sub_areas_bits: BitVector) -> list[tuple[int, str | int]]:
         """Return a list of the sub area types."""
-        shapes: list[tuple[int, str | int]] = []
-        for i in range(len(sub_areas_bits) // SUB_AREA_SIZE):
-            bits = sub_areas_bits[i * SUB_AREA_SIZE : (i + 1) * SUB_AREA_SIZE]
-            shape = int(bits[:3])
-            shapes.append((shape, shape_types[shape]))
-        return shapes
+        return [
+            (shape, shape_types[shape])
+            for shape in (
+                int(sub_areas_bits[i * SUB_AREA_SIZE : i * SUB_AREA_SIZE + 3])
+                for i in range(len(sub_areas_bits) // SUB_AREA_SIZE)
+            )
+        ]
 
     def subarea_factory(self, bits: BitVector) -> AreaNoticeSubArea | None:
         """Scary side effects going on in this with Polyline and Polygon."""
