@@ -93,6 +93,18 @@ def test_ne_and_html_and_geo_interface() -> None:
         _ = mh1.__geo_interface__
 
 
+def test_decode_bits_invalid_message_id() -> None:
+    """Test decoding fails when message ID is not 8."""
+    mh = met_hydro.MetHydro31(source_mmsi=123456789)
+    # The minimum required bits for decode_bits to not crash early based on size
+    # However, it fails right at message_id. Let's get the standard bits and modify the first 6 bits (message ID)
+    valid_bits = mh.get_bits()
+    # Change message_id from 8 to 9 (001001)
+    invalid_bits = BitVector.from_int(9, size=6) + valid_bits[6:]
+    with pytest.raises(met_hydro.AisUnpackingException, match="Invalid message ID: 9"):
+        mh.decode_bits(invalid_bits)
+
+
 def test_get_bits_wrong_size_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test get_bits raises exception when message size is invalid."""
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
