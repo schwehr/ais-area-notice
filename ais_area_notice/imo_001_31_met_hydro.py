@@ -354,9 +354,12 @@ class MetHydro31(BBM):
     def decode_bits(self, bits: BitVector, _year: int | None = None) -> None:
         """Decode the bits for a message."""
 
-        # TODO: Pass these through and verify.
-        # message_id = int(bits[:6])
-        # repeat_indicator = int(bits[6:8])
+        message_id = int(bits[:6])
+        if message_id != 8:
+            raise AisUnpackingException(f"Invalid message ID: {message_id}")
+        self.message_id = message_id
+
+        self.repeat_indicator = int(bits[6:8])
         self.source_mmsi = int(bits[8:38])
         # TODO: Should we look at the spare bits?
         # spare = int(bits[38:40])
