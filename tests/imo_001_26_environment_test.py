@@ -18,6 +18,38 @@ import ais_area_notice.imo_001_26_environment as env
 FUZZ_COUNT = 30
 
 
+def test_almost_equal() -> None:
+    """Test the almost_equal utility function."""
+    # Happy paths
+    assert env.almost_equal(1.0, 1.0) is True
+    assert env.almost_equal(1.0, 1.0005) is True
+    assert env.almost_equal(1.0, 0.9995) is True
+
+    # Outside epsilon
+    assert env.almost_equal(1.0, 1.0015) is False
+    assert env.almost_equal(1.0, 0.9985) is False
+
+    # Boundaries (floating point arithmetic makes exact matching tricky, so we use values slightly outside)
+    assert env.almost_equal(1.0, 1.001000000001) is False
+    assert env.almost_equal(1.0, 0.998999999999) is False
+
+    # Different epsilon
+    assert env.almost_equal(1.0, 1.1, epsilon=0.2) is True
+    assert env.almost_equal(1.0, 1.3, epsilon=0.2) is False
+
+    # Negative numbers
+    assert env.almost_equal(-1.0, -1.0) is True
+    assert env.almost_equal(-1.0, -1.0005) is True
+    assert env.almost_equal(-1.0, -0.9995) is True
+    assert env.almost_equal(-1.0, -1.0015) is False
+
+    # Zero
+    assert env.almost_equal(0.0, 0.0) is True
+    assert env.almost_equal(0.0, 0.0005) is True
+    assert env.almost_equal(0.0, -0.0005) is True
+    assert env.almost_equal(0.0, 0.0015) is False
+
+
 def random_date() -> datetime.datetime:
     """Generate a random datetime within 2010-2049.
 
