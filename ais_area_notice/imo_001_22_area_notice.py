@@ -571,12 +571,13 @@ class AisUnpackingException(AisException):
 
 def nmea_checksum_hex(sentence: str) -> str:
     """8-bit XOR of everything between the [!$] and the *."""
-    nmea = map(ord, sentence.split("*")[0][1:])
-    checksum = reduce(operator.xor, nmea)
-    checksum_str = hex(checksum).split("x")[1].upper()
-    if len(checksum_str) == 1:
-        checksum_str = "0" + checksum_str
-    assert len(checksum_str) == 2
+    end: int | None = sentence.find("*")
+    if end == -1:
+        end = None
+    checksum = reduce(operator.xor, sentence[1:end].encode("utf-8"))
+    checksum_str = f"{checksum:02X}"
+    if len(checksum_str) != 2:
+        raise ValueError("Checksum length must be exactly 2 characters")
     return checksum_str
 
 
