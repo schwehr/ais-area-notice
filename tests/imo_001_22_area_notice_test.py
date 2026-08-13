@@ -1230,9 +1230,8 @@ def test_area_notice_init_and_methods_and_errors() -> None:
     an_max = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )
-    # TODO: Make each subarea different.
-    for _unused_i in range(9):
-        an_max.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
+    for i in range(9):
+        an_max.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100 + i))
 
     with pytest.raises(
         area_notice.AisPackingException, match="Can only have 9 sub areas"
