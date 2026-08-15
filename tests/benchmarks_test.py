@@ -127,7 +127,7 @@ def test_benchmark_binary_signed_int_from_bv(
 def _create_area_notice_22() -> area_notice_22.AreaNotice:
     an = area_notice_22.AreaNotice(
         area_type=0,
-        when=datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc),
+        when=datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.UTC),
         duration=60,
         link_id=1,
         source_mmsi=123456789,
@@ -168,7 +168,7 @@ def test_benchmark_imo_001_22_area_notice_decode(
     def _decode() -> area_notice_22.AreaNotice:
         decoded = area_notice_22.AreaNotice(
             area_type=0,
-            when=datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc),
+            when=datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.UTC),
             duration=60,
             link_id=1,
             source_mmsi=123456789,
@@ -206,7 +206,7 @@ def test_benchmark_imo_001_22_area_notice_geo_interface(
 
 def _create_environment_26() -> environment_26.Environment:
     env = environment_26.Environment(source_mmsi=123456789)
-    dt = datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+    dt = datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.UTC)
     env.add_sensor_report(
         environment_26.SensorReportLocation(
             site_id=1,
@@ -402,7 +402,7 @@ def test_benchmark_m366_22_circle_decode_bits(
 
 
 def _create_m367_22() -> m367_22.AreaNotice:
-    now = datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+    now = datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.UTC)
     an = m367_22.AreaNotice(
         area_type=1, when=now, duration_min=60, link_id=10, mmsi=123456789
     )
@@ -437,7 +437,7 @@ def test_benchmark_m367_22_decode(benchmark: BenchmarkFixture) -> None:
     bits = an.get_bits(include_bin_hdr=True)
 
     def _decode() -> m367_22.AreaNotice:
-        now = datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+        now = datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.UTC)
         decoded = m367_22.AreaNotice(
             area_type=1, when=now, duration_min=60, link_id=10, mmsi=123456789
         )

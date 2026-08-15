@@ -220,7 +220,7 @@ class SensorReport:
             return
 
         if not all(v is not None for v in (year, month, day, hour, minute)):
-            now = datetime.datetime.now(datetime.timezone.utc)
+            now = datetime.datetime.now(datetime.UTC)
             # TODO(schwehr): Switch to year = year or now.year.
             if year is None:
                 year = now.year
@@ -332,7 +332,7 @@ class SensorReport:
         self.site_id = int(bits[20:27])
 
         if year is None:
-            now = datetime.datetime.now(datetime.timezone.utc)
+            now = datetime.datetime.now(datetime.UTC)
             year = now.year
             month = now.month
 

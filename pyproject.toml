@@ -85,8 +85,6 @@ ignore = [
     "SIM102",  # Use a single if statement instead of nested if statements
     "SIM117",  # Use a single with statement instead of nested with statements
     "SIM118",  # Use key in dict instead of key in dict.keys()
-    "UP017",  # Use datetime.UTC alias instead of datetime.timezone.utc
-    "UP032",  # Use f-string instead of format call
 ]
 
 [tool.coverage.run]
