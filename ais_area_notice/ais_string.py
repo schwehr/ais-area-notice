@@ -131,9 +131,8 @@ def encode(string: str, bit_size: int | None = None) -> BitVector:
     Returns:
         BitVector representing the string.
     """
-    if bit_size:
-        if bit_size % 6 != 0:
-            raise ValueError(f"bit_size must be a multiple of 6, got {bit_size}")
+    if bit_size and bit_size % 6 != 0:
+        raise ValueError(f"bit_size must be a multiple of 6, got {bit_size}")
     bv = BitVector(size=0)
     for char in string:
         bv += character_bits[char]
