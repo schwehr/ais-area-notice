@@ -8,27 +8,27 @@ from unittest.mock import MagicMock
 import pytest
 from BitVector import BitVector
 
-from ais_area_notice.imo_001_22_area_notice import AIVDM
-from ais_area_notice.imo_001_22_area_notice import AisPackingException
-from ais_area_notice.imo_001_22_area_notice import AisUnpackingException
-from ais_area_notice.imo_001_22_area_notice import AreaNotice
-from ais_area_notice.imo_001_22_area_notice import AreaNoticeCirclePt
-from ais_area_notice.imo_001_22_area_notice import AreaNoticeFreeText
-from ais_area_notice.imo_001_22_area_notice import AreaNoticePolygon
-from ais_area_notice.imo_001_22_area_notice import AreaNoticePolyline
-from ais_area_notice.imo_001_22_area_notice import AreaNoticeRectangle
-from ais_area_notice.imo_001_22_area_notice import AreaNoticeSector
-from ais_area_notice.imo_001_22_area_notice import AreaNoticeSubArea
-from ais_area_notice.imo_001_22_area_notice import BBM
-from ais_area_notice.imo_001_22_area_notice import main as main_22
-from ais_area_notice.imo_001_22_area_notice import message_2_fetcherformatter
 from ais_area_notice import imo_001_26_environment as env
+from ais_area_notice import m366_22, m367_22
+from ais_area_notice.imo_001_22_area_notice import (
+    AIVDM,
+    BBM,
+    AisPackingException,
+    AisUnpackingException,
+    AreaNotice,
+    AreaNoticeCirclePt,
+    AreaNoticeFreeText,
+    AreaNoticePolygon,
+    AreaNoticePolyline,
+    AreaNoticeRectangle,
+    AreaNoticeSector,
+    AreaNoticeSubArea,
+    message_2_fetcherformatter,
+)
+from ais_area_notice.imo_001_22_area_notice import main as main_22
 from ais_area_notice.imo_001_31_met_hydro import MetHydro31
-from ais_area_notice import m366_22
-from ais_area_notice import m367_22
 from tests.imo_001_22_area_notice_test import assert_almost_equal_geojson
 from tests.imo_001_31_met_hydro_test import random_msg as random_met_hydro
-
 
 NOW = datetime.datetime(2026, 1, 1, 12, 0, 0)
 

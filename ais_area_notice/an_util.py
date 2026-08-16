@@ -2,8 +2,7 @@
 
 from BitVector import BitVector
 
-from . import ais_string
-from . import binary
+from . import ais_string, binary
 
 
 class Error(Exception):

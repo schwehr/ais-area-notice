@@ -10,7 +10,6 @@ import re
 
 from BitVector import BitVector
 
-
 character_lut: list[str] = [
     "@",
     "A",

@@ -17,9 +17,7 @@ TODO(schwehr): Handle text that spans adjacent subareas.
 """
 
 import calendar
-from collections.abc import Iterator, Sequence
 import datetime
-from functools import reduce
 import logging
 import math
 import operator
@@ -28,17 +26,18 @@ import queue as Queue
 import re
 import sys
 import time
+from collections.abc import Iterator, Sequence
+from functools import reduce
 from typing import Any, Literal, overload
 
-from BitVector import BitVector
 import lxml
 import lxml.html
+import shapely.geometry
+from BitVector import BitVector
 from lxml.html import builder as E
 from pyproj import Proj
-import shapely.geometry
 
-from . import ais_string
-from . import binary
+from . import ais_string, binary
 
 # Track the next value to use for multiline nmea messages.
 NEXT_SEQUENCE: int = 1

@@ -4,17 +4,17 @@
 TODO(schwehr): Need to test the year and month roll overs in time.
 """
 
-from collections.abc import Sequence
 import datetime
 import math
 import pathlib
 import runpy
 import sys
+from collections.abc import Sequence
 from typing import Any
 
-from BitVector import BitVector
 import geojson
 import pytest
+from BitVector import BitVector
 
 import ais_area_notice.imo_001_22_area_notice as area_notice
 

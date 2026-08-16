@@ -1,24 +1,27 @@
 #!/usr/bin/env python
 """Test USCG specific 8:367:22 area notice message."""
 
-from collections.abc import Sequence
 import datetime
+from collections.abc import Sequence
 
-from BitVector import BitVector
 import pytest
+from BitVector import BitVector
 
-from ais_area_notice import binary
-from ais_area_notice import m367_22
-from ais_area_notice.imo_001_22_area_notice import AisPackingException
-from ais_area_notice.imo_001_22_area_notice import AisUnpackingException
-from ais_area_notice.m367_22 import AreaNotice
-from ais_area_notice.m367_22 import AreaNoticeCircle
-from ais_area_notice.m367_22 import AreaNoticePoly
-from ais_area_notice.m367_22 import AreaNoticeRectangle
-from ais_area_notice.m367_22 import AreaNoticeSector
-from ais_area_notice.m367_22 import AreaNoticeText
-from ais_area_notice.m367_22 import DecodeBits
-from ais_area_notice.m367_22 import SHAPES
+from ais_area_notice import binary, m367_22
+from ais_area_notice.imo_001_22_area_notice import (
+    AisPackingException,
+    AisUnpackingException,
+)
+from ais_area_notice.m367_22 import (
+    SHAPES,
+    AreaNotice,
+    AreaNoticeCircle,
+    AreaNoticePoly,
+    AreaNoticeRectangle,
+    AreaNoticeSector,
+    AreaNoticeText,
+    DecodeBits,
+)
 
 
 class DiffAreaNotice:

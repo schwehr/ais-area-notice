@@ -2,11 +2,10 @@
 
 import datetime
 
-from BitVector import BitVector
 import pytest
+from BitVector import BitVector
 
-from ais_area_notice import binary
-from ais_area_notice import m366_22
+from ais_area_notice import binary, m366_22
 
 
 def test_empty_init() -> None:

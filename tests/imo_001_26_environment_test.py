@@ -8,11 +8,11 @@ import datetime
 import math
 import random
 
-from BitVector import BitVector
 import pytest
+from BitVector import BitVector
 
-from ais_area_notice import ais_string
 import ais_area_notice.imo_001_26_environment as env
+from ais_area_notice import ais_string
 
 # How many loops to do on fuzz testing
 FUZZ_COUNT = 30

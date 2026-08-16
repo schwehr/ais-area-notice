@@ -16,14 +16,10 @@ import datetime
 from BitVector import BitVector
 from pytest_benchmark.fixture import BenchmarkFixture
 
-from ais_area_notice import ais_string
-from ais_area_notice import an_util
-from ais_area_notice import binary
+from ais_area_notice import ais_string, an_util, binary, m366_22, m367_22
 from ais_area_notice import imo_001_22_area_notice as area_notice_22
 from ais_area_notice import imo_001_26_environment as environment_26
 from ais_area_notice import imo_001_31_met_hydro as met_hydro_31
-from ais_area_notice import m366_22
-from ais_area_notice import m367_22
 
 # ------------------------------------------------------------------------------
 # 1. ais_string benchmarks

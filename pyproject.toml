@@ -73,7 +73,6 @@ ignore = [
     "EXE002",  # The file is executable but no shebang is present
     "F601",  # Dictionary key literal repeated
     "F821",  # Undefined name
-    "I001",  # Import block is unsorted or unformatted
 ]
 
 [tool.coverage.run]
