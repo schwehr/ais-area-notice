@@ -1787,7 +1787,7 @@ class AreaNoticeFreeText(AreaNoticeSubArea):
         Returns:
             None as free text does not have explicit spatial geometry.
         """
-        return None
+        return
 
     @property
     def __geo_interface__(self) -> dict[str, Any]:
