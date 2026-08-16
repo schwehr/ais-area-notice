@@ -78,7 +78,6 @@ ignore = [
     "LOG015",  # Root logger call (e.g. logging.info) at module level
     "PERF402",  # Use list copy or list comprehension instead of manual append loop
     "PLR0124",  # Name compared with itself
-    "PYI041",  # Use float instead of int | float
 ]
 
 [tool.coverage.run]
