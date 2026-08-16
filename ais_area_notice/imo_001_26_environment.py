@@ -13,19 +13,20 @@ Be aware that year and month are not a part of the timestamps send
 through the binary AIS messages.
 """
 
-from collections.abc import Sequence
 import datetime
+from collections.abc import Sequence
 from typing import NoReturn, TypedDict
 
 from BitVector import BitVector
 
-from . import ais_string
-from . import binary
-from .imo_001_22_area_notice import ais_nmea_regex
-from .imo_001_22_area_notice import AisPackingException
-from .imo_001_22_area_notice import AisUnpackingException
-from .imo_001_22_area_notice import BBM
-from .imo_001_22_area_notice import nmea_checksum_hex
+from . import ais_string, binary
+from .imo_001_22_area_notice import (
+    BBM,
+    AisPackingException,
+    AisUnpackingException,
+    ais_nmea_regex,
+    nmea_checksum_hex,
+)
 
 SENSOR_REPORT_HDR_SIZE: int = 27
 SENSOR_REPORT_SIZE: int = 112

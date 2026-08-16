@@ -2,8 +2,8 @@
 
 """Tests for ais_area_notice.binary."""
 
-from BitVector import BitVector
 import pytest
+from BitVector import BitVector
 
 from ais_area_notice import binary
 

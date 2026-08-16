@@ -1,7 +1,7 @@
 """Tests for ais_area_notice.an_util."""
 
-from BitVector import BitVector
 import pytest
+from BitVector import BitVector
 
 from ais_area_notice import an_util
 

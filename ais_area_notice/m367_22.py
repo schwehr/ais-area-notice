@@ -5,20 +5,21 @@ Just different.
 https://en.wikipedia.org/wiki/Rhumb_line
 """
 
-from collections.abc import Sequence
 import datetime
 import logging
+from collections.abc import Sequence
 from typing import Any
 
 from BitVector import BitVector
 
-from . import ais_string
-from . import binary
-from .imo_001_22_area_notice import ais_nmea_regex
-from .imo_001_22_area_notice import AisPackingException
-from .imo_001_22_area_notice import AisUnpackingException
-from .imo_001_22_area_notice import BBM
-from .imo_001_22_area_notice import nmea_checksum_hex
+from . import ais_string, binary
+from .imo_001_22_area_notice import (
+    BBM,
+    AisPackingException,
+    AisUnpackingException,
+    ais_nmea_regex,
+    nmea_checksum_hex,
+)
 
 SUB_AREA_SIZE: int = 96
 

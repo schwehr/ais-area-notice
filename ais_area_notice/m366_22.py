@@ -11,12 +11,13 @@ from collections.abc import Sequence
 
 from BitVector import BitVector
 
-from . import an_util
-from . import binary
-from .imo_001_22_area_notice import ais_nmea_regex
-from .imo_001_22_area_notice import AisPackingException
-from .imo_001_22_area_notice import AisUnpackingException
-from .imo_001_22_area_notice import nmea_checksum_hex
+from . import an_util, binary
+from .imo_001_22_area_notice import (
+    AisPackingException,
+    AisUnpackingException,
+    ais_nmea_regex,
+    nmea_checksum_hex,
+)
 
 DAC: int = 366
 FI: int = 22

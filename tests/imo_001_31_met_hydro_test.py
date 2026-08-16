@@ -6,10 +6,11 @@ since: Mon Feb 14 15:55:02 2011 -0500
 
 import random
 
-from BitVector import BitVector
 import pytest
+from BitVector import BitVector
 
 import ais_area_notice.imo_001_31_met_hydro as met_hydro
+
 from .imo_001_26_environment_test import random_date
 
 # Number of loops to do on fuzz testing.
