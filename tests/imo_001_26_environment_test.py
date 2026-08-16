@@ -1899,6 +1899,13 @@ class TestEnvironment:
     @pytest.mark.parametrize(
         ("report_cls", "wrong_type"),
         [
+            (env.SensorReportLocation, 1),
+            (env.SensorReportId, 0),
+            (env.SensorReportWind, 0),
+            (env.SensorReportWaterLevel, 0),
+            (env.SensorReportCurrent2d, 0),
+            (env.SensorReportCurrent3d, 0),
+            (env.SensorReportCurrentHorz, 0),
             (env.SensorReportSeaState, 0),
             (env.SensorReportSalinity, 0),
             (env.SensorReportWeather, 0),
@@ -1907,12 +1914,7 @@ class TestEnvironment:
     )
     def test_sensor_report_decode_bits_type_mismatch(
         self,
-        report_cls: type[
-            env.SensorReportSeaState
-            | env.SensorReportSalinity
-            | env.SensorReportWeather
-            | env.SensorReportAirGap
-        ],
+        report_cls: type[env.SensorReport],
         wrong_type: int,
     ) -> None:
         """Test decode_bits raises ValueError when report type header mismatches."""
@@ -1922,6 +1924,63 @@ class TestEnvironment:
         )
         with pytest.raises(ValueError):
             sr.decode_bits(wrong_bits)
+
+    def test_sensor_report_base_get_bits_invalid_length(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test SensorReport.get_bits raises ValueError on invalid bit lengths."""
+        sr = env.SensorReport(report_type=0, site_id=1)
+
+        monkeypatch.setattr(env.binary, "joinBV", lambda _bv_list: BitVector(size=26))
+        with pytest.raises(ValueError):
+            sr.get_bits()
+
+        monkeypatch.setattr(env.binary, "joinBV", lambda _bv_list: BitVector(size=27))
+        monkeypatch.setattr(env, "SENSOR_REPORT_HDR_SIZE", 28)
+        with pytest.raises(ValueError):
+            sr.get_bits()
+
+    def test_sensor_report_location_get_bits_invalid_length(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test SensorReportLocation.get_bits raises ValueError when bit length is not 112."""
+        sr = env.SensorReportLocation(
+            site_id=1, lon=-70.0, lat=42.0, alt=10.0, owner=1, timeout=1
+        )
+        orig_joinbv = env.binary.joinBV
+        calls = 0
+
+        def fake_joinbv(bv_list: list[BitVector]) -> BitVector:
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                return BitVector(size=100)
+            return orig_joinbv(bv_list)
+
+        monkeypatch.setattr(env.binary, "joinBV", fake_joinbv)
+        with pytest.raises(ValueError):
+            sr.get_bits()
+
+    def test_sensor_report_water_level_flaky_comparison(self) -> None:
+        """Test SensorReportWaterLevel __init__ duplicate range check on line 889."""
+
+        class FlakyFloat(float):
+            """Float subclass that returns False on the second <= comparison."""
+
+            def __init__(self, _val: float) -> None:
+                super().__init__()
+                self.count = 0
+
+            def __ge__(self, _other: object) -> bool:
+                return True
+
+            def __le__(self, _other: object) -> bool:
+                self.count += 1
+                return self.count <= 1
+
+        flaky_wl = FlakyFloat(0.0)
+        with pytest.raises(ValueError):
+            env.SensorReportWaterLevel(site_id=1, wl=flaky_wl)
 
     def test_sensor_report_factory_invalid_bit_length(self) -> None:
         """Test sensor_report_factory raises ValueError when bit length is not 112."""
