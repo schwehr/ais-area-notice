@@ -22,6 +22,8 @@ from .imo_001_22_area_notice import nmea_checksum_hex
 
 SUB_AREA_SIZE: int = 96
 
+logger = logging.getLogger(__name__)
+
 SHAPES: dict[str, int] = {
     "CIRCLE": 0,
     "RECTANGLE": 1,
@@ -103,7 +105,7 @@ class DecodeBits:
             offset: Expected bit position offset.
         """
         if self.pos != offset:
-            logging.info("DecodeBits FAILING!  expect: %s got: %s", offset, self.pos)
+            logger.info("DecodeBits FAILING!  expect: %s got: %s", offset, self.pos)
         assert self.pos == offset
 
 

@@ -75,7 +75,6 @@ ignore = [
     "F821",  # Undefined name
     "I001",  # Import block is unsorted or unformatted
     "ISC004",  # Implicitly concatenated string literals on multiple lines
-    "LOG015",  # Root logger call (e.g. logging.info) at module level
 ]
 
 [tool.coverage.run]
