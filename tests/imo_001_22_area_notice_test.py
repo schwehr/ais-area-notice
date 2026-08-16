@@ -1373,6 +1373,29 @@ def test_message_2_fetcherformatter_and_normqueue() -> None:
     nq.put(m_bad)
 
 
+def test_nmea_checksum_hex() -> None:
+    """Test nmea_checksum_hex calculation with and without asterisk."""
+    sentence = "!AIVDM,1,1,,A,12345,0*2A"
+    assert area_notice.nmea_checksum_hex(sentence) == "17"
+
+    sentence_no_asterisk = "!AIVDM,1,1,,A,12345,0"
+    assert area_notice.nmea_checksum_hex(sentence_no_asterisk) == "17"
+
+
+def test_nmea_checksum_hex_invalid_length(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test nmea_checksum_hex raises ValueError when checksum string length is not 2."""
+    monkeypatch.setattr(
+        "ais_area_notice.imo_001_22_area_notice.reduce",
+        lambda *unused_args: 256,
+    )
+    with pytest.raises(
+        ValueError, match="Checksum length must be exactly 2 characters"
+    ):
+        area_notice.nmea_checksum_hex("!AIVDM,1,1,,A,12345,0*")
+
+
 def test_main_cli(monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path) -> None:
     """Test CLI main entry point sentence parsing and KML output file creation."""
     when = datetime.datetime(2026, 8, 7, 0, 0)
@@ -1381,6 +1404,14 @@ def test_main_cli(monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path) -> No
     )
     an.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
     sentence = an.get_aivdm()[0]
+
+    an_multi = area_notice.AreaNotice(
+        area_type=1, when=when, duration=60, source_mmsi=123456789
+    )
+    an_multi.add_subarea(area_notice.AreaNoticeCirclePt(-122.0, 37.0, radius=100))
+    for i in range(8):
+        an_multi.add_subarea(area_notice.AreaNoticeFreeText(text=f"TEXT {i}"))
+    multi_sentences = "\n".join(an_multi.get_aivdm(sequence_num=1)) + "\n"
 
     styles_file = tmp_path / "areanotice_styles.kml"
     styles_file.write_text('<Style id="test"></Style>')
@@ -1394,7 +1425,9 @@ def test_main_cli(monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path) -> No
     non_aivdm = "INVALID LINE AIVDM\n"
     non_match = "NOT MATCHING LINE\n"
     non_8_msg = "!AIVDM,1,1,,A,13u?t:?P0000000,0*74\n"
-    nmea_file.write_text(non_aivdm + non_match + non_8_msg + sentence + "\n")
+    nmea_file.write_text(
+        non_aivdm + non_match + non_8_msg + multi_sentences + sentence + "\n"
+    )
 
     monkeypatch.setattr(sys, "argv", ["main", str(nmea_file)])
     area_notice.main()
