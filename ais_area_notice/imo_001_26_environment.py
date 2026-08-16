@@ -982,12 +982,12 @@ class SensorReportWaterLevel(SensorReport):
             SensorReport.get_bits(self),
             BitVector.from_int(self.wl_type, size=1),
             # TODO(schwehr): Check this is the right encoding.
-            binary.bvFromSignedInt(int(round(self.wl * 100)), 16),
+            binary.bvFromSignedInt(round(self.wl * 100), 16),
             BitVector.from_int(self.trend, size=2),
             BitVector.from_int(self.vdatum, size=5),
             BitVector.from_int(self.data_descr, size=3),
             BitVector.from_int(self.forecast_type, size=1),
-            binary.bvFromSignedInt(int(round(self.forecast_wl * 100)), 16),
+            binary.bvFromSignedInt(round(self.forecast_wl * 100), 16),
             BitVector.from_int(self.forecast_day, size=5),
             BitVector.from_int(self.forecast_hour, size=5),
             BitVector.from_int(self.forecast_minute, size=6),
@@ -1668,19 +1668,19 @@ class SensorReportSeaState(SensorReport):
         """
         bv_list = [SensorReport.get_bits(self)]
 
-        bv_list.append(BitVector.from_int(int(round(self.swell_height * 10)), size=8))
+        bv_list.append(BitVector.from_int(round(self.swell_height * 10), size=8))
         bv_list.append(BitVector.from_int(self.swell_period, size=6))
         bv_list.append(BitVector.from_int(self.swell_dir, size=9))
         bv_list.append(BitVector.from_int(self.sea_state, size=4))
         bv_list.append(BitVector.from_int(self.swell_data_descr, size=3))
-        bv_list.append(BitVector.from_int(int(round((self.temp + 10) * 10)), size=10))
-        bv_list.append(BitVector.from_int(int(round(self.temp_depth * 10)), size=7))
+        bv_list.append(BitVector.from_int(round((self.temp + 10) * 10), size=10))
+        bv_list.append(BitVector.from_int(round(self.temp_depth * 10), size=7))
         bv_list.append(BitVector.from_int(self.temp_data_descr, size=3))
-        bv_list.append(BitVector.from_int(int(round(self.wave_height * 10)), size=8))
+        bv_list.append(BitVector.from_int(round(self.wave_height * 10), size=8))
         bv_list.append(BitVector.from_int(self.wave_period, size=6))
         bv_list.append(BitVector.from_int(self.wave_dir, size=9))
         bv_list.append(BitVector.from_int(self.wave_data_descr, size=3))
-        bv_list.append(BitVector.from_int(int(round(self.salinity * 10)), size=9))
+        bv_list.append(BitVector.from_int(round(self.salinity * 10), size=9))
 
         # bv_list.append(BitVector(size=0)) # no spare
         bits = binary.joinBV(bv_list)
@@ -1850,11 +1850,11 @@ class SensorReportSalinity(SensorReport):
         """
         bv_list = [SensorReport.get_bits(self)]
 
-        bv_list.append(BitVector.from_int(int(round((self.temp + 10) * 10)), size=10))
+        bv_list.append(BitVector.from_int(round((self.temp + 10) * 10), size=10))
         # int(206.999999) == 206, but int(round(2.07 * 100)) == 207.
-        bv_list.append(BitVector.from_int(int(round(self.cond * 100)), size=10))
-        bv_list.append(BitVector.from_int(int(round(self.pres * 10)), size=16))
-        bv_list.append(BitVector.from_int(int(round(self.salinity * 10)), size=9))
+        bv_list.append(BitVector.from_int(round(self.cond * 100), size=10))
+        bv_list.append(BitVector.from_int(round(self.pres * 10), size=16))
+        bv_list.append(BitVector.from_int(round(self.salinity * 10), size=9))
         bv_list.append(BitVector.from_int(self.salinity_type, size=2))
         bv_list.append(BitVector.from_int(self.data_descr, size=3))
         bv_list.append(BitVector(size=35))  # Spare bits.
@@ -2223,10 +2223,10 @@ class SensorReportAirGap(SensorReport):
         """
         bv_list = [SensorReport.get_bits(self)]
 
-        bv_list.append(BitVector.from_int(int(round(self.draft * 100)), size=13))
-        bv_list.append(BitVector.from_int(int(round(self.gap * 100)), size=13))
+        bv_list.append(BitVector.from_int(round(self.draft * 100), size=13))
+        bv_list.append(BitVector.from_int(round(self.gap * 100), size=13))
         bv_list.append(BitVector.from_int(self.gap_trend, size=2))
-        bv_list.append(BitVector.from_int(int(round(self.forecast_gap * 100)), size=13))
+        bv_list.append(BitVector.from_int(round(self.forecast_gap * 100), size=13))
         bv_list.append(BitVector.from_int(self.forecast_day, size=5))
         bv_list.append(BitVector.from_int(self.forecast_hour, size=5))
         bv_list.append(BitVector.from_int(self.forecast_minute, size=6))

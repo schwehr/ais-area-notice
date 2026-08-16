@@ -274,44 +274,44 @@ class MetHydro31(BBM):
         bv_list.append(BitVector.from_int(self.wind_dir, size=9))
         bv_list.append(BitVector.from_int(self.gust_dir, size=9))
 
-        bv_list.append(binary.bvFromSignedInt(int(round(self.air_temp * 10)), 11))
+        bv_list.append(binary.bvFromSignedInt(round(self.air_temp * 10), 11))
         bv_list.append(BitVector.from_int(self.humid, size=7))
-        bv_list.append(binary.bvFromSignedInt(int(round(self.dew * 10)), 10))
+        bv_list.append(binary.bvFromSignedInt(round(self.dew * 10), 10))
         bv_list.append(BitVector.from_int(self.air_pres - 799, size=9))
         bv_list.append(BitVector.from_int(self.air_pres_trend, size=2))
 
-        bv_list.append(BitVector.from_int(int(round(self.vis * 10)), size=8))
+        bv_list.append(BitVector.from_int(round(self.vis * 10), size=8))
 
         # TODO(schwehr): Double check water level.
-        bv_list.append(BitVector.from_int(int(round((self.wl + 10) * 100)), size=12))
+        bv_list.append(BitVector.from_int(round((self.wl + 10) * 100), size=12))
         bv_list.append(BitVector.from_int(self.wl_trend, size=2))
 
         bv_list.append(
-            BitVector.from_int(int(round(float(self.cur[0]["speed"]) * 10)), size=8)
+            BitVector.from_int(round(float(self.cur[0]["speed"]) * 10), size=8)
         )
         bv_list.append(BitVector.from_int(int(self.cur[0]["dir"]), size=9))
 
         for i in (1, 2):
             bv_list.append(
-                BitVector.from_int(int(round(float(self.cur[i]["speed"]) * 10)), size=8)
+                BitVector.from_int(round(float(self.cur[i]["speed"]) * 10), size=8)
             )
             bv_list.append(BitVector.from_int(int(self.cur[i]["dir"]), size=9))
             bv_list.append(BitVector.from_int(int(self.cur[i]["level"]), size=5))
 
-        bv_list.append(BitVector.from_int(int(round(self.wave_height * 10)), size=8))
+        bv_list.append(BitVector.from_int(round(self.wave_height * 10), size=8))
         bv_list.append(BitVector.from_int(self.wave_period, size=6))
         bv_list.append(BitVector.from_int(self.wave_dir, size=9))
 
-        bv_list.append(BitVector.from_int(int(round(self.swell_height * 10)), size=8))
+        bv_list.append(BitVector.from_int(round(self.swell_height * 10), size=8))
         bv_list.append(BitVector.from_int(self.swell_period, size=6))
         bv_list.append(BitVector.from_int(self.swell_dir, size=9))
 
         bv_list.append(BitVector.from_int(self.sea_state, size=4))
 
-        bv_list.append(binary.bvFromSignedInt(int(round(self.water_temp * 10)), 10))
+        bv_list.append(binary.bvFromSignedInt(round(self.water_temp * 10), 10))
         bv_list.append(BitVector.from_int(self.precip, size=3))
 
-        bv_list.append(BitVector.from_int(int(round(self.salinity * 10)), size=9))
+        bv_list.append(BitVector.from_int(round(self.salinity * 10), size=9))
 
         bv_list.append(BitVector.from_int(self.ice, size=2))
 

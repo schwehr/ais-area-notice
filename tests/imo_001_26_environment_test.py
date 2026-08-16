@@ -489,7 +489,7 @@ class TestSensorReports:
 
     def test_sr_location(self) -> None:
         """SensorReportLocation"""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr_l = env.SensorReportLocation(day=1, hour=2, minute=3, site_id=site_id)
         bits = sr_l.get_bits()
         assert len(bits) == env.SENSOR_REPORT_SIZE
@@ -552,7 +552,7 @@ class TestSensorReports:
 
     def test_sr_id(self) -> None:
         """SensorReportId with range of strings."""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr = env.SensorReportId(site_id=site_id)
         sr = env.SensorReportId(year=2010, month=8, site_id=site_id)
         assert sr.year == 2010
@@ -586,7 +586,7 @@ class TestSensorReports:
 
     def test_sr_wind(self) -> None:
         """SensorReport Wind"""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr = env.SensorReportWind(site_id=site_id)
         sr = env.SensorReportWind(year=2020, month=1, site_id=site_id)
         assert sr.year == 2020
@@ -693,7 +693,7 @@ class TestSensorReports:
 
     def test_sr_water_level(self) -> None:
         """SensorReport WaterLevel"""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr = env.SensorReportWaterLevel(site_id=site_id)
         sr = env.SensorReportWaterLevel(year=2020, month=1, site_id=site_id)
         assert sr.year == 2020
@@ -794,7 +794,7 @@ class TestSensorReports:
 
     def test_sensor_report_current_2d(self) -> None:
         """SensorReport Current2d"""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr = env.SensorReportCurrent2d(site_id=site_id)
         sr = env.SensorReportCurrent2d(year=2020, month=1, site_id=site_id)
         assert sr.year == 2020
@@ -873,7 +873,7 @@ class TestSensorReports:
 
     def test_sensor_report_current_3d(self) -> None:
         """SensorReport Current3d"""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr = env.SensorReportCurrent3d(site_id=site_id)
         sr = env.SensorReportCurrent3d(year=2020, month=1, site_id=site_id)
         assert sr.year == 2020
@@ -944,7 +944,7 @@ class TestSensorReports:
 
     def test_sensor_report_current_horz(self) -> None:
         """SensorReport CurrentHorz"""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr = env.SensorReportCurrentHorz(site_id=site_id)
         sr = env.SensorReportCurrentHorz(year=2020, month=1, site_id=site_id)
         assert sr.year == 2020
@@ -1016,7 +1016,7 @@ class TestSensorReports:
 
     def test_sensor_report_sea_state(self) -> None:
         """SensorReport SeaState"""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr = env.SensorReportSeaState(site_id=site_id)
         sr = env.SensorReportSeaState(year=2020, month=1, site_id=site_id)
         assert sr.year == 2020
@@ -1109,7 +1109,7 @@ class TestSensorReports:
 
     def test_sensor_report_salinity(self) -> None:
         """SensorReport Salinity"""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr = env.SensorReportSalinity(site_id=site_id)
         sr = env.SensorReportSalinity(year=2020, month=1, site_id=site_id)
         assert sr.year == 2020
@@ -1173,7 +1173,7 @@ class TestSensorReports:
 
     def test_sensor_report_weather(self) -> None:
         """SensorReport Weather"""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr = env.SensorReportWeather(site_id=site_id)
         sr = env.SensorReportWeather(year=2020, month=1, site_id=site_id)
         assert sr.year == 2020
@@ -1253,7 +1253,7 @@ class TestSensorReports:
 
     def test_sensor_report_air_gap(self) -> None:
         """SensorReport AirGap"""
-        site_id = int(math.floor(random.random() * 128))
+        site_id = math.floor(random.random() * 128)
         sr = env.SensorReportAirGap(site_id=site_id)
         sr = env.SensorReportAirGap(year=2020, month=1, site_id=site_id)
         assert sr.year == 2020
@@ -1360,7 +1360,7 @@ class TestEnvironment:
         for sr_class in env.sensor_report_classes:
             e = env.Environment(source_mmsi=123456)
             assert e == e  # pylint: disable=comparison-with-itself
-            site_id = int(math.floor(random.random() * 128))
+            site_id = math.floor(random.random() * 128)
             sr = sr_class(site_id=site_id)
             e.add_sensor_report(sr)
             assert e == e  # pylint: disable=comparison-with-itself
