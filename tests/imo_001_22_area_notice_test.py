@@ -309,7 +309,7 @@ class Test3AreaNoticeCirclePt:
         """Test point and circle Shapely geometry generation."""
         pt1 = area_notice.AreaNoticeCirclePt(-73, 43, 0)
         assert pt1.radius == 0
-        assert_almost_equal_series((-73, 43), list(pt1.geom().coords)[0])
+        assert_almost_equal_series((-73, 43), next(iter(pt1.geom().coords)))
 
         # Circle.
         pt2 = area_notice.AreaNoticeCirclePt(-73, 43, 123.4)
@@ -322,7 +322,7 @@ class Test3AreaNoticeCirclePt:
         assert pt1.lon == pytest.approx(-73)
         assert pt1.lat == pytest.approx(43)
         assert pt1.radius == pytest.approx(0)
-        assert_almost_equal_series((-73, 43), list(pt1.geom().coords)[0])
+        assert_almost_equal_series((-73, 43), next(iter(pt1.geom().coords)))
 
         pt2 = area_notice.AreaNoticeCirclePt(-73, 43, 12300)
         assert pt2.radius == 12300

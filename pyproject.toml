@@ -80,7 +80,6 @@ ignore = [
     "PLR0124",  # Name compared with itself
     "PYI041",  # Use float instead of int | float
     "RET501",  # Do not explicitly return None in function if it can be omitted
-    "RUF015",  # Prefer next(iter(...)) over list(...)[0]
     "RUF046",  # Unnecessary cast to int
 ]
 
