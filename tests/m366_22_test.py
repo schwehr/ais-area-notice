@@ -116,7 +116,7 @@ def test_decode_nmea_errors_and_none_in_msgs(monkeypatch: pytest.MonkeyPatch) ->
 
         def groupdict(self) -> None:
             """Return None for groupdict."""
-            return None
+            return
 
     class FakeRegex:
         """Fake regex search implementation for testing NMEA parsing."""

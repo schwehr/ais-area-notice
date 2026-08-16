@@ -79,7 +79,6 @@ ignore = [
     "PERF402",  # Use list copy or list comprehension instead of manual append loop
     "PLR0124",  # Name compared with itself
     "PYI041",  # Use float instead of int | float
-    "RET501",  # Do not explicitly return None in function if it can be omitted
 ]
 
 [tool.coverage.run]
