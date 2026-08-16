@@ -83,7 +83,6 @@ ignore = [
     "RUF015",  # Prefer next(iter(...)) over list(...)[0]
     "RUF046",  # Unnecessary cast to int
     "SIM102",  # Use a single if statement instead of nested if statements
-    "SIM117",  # Use a single with statement instead of nested with statements
 ]
 
 [tool.coverage.run]

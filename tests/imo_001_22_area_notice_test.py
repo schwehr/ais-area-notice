@@ -992,10 +992,12 @@ def test_circle_pt_scale_factors_and_decoding() -> None:
     def mock_join_short(_bv_list: list[BitVector]) -> BitVector:
         return BitVector(size=50)
 
-    with pytest.raises(area_notice.AisPackingException, match="area not 87 bits"):
-        with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(area_notice.binary, "joinBV", mock_join_short)
-            c1.get_bits()
+    with (
+        pytest.raises(area_notice.AisPackingException, match="area not 87 bits"),
+        pytest.MonkeyPatch.context() as mp,
+    ):
+        mp.setattr(area_notice.binary, "joinBV", mock_join_short)
+        c1.get_bits()
 
 
 def test_rectangle_scale_factors_decoding_unicode() -> None:
@@ -1095,10 +1097,12 @@ def test_polyline_scale_factors_decoding_errors_unicode(
             return BitVector(size=50)
         return orig_join(bv_list)
 
-    with pytest.raises(area_notice.AisPackingException, match="area not 87 bits"):
-        with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(area_notice.binary, "joinBV", mock_join_short_poly)
-            p0.get_bits()
+    with (
+        pytest.raises(area_notice.AisPackingException, match="area not 87 bits"),
+        pytest.MonkeyPatch.context() as mp,
+    ):
+        mp.setattr(area_notice.binary, "joinBV", mock_join_short_poly)
+        p0.get_bits()
 
     bv = p0.get_bits()
     bits_str = str(bv[87:])
@@ -1169,12 +1173,14 @@ def test_polygon_unicode_and_freetext_methods() -> None:
     def mock_join_short(_bv_list: list[BitVector]) -> BitVector:
         return BitVector(size=50)
 
-    with pytest.raises(
-        area_notice.AisPackingException, match="text subarea not 87 bits"
+    with (
+        pytest.raises(
+            area_notice.AisPackingException, match="text subarea not 87 bits"
+        ),
+        pytest.MonkeyPatch.context() as mp,
     ):
-        with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(area_notice.binary, "joinBV", mock_join_short)
-            ft.get_bits()
+        mp.setattr(area_notice.binary, "joinBV", mock_join_short)
+        ft.get_bits()
 
 
 def test_area_notice_init_and_methods_and_errors() -> None:
@@ -1252,10 +1258,12 @@ def test_area_notice_init_and_methods_and_errors() -> None:
             return BitVector(size=1000)
         return orig_join(bv_list)
 
-    with pytest.raises(area_notice.AisPackingException, match="message to large"):
-        with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(area_notice.binary, "joinBV", mock_join_large)
-            an.get_bits()
+    with (
+        pytest.raises(area_notice.AisPackingException, match="message to large"),
+        pytest.MonkeyPatch.context() as mp,
+    ):
+        mp.setattr(area_notice.binary, "joinBV", mock_join_large)
+        an.get_bits()
 
 
 def test_area_notice_decode_nmea_errors() -> None:
