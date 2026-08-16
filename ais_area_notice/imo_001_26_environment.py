@@ -1484,8 +1484,11 @@ class SensorReportCurrentHorz(SensorReport):
 
     def __unicode__(self) -> str:
         r = [
-            f"SensorReport CurrentHorz: site_id={self.site_id} type={self.report_type} "
-            f"d={self.day} hr={self.hour} m={self.minute}",
+            (
+                f"SensorReport CurrentHorz: site_id={self.site_id} "
+                f"type={self.report_type} d={self.day} hr={self.hour} "
+                f"m={self.minute}"
+            ),
         ]
         for c in self.cur:
             if c["bearing"] != 361:

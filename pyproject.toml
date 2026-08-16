@@ -74,7 +74,6 @@ ignore = [
     "F601",  # Dictionary key literal repeated
     "F821",  # Undefined name
     "I001",  # Import block is unsorted or unformatted
-    "ISC004",  # Implicitly concatenated string literals on multiple lines
 ]
 
 [tool.coverage.run]
