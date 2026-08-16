@@ -129,7 +129,7 @@ class BuildBits:
         self.bits_expected += num_bits
         self.bv_list.append(bits)
 
-    def add_int(self, val: int | float, num_bits: int) -> None:
+    def add_int(self, val: float, num_bits: int) -> None:
         """Add a signed integer."""
         bits = binary.bv_from_signed_int(int(val), num_bits)
         assert num_bits == len(bits)
