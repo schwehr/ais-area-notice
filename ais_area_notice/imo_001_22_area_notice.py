@@ -1615,7 +1615,7 @@ class AreaNoticePolyline(AreaNoticeSubArea):
 
             bv_list.append(
                 binary.setBitVectorSize(
-                    BitVector.from_int(int(math.ceil(pt[1] / self.scale_factor))), 10
+                    BitVector.from_int(math.ceil(pt[1] / self.scale_factor)), 10
                 )
             )
 
