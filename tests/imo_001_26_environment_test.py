@@ -1895,3 +1895,43 @@ class TestEnvironment:
         monkeypatch.setattr(env.binary, "joinBV", fake_joinbv)
         with pytest.raises(env.AisPackingException, match="Bit length 100"):
             id_sr.get_bits()
+
+    @pytest.mark.parametrize(
+        ("report_cls", "wrong_type"),
+        [
+            (env.SensorReportSeaState, 0),
+            (env.SensorReportSalinity, 0),
+            (env.SensorReportWeather, 0),
+            (env.SensorReportAirGap, 0),
+        ],
+    )
+    def test_sensor_report_decode_bits_type_mismatch(
+        self,
+        report_cls: type[
+            env.SensorReportSeaState
+            | env.SensorReportSalinity
+            | env.SensorReportWeather
+            | env.SensorReportAirGap
+        ],
+        wrong_type: int,
+    ) -> None:
+        """Test decode_bits raises ValueError when report type header mismatches."""
+        sr = report_cls(site_id=1)
+        wrong_bits = BitVector.from_int(wrong_type, size=4) + BitVector(
+            size=env.SENSOR_REPORT_SIZE - 4
+        )
+        with pytest.raises(ValueError):
+            sr.decode_bits(wrong_bits)
+
+    def test_sensor_report_factory_invalid_bit_length(self) -> None:
+        """Test sensor_report_factory raises ValueError when bit length is not 112."""
+        e = env.Environment(source_mmsi=123456)
+        with pytest.raises(ValueError):
+            e.sensor_report_factory(BitVector(size=100))
+
+    def test_decode_nmea_valid_completion(self) -> None:
+        """Test decode_nmea completes loop successfully on valid sentences and empty input."""
+        e = env.Environment(source_mmsi=123456)
+        sentence = "!AIVDM,1,1,0,A,85M:Ih1KmPAU6jAs85`03cJm;1NHQhPFP000,0*19"
+        e.decode_nmea([sentence])
+        e.decode_nmea([])
