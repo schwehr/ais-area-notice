@@ -68,7 +68,8 @@ def random_msg() -> met_hydro.MetHydro31:
 def test_empty() -> None:
     """Test default MetHydro31 message serialization and deserialization."""
     mh = met_hydro.MetHydro31(source_mmsi=123456789)
-    assert mh == mh  # pylint: disable=comparison-with-itself
+    # pylint: disable-next=comparison-with-itself
+    assert mh == mh  # noqa: PLR0124
     mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
     assert mh == mh_b
 
@@ -77,7 +78,8 @@ def test_random() -> None:
     """fuzz test"""
     for _ in range(FUZZ_COUNT):
         mh = met_hydro.MetHydro31(source_mmsi=123456789)
-        assert mh == mh  # pylint: disable=comparison-with-itself
+        # pylint: disable-next=comparison-with-itself
+        assert mh == mh  # noqa: PLR0124
         mh_b = met_hydro.MetHydro31(bits=mh.get_bits())
         assert mh == mh_b
 
