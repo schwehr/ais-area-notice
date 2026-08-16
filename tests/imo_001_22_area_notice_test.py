@@ -63,7 +63,7 @@ def assert_almost_equal_geojson(
 
     assert isinstance(g1, dict)
     assert isinstance(g2, dict)
-    for key in g1.keys():
+    for key in g1:
         if isinstance(g1[key], dict):
             assert_almost_equal_geojson(g1[key], g2[key], delta=delta, verbose=verbose)
         elif isinstance(g1[key], list):
