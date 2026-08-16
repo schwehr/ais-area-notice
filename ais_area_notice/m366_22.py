@@ -23,6 +23,8 @@ FI: int = 22
 MAX_SUB_AREAS: int = 10
 SUB_AREA_BIT_SIZE: int = 90 + 3
 
+logger = logging.getLogger(__name__)
+
 SHAPES: dict[str, int] = {
     "CIRCLE": 0,
     "RECTANGLE": 1,
@@ -124,7 +126,7 @@ class AreaNoticeCircle(AreaNoticeSubArea):
         Args:
             bits: BitVector containing encoded subarea bits.
         """
-        logging.info("areanotice CIRCLE - decode bits %d %s", len(bits), bits)
+        logger.info("areanotice CIRCLE - decode bits %d %s", len(bits), bits)
         db = an_util.DecodeBits(bits)
         self.area_shape = db.get_int(3)
         self.scale_factor = self.decode_scale_factor(db)
@@ -303,7 +305,7 @@ class AreaNotice:
             start = area_num * SUB_AREA_BIT_SIZE
             end = start + SUB_AREA_BIT_SIZE
             sub_bits = sub_areas_bits[start:end]
-            logging.info("bits for sub area: %d %d %d", len(sub_bits), start, end)
+            logger.info("bits for sub area: %d %d %d", len(sub_bits), start, end)
             subarea = self.subarea_factory(sub_bits)
             self.add_subarea(subarea)
 

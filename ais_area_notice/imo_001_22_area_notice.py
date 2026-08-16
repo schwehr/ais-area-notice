@@ -44,6 +44,8 @@ from . import binary
 NEXT_SEQUENCE: int = 1
 next_sequence: int = NEXT_SEQUENCE  # pylint: disable=invalid-name
 
+logger = logging.getLogger(__name__)
+
 # 87 Bits for IMO Circ 289 rather than the 90 for USCG and Nav 55 version.
 SUB_AREA_SIZE: int = 87
 
@@ -2202,7 +2204,7 @@ def message_2_fetcherformatter(
 ) -> str:
     """Take an AreaNotice and produce a Fetcher Formatter CSV."""
     if verbose:
-        logging.info("message_2_fetcherformatter: %s", msg)
+        logger.info("message_2_fetcherformatter: %s", msg)
 
     if timestamp is None:
         timestamp_int = int(time.time())
@@ -2213,7 +2215,7 @@ def message_2_fetcherformatter(
 
     timestamp_int += 24 * 3600
     if verbose:
-        logging.info(
+        logger.info(
             "Moving time up by 4 hours to deal with Windows time coding issues."
         )
 
@@ -2235,8 +2237,8 @@ def message_2_fetcherformatter(
     dacfi = dac + fi
     bits = msg.get_bits(include_dac_fi=False)
     if verbose:
-        logging.info("dacfi: %s", dacfi)
-        logging.info("bits: len=%d %s", len(bits), bits)
+        logger.info("dacfi: %s", dacfi)
+        logger.info("bits: len=%d %s", len(bits), bits)
 
     line = [
         magic_number,
@@ -2360,7 +2362,7 @@ def main() -> None:
                         match = ais_nmea_regex.search(line)
                         if match is None:
                             if "AIVDM" in line:
-                                logging.error("BAD_MATCH: %s", line)
+                                logger.error("BAD_MATCH: %s", line)
                             continue
                         match_dict = match.groupdict()
 
