@@ -84,7 +84,6 @@ ignore = [
     "RUF046",  # Unnecessary cast to int
     "SIM102",  # Use a single if statement instead of nested if statements
     "SIM117",  # Use a single with statement instead of nested with statements
-    "SIM118",  # Use key in dict instead of key in dict.keys()
 ]
 
 [tool.coverage.run]
