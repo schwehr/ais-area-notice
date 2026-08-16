@@ -709,9 +709,7 @@ class TestWhaleNotices:
         assert data["bbm"]["area_type_desc"] == area_notice.notice_type[zone_type]
 
         # Now try to pass the message as nmea strings and decode the message.
-        aivdms = []
-        for line in circle.get_aivdm():
-            aivdms.append(line)
+        aivdms = list(circle.get_aivdm())
 
         notice = area_notice.AreaNotice(nmea_strings=aivdms)
         assert notice.area_type == zone_type
@@ -745,9 +743,7 @@ class TestWhaleNotices:
         assert data["bbm"]["area_type_desc"] == area_notice.notice_type[zone_type]
 
         # Now try to pass the message as nmea strings and decode the message.
-        aivdms = []
-        for line in circle.get_aivdm():
-            aivdms.append(line)
+        aivdms = list(circle.get_aivdm())
 
         notice = area_notice.AreaNotice(nmea_strings=aivdms)
         assert notice.area_type == zone_type
