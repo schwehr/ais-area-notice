@@ -93,7 +93,7 @@ def test_area_notice_subarea_base_methods() -> None:
 def test_subarea_kml_with_custom_name() -> None:
     """Test KML generation when notice has a custom name."""
     an = AreaNotice(area_type=1, when=NOW, duration=60)
-    setattr(an, "name", "CustomAreaNoticeName")
+    an.name = "CustomAreaNoticeName"
     sa = AreaNoticeCirclePt(lon=-70.0, lat=42.0, radius=500)
     an.add_subarea(sa)
     kml_str = an.kml()

@@ -187,13 +187,13 @@ def test_eq_branches() -> None:
     mh2 = met_hydro.MetHydro31(source_mmsi=123456789)
 
     # Line 215: len(self.__dict__) != len(other.__dict__)
-    setattr(mh2, "extra_attr", 123)
+    mh2.extra_attr = 123  # type: ignore[attr-defined]
     assert mh1 != mh2
     delattr(mh2, "extra_attr")
 
     # Line 220: key not in other.__dict__
-    setattr(mh1, "attr_a", 1)
-    setattr(mh2, "attr_b", 1)
+    mh1.attr_a = 1  # type: ignore[attr-defined]
+    mh2.attr_b = 1  # type: ignore[attr-defined]
     assert mh1 != mh2
     delattr(mh1, "attr_a")
     delattr(mh2, "attr_b")
