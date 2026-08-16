@@ -2223,9 +2223,8 @@ def message_2_fetcherformatter(
         else:
             raise NotImplementedError
 
-    if isinstance(msg, AreaNotice):
-        if message_type < 1000:
-            message_type += 1000
+    if isinstance(msg, AreaNotice) and message_type < 1000:
+        message_type += 1000
 
     if link_id is None:
         link_id = msg.link_id

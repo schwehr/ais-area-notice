@@ -82,7 +82,6 @@ ignore = [
     "RET501",  # Do not explicitly return None in function if it can be omitted
     "RUF015",  # Prefer next(iter(...)) over list(...)[0]
     "RUF046",  # Unnecessary cast to int
-    "SIM102",  # Use a single if statement instead of nested if statements
 ]
 
 [tool.coverage.run]
