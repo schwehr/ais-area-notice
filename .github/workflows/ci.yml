@@ -11,7 +11,12 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: "Test (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     permissions:
       contents: read
     steps:
@@ -34,12 +39,19 @@ jobs:
         run: uv sync
 
       - name: Run pre-commit
+        if: matrix.os == 'ubuntu-latest'
         run: uv run pre-commit run --all-files
 
-      - name: Run tests
+      - name: Run tests (with coverage)
+        if: matrix.os == 'ubuntu-latest'
         run: uv run pytest --benchmark-skip
 
+      - name: Run tests (without coverage)
+        if: matrix.os != 'ubuntu-latest'
+        run: uv run pytest --benchmark-skip --no-cov
+
       - name: Write coverage report to Job Summary
+        if: matrix.os == 'ubuntu-latest'
         run: |
           echo "### Test Coverage Report (Python 3.14)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
