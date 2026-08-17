@@ -92,7 +92,7 @@ class TestAreaNotice:
         assert area_notice.link_id == link_id
         assert area_notice.area_type == area_type
         year = datetime.datetime.now(datetime.UTC).year
-        timestamp_dt = datetime.datetime(year, *timestamp)
+        timestamp_dt = datetime.datetime(year, *timestamp, tzinfo=datetime.UTC)
         assert area_notice.when == timestamp_dt
         assert area_notice.duration_min == duration
         if "spare2" in area_notice.__dict__:
@@ -306,7 +306,7 @@ class TestAreaNotice:
         """Test AreaNotice with circle subarea encoding and NMEA generation."""
         # Test against 'Sample AN Data RTCMv1.xlsx' circle
         year = datetime.datetime.now(datetime.UTC).year
-        when = datetime.datetime(year, 9, 4, 15, 25)
+        when = datetime.datetime(year, 9, 4, 15, 25, tzinfo=datetime.UTC)
 
         # Match the USCG sample
         duration = 2880
@@ -404,7 +404,7 @@ class TestAreaNotice:
     def test_rectangle_encode(self) -> None:
         """Test AreaNotice with rectangle subarea encoding and NMEA generation."""
         year = datetime.datetime.now(datetime.UTC).year
-        when = datetime.datetime(year, 9, 4, 15, 25)
+        when = datetime.datetime(year, 9, 4, 15, 25, tzinfo=datetime.UTC)
 
         duration = 360
         scale_factor = 10
@@ -605,7 +605,7 @@ class TestAreaNotice:
 
     def test_add_subarea_no_areas_attr_and_max_areas_exceeded(self) -> None:
         """Test subarea addition limits and attribute handling."""
-        when = datetime.datetime(2026, 9, 4, 15, 25)
+        when = datetime.datetime(2026, 9, 4, 15, 25, tzinfo=datetime.UTC)
         an = AreaNotice(
             area_type=13, when=when, duration_min=60, link_id=1, mmsi=366123456
         )
@@ -624,7 +624,7 @@ class TestAreaNotice:
 
     def test_get_bits_include_bin_hdr_and_too_large_error(self) -> None:
         """Test binary header inclusion and message size overflow check."""
-        when = datetime.datetime(2026, 9, 4, 15, 25)
+        when = datetime.datetime(2026, 9, 4, 15, 25, tzinfo=datetime.UTC)
         an = AreaNotice(
             area_type=13, when=when, duration_min=60, link_id=1, mmsi=366123456
         )
@@ -672,7 +672,7 @@ class TestAreaNotice:
 
     def test_subarea_factory_invalid_preceding_shape(self) -> None:
         """Test subarea factory throws error for invalid shape sequence."""
-        when = datetime.datetime(2026, 9, 4, 15, 25)
+        when = datetime.datetime(2026, 9, 4, 15, 25, tzinfo=datetime.UTC)
         an = AreaNotice(
             area_type=13, when=when, duration_min=60, link_id=1, mmsi=366123456
         )
@@ -790,7 +790,7 @@ class TestAreaNotice:
 
 def test_diff_area_notice() -> None:
     """Test DiffAreaNotice comparison helper."""
-    now = datetime.datetime(2026, 1, 1, 12, 0)
+    now = datetime.datetime(2026, 1, 1, 12, 0, tzinfo=datetime.UTC)
     an1 = AreaNotice(area_type=1, when=now, duration_min=60, link_id=1, mmsi=123456789)
     an2 = AreaNotice(area_type=2, when=now, duration_min=120, link_id=1, mmsi=123456789)
     diff = DiffAreaNotice(an1, an2)

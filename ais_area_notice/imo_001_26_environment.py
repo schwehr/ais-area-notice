@@ -288,9 +288,13 @@ class SensorReport:
         Returns:
             A datetime object for the sensor report timestamp.
         """
-        # TODO(schwehr): Add the UTC timezone?
         return datetime.datetime(
-            self.year, self.month, self.day, self.hour, self.minute
+            self.year,
+            self.month,
+            self.day,
+            self.hour,
+            self.minute,
+            tzinfo=datetime.UTC,
         )
 
     def __unicode__(self) -> str:

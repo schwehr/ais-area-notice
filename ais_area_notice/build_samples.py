@@ -346,7 +346,7 @@ def point(lon: float, lat: float, zone_type: int, kmlfile: TextIO) -> None:
     print("# Point")
     pt1 = an.AreaNotice(
         zone_type,
-        datetime.datetime(2011, 7, 6, 0, 0, 0),
+        datetime.datetime(2011, 7, 6, 0, 0, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -407,7 +407,7 @@ def main() -> None:
     zone_type = 2
     circle1 = an.AreaNotice(
         an.notice_type["cau_mammals_not_obs"],
-        datetime.datetime(2011, 7, 6, 1, 10, 0),
+        datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -420,7 +420,7 @@ def main() -> None:
 
     circle1 = an.AreaNotice(
         an.notice_type["cau_mammals_reduce_speed"],
-        datetime.datetime(2011, 7, 6, 2, 15, 0),
+        datetime.datetime(2011, 7, 6, 2, 15, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -435,7 +435,7 @@ def main() -> None:
     # Next two make sure that code can handle both byte aligned test data.
     circle_aligned = an.AreaNotice(
         an.notice_type["dis_collision"],
-        datetime.datetime(2011, 2, 6, 2, 15, 0),
+        datetime.datetime(2011, 2, 6, 2, 15, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=366786,
@@ -449,7 +449,7 @@ def main() -> None:
 
     circles_aligned = an.AreaNotice(
         an.notice_type["dis_pollution"],
-        datetime.datetime(2011, 2, 6, 2, 15, 0),
+        datetime.datetime(2011, 2, 6, 2, 15, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=366786,
@@ -464,7 +464,7 @@ def main() -> None:
 
     circles = an.AreaNotice(
         an.notice_type["res_drifting_mines"],
-        datetime.datetime(2011, 2, 6, 2, 15, 0),
+        datetime.datetime(2011, 2, 6, 2, 15, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=366786,
@@ -485,7 +485,7 @@ def main() -> None:
 
     rect1 = an.AreaNotice(
         zone_type,
-        datetime.datetime(2011, 7, 6, 5, 31, 0),
+        datetime.datetime(2011, 7, 6, 5, 31, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -499,7 +499,7 @@ def main() -> None:
 
     sec1 = an.AreaNotice(
         zone_type,
-        datetime.datetime(2011, 7, 6, 12, 49, 0),
+        datetime.datetime(2011, 7, 6, 12, 49, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -513,7 +513,7 @@ def main() -> None:
 
     line1 = an.AreaNotice(
         zone_type,
-        datetime.datetime(2011, 7, 6, 15, 1, 0),
+        datetime.datetime(2011, 7, 6, 15, 1, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -527,7 +527,7 @@ def main() -> None:
 
     poly1 = an.AreaNotice(
         zone_type,
-        datetime.datetime(2011, 7, 6, 20, 59, 0),
+        datetime.datetime(2011, 7, 6, 20, 59, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -541,7 +541,7 @@ def main() -> None:
 
     text1 = an.AreaNotice(
         zone_type,
-        datetime.datetime(2011, 7, 6, 23, 59, 0),
+        datetime.datetime(2011, 7, 6, 23, 59, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -558,7 +558,7 @@ def main() -> None:
 
     one_of_each = an.AreaNotice(
         zone_type,
-        datetime.datetime(2011, 11, 29, 0, 1, 0),
+        datetime.datetime(2011, 11, 29, 0, 1, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -579,7 +579,7 @@ def main() -> None:
 
     many_sectors = an.AreaNotice(
         zone_type,
-        datetime.datetime(2011, 12, 31, 0, 0, 0),
+        datetime.datetime(2011, 12, 31, 0, 0, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -599,7 +599,7 @@ def main() -> None:
 
     full1 = an.AreaNotice(
         zone_type,
-        datetime.datetime(2011, 1, 1, 0, 1, 0),
+        datetime.datetime(2011, 1, 1, 0, 1, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -622,7 +622,7 @@ def main() -> None:
     lon_off: float = 0
     rr = an.AreaNotice(
         zone_type,
-        datetime.datetime(2010, 9, 8, 17, 0, 0),
+        datetime.datetime(2010, 9, 8, 17, 0, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=200000000,
@@ -646,7 +646,7 @@ def main() -> None:
 
     rr2 = an.AreaNotice(
         zone_type,
-        datetime.datetime(2010, 9, 8, 17, 0, 0),
+        datetime.datetime(2010, 9, 8, 17, 0, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=200000000,
@@ -670,7 +670,7 @@ def main() -> None:
 
     rr3 = an.AreaNotice(
         zone_type,
-        datetime.datetime(2010, 9, 8, 17, 0, 0),
+        datetime.datetime(2010, 9, 8, 17, 0, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=200000000,
@@ -696,7 +696,7 @@ def main() -> None:
     print("\n# rect-multi-scale")
     rect1 = an.AreaNotice(
         zone_type,
-        datetime.datetime(2011, 7, 6, 0, 0, 0),
+        datetime.datetime(2011, 7, 6, 0, 0, 0, tzinfo=datetime.UTC),
         60,
         10,
         source_mmsi=123456789,
@@ -754,7 +754,7 @@ def main() -> None:
         zone_type = 2
         circle1 = an.AreaNotice(
             an.notice_type["cau_mammals_not_obs"],
-            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=123456789,
@@ -767,7 +767,7 @@ def main() -> None:
 
         circle2 = an.AreaNotice(
             an.notice_type["cau_mammals_reduce_speed"],
-            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=123456789,
@@ -780,7 +780,7 @@ def main() -> None:
 
         rec1 = an.AreaNotice(
             zone_type,
-            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=123456789,
@@ -793,7 +793,7 @@ def main() -> None:
 
         poly1 = an.AreaNotice(
             zone_type,
-            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=123456789,
@@ -811,7 +811,7 @@ def main() -> None:
 
         line1 = an.AreaNotice(
             zone_type,
-            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=123456789,
@@ -830,7 +830,7 @@ def main() -> None:
         # Free text in circle notice
         pt1 = an.AreaNotice(
             an.notice_type["cau_mammals_not_obs"],
-            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=123456789,
@@ -844,7 +844,7 @@ def main() -> None:
         # Free text in circle notice
         pt1 = an.AreaNotice(
             an.notice_type["cau_mammals_not_obs"],
-            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=123456789,
@@ -859,7 +859,7 @@ def main() -> None:
         # Sector
         sec1 = an.AreaNotice(
             zone_type,
-            datetime.datetime(2011, 7, 6, 1, 10, 0),
+            datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=123456789,
@@ -880,7 +880,7 @@ def main() -> None:
         start = sbnms_boundary[0]
         sbnms1 = an.AreaNotice(
             zone_type,
-            datetime.datetime(2010, 9, 8, 20, 0, 17),
+            datetime.datetime(2010, 9, 8, 20, 0, 17, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=369871000,

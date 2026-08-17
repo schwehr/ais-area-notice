@@ -417,7 +417,7 @@ class TestBitDecoding:
         year = datetime.datetime.now(datetime.UTC).year
         pt1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
-            datetime.datetime(year, 8, 6, 0, 1, 0),
+            datetime.datetime(year, 8, 6, 0, 1, 0, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=445566778,
@@ -439,7 +439,7 @@ class TestBitDecoding:
         circle1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
             # Do not use seconds.  Can only use minutes.
-            datetime.datetime(now.year, 7, 6, 0, 0, 0),
+            datetime.datetime(now.year, 7, 6, 0, 0, 0, tzinfo=datetime.UTC),
             60,
             10,
             source_mmsi=2,
@@ -458,7 +458,15 @@ class TestBitDecoding:
         """Test Area Notice encoding and decoding roundtrip for rectangle subarea."""
         rect = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_reduce_speed"],
-            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
+            datetime.datetime(
+                datetime.datetime.now(datetime.UTC).year,
+                7,
+                6,
+                0,
+                0,
+                4,
+                tzinfo=datetime.UTC,
+            ),
             60,
             10,
             source_mmsi=123,
@@ -475,7 +483,15 @@ class TestBitDecoding:
         """Test Area Notice encoding and decoding roundtrip for sector subarea."""
         sec1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_habitat_reduce_speed"],
-            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
+            datetime.datetime(
+                datetime.datetime.now(datetime.UTC).year,
+                7,
+                6,
+                0,
+                0,
+                4,
+                tzinfo=datetime.UTC,
+            ),
             60,
             10,
             source_mmsi=456,
@@ -491,7 +507,15 @@ class TestBitDecoding:
         """Test Area Notice encoding and decoding roundtrip for polyline subarea."""
         line1 = area_notice.AreaNotice(
             area_notice.notice_type["report_of_icing"],
-            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
+            datetime.datetime(
+                datetime.datetime.now(datetime.UTC).year,
+                7,
+                6,
+                0,
+                0,
+                4,
+                tzinfo=datetime.UTC,
+            ),
             60,
             10,
             source_mmsi=123456,
@@ -506,7 +530,15 @@ class TestBitDecoding:
         """Test Area Notice encoding and decoding roundtrip for polygon subarea."""
         poly1 = area_notice.AreaNotice(
             area_notice.notice_type["cau_divers"],
-            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
+            datetime.datetime(
+                datetime.datetime.now(datetime.UTC).year,
+                7,
+                6,
+                0,
+                0,
+                4,
+                tzinfo=datetime.UTC,
+            ),
             60,
             10,
             source_mmsi=987123456,
@@ -523,7 +555,15 @@ class TestBitDecoding:
         """Test Area Notice encoding and decoding roundtrip for free text subarea."""
         text1 = area_notice.AreaNotice(
             area_notice.notice_type["res_military_ops"],
-            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 4, 0),
+            datetime.datetime(
+                datetime.datetime.now(datetime.UTC).year,
+                7,
+                6,
+                0,
+                4,
+                0,
+                tzinfo=datetime.UTC,
+            ),
             60,
             10,
             source_mmsi=300000000,
@@ -546,7 +586,15 @@ class TestBitDecoding2:
         # One of each.
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
-            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
+            datetime.datetime(
+                datetime.datetime.now(datetime.UTC).year,
+                7,
+                6,
+                0,
+                0,
+                4,
+                tzinfo=datetime.UTC,
+            ),
             60,
             10,
             source_mmsi=666555444,
@@ -576,7 +624,15 @@ class TestBitDecoding2:
         """Test Area Notice with multiple sector subareas and max subarea limit."""
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
-            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
+            datetime.datetime(
+                datetime.datetime.now(datetime.UTC).year,
+                7,
+                6,
+                0,
+                0,
+                4,
+                tzinfo=datetime.UTC,
+            ),
             60,
             10,
             source_mmsi=1,
@@ -623,7 +679,15 @@ class TestBitDecoding2:
         """Test Area Notice with multi-part text subareas and merged text retrieval."""
         notice = area_notice.AreaNotice(
             area_notice.notice_type["cau_mammals_not_obs"],
-            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
+            datetime.datetime(
+                datetime.datetime.now(datetime.UTC).year,
+                7,
+                6,
+                0,
+                0,
+                4,
+                tzinfo=datetime.UTC,
+            ),
             60,
             10,
             source_mmsi=2,
@@ -692,7 +756,15 @@ class TestWhaleNotices:
         zone_type = area_notice.notice_type["cau_mammals_not_obs"]
         circle = area_notice.AreaNotice(
             zone_type,
-            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
+            datetime.datetime(
+                datetime.datetime.now(datetime.UTC).year,
+                7,
+                6,
+                0,
+                0,
+                4,
+                tzinfo=datetime.UTC,
+            ),
             60,
             10,
             source_mmsi=123456789,
@@ -726,7 +798,15 @@ class TestWhaleNotices:
         zone_type = area_notice.notice_type["cau_mammals_reduce_speed"]
         circle = area_notice.AreaNotice(
             zone_type,
-            datetime.datetime(datetime.datetime.now(datetime.UTC).year, 7, 6, 0, 0, 4),
+            datetime.datetime(
+                datetime.datetime.now(datetime.UTC).year,
+                7,
+                6,
+                0,
+                0,
+                4,
+                tzinfo=datetime.UTC,
+            ),
             60,
             10,
             source_mmsi=123456789,
@@ -820,7 +900,7 @@ def test_get_aivdm_validation_errors() -> None:
 
 def test_get_aivdm_byte_align_and_normal_form_and_sequence_wrap() -> None:
     """Test AIVDM byte alignment, normal form, and sequence number wrap-around."""
-    when = datetime.datetime(2026, 8, 7, 0, 0, 0)
+    when = datetime.datetime(2026, 8, 7, 0, 0, 0, tzinfo=datetime.UTC)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )
@@ -879,7 +959,7 @@ def test_area_notice_kml_options(
     monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path
 ) -> None:
     """Test KML generation options, styles, and empty geometry handling."""
-    when = datetime.datetime(2026, 8, 7, 0, 0)
+    when = datetime.datetime(2026, 8, 7, 0, 0, tzinfo=datetime.UTC)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )
@@ -1184,7 +1264,7 @@ def test_area_notice_init_and_methods_and_errors() -> None:
     with pytest.raises(AssertionError):
         area_notice.AreaNotice()
 
-    when = datetime.datetime(2026, 8, 7, 0, 0)
+    when = datetime.datetime(2026, 8, 7, 0, 0, tzinfo=datetime.UTC)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )
@@ -1264,7 +1344,7 @@ def test_area_notice_init_and_methods_and_errors() -> None:
 
 def test_area_notice_decode_nmea_errors() -> None:
     """Test AreaNotice NMEA sentence decoding error handling."""
-    when = datetime.datetime(2026, 8, 7, 0, 0)
+    when = datetime.datetime(2026, 8, 7, 0, 0, tzinfo=datetime.UTC)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )
@@ -1282,7 +1362,7 @@ def test_area_notice_decode_nmea_errors() -> None:
 
 def test_subarea_factory_and_get_shapes() -> None:
     """Test subarea factory shape instantiation and sequencing validation."""
-    when = datetime.datetime(2026, 8, 7, 0, 0)
+    when = datetime.datetime(2026, 8, 7, 0, 0, tzinfo=datetime.UTC)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )
@@ -1323,7 +1403,7 @@ def test_subarea_factory_and_get_shapes() -> None:
 
 def test_message_2_fetcherformatter_and_normqueue() -> None:
     """Test CSV message formatting and NormQueue multi-sentence NMEA reassembly."""
-    when = datetime.datetime(2026, 8, 7, 0, 0)
+    when = datetime.datetime(2026, 8, 7, 0, 0, tzinfo=datetime.UTC)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )
@@ -1402,7 +1482,7 @@ def test_nmea_checksum_hex_invalid_length(
 
 def test_main_cli(monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path) -> None:
     """Test CLI main entry point sentence parsing and KML output file creation."""
-    when = datetime.datetime(2026, 8, 7, 0, 0)
+    when = datetime.datetime(2026, 8, 7, 0, 0, tzinfo=datetime.UTC)
     an = area_notice.AreaNotice(
         area_type=1, when=when, duration=60, source_mmsi=123456789
     )

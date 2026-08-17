@@ -75,7 +75,7 @@ def test_area_notice_circle_init_and_get_bits() -> None:
 
 def test_add_subarea_no_areas_attr_and_max_areas_exceeded() -> None:
     """Test adding subareas handles missing areas attribute and enforces maximum limit."""
-    when = datetime.datetime(2026, 9, 4, 15, 25)
+    when = datetime.datetime(2026, 9, 4, 15, 25, tzinfo=datetime.UTC)
     an = m366_22.AreaNotice(area_type=1, when=when)
     del an.areas
     circle = m366_22.AreaNoticeCircle(lon=1.0, lat=-2.0, radius=4, precision=3)

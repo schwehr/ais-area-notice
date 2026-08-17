@@ -1850,6 +1850,7 @@ class AreaNotice(BBM):
                 day=when.day,
                 hour=when.hour,
                 minute=when.minute,
+                tzinfo=when.tzinfo or datetime.UTC,
             )
             assert duration < 2**18 - 1
             self.duration = duration
@@ -2099,6 +2100,7 @@ class AreaNotice(BBM):
             day=r["utc_day"],
             hour=r["utc_hour"],
             minute=r["utc_min"],
+            tzinfo=datetime.UTC,
         )
         self.duration = r["duration_min"]
         self.link_id = r["link_id"]
