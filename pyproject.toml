@@ -66,7 +66,6 @@ skips = ["B101", "B311"]
 
 [tool.ruff.lint]
 ignore = [
-    "EXE002",  # The file is executable but no shebang is present
     "F601",  # Dictionary key literal repeated
     "F821",  # Undefined name
 ]
