@@ -63,8 +63,6 @@ The project repository is structured as a modern Python package:
   v23, USCG Environmental Message v15).
 - **`pyproject.toml`**: Modern project configuration defining package metadata,
   build system (`setuptools`), and dependency groups (`pytest`, `uv`).
-- **`Makefile`**: Command shortcuts for testing, building distributions
-  (`sdist`), and sample generation.
 - **`README.md` & `LICENSE`**: Project documentation and Apache-2.0 license
   file.
 
