@@ -64,11 +64,6 @@ ignore-words-list = "anc,astroid,pres,tht"
 [tool.bandit]
 skips = ["B101", "B311"]
 
-[tool.ruff.lint]
-ignore = [
-    "F821",  # Undefined name
-]
-
 [tool.coverage.run]
 source = ["ais_area_notice", "tests"]
 branch = true
