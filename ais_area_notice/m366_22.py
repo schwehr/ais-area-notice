@@ -334,9 +334,9 @@ class AreaNotice:
         if shape == 0:
             return AreaNoticeCircle(bits=bits)
         if shape == 1:
-            return AreaNoticeRectangle(bits=bits)  # type: ignore[name-defined]
+            return AreaNoticeRectangle(bits=bits)  # type: ignore[name-defined]  # noqa: F821
         if shape == 2:
-            return AreaNoticeSector(bits=bits)  # type: ignore[name-defined]
+            return AreaNoticeSector(bits=bits)  # type: ignore[name-defined]  # noqa: F821
         if shape in (3, 4):
             if self.areas and isinstance(self.areas[-1], AreaNoticeCircle):
                 lon = self.areas[-1].lon
@@ -344,7 +344,7 @@ class AreaNotice:
                 self.areas.pop()
             elif self.areas and isinstance(
                 self.areas[-1],
-                AreaNoticePoly,  # type: ignore[name-defined]
+                AreaNoticePoly,  # type: ignore[name-defined]  # noqa: F821
             ):
                 last_pt = self.areas[-1].points[-1]
                 lon = last_pt[0]
@@ -353,7 +353,7 @@ class AreaNotice:
                 raise AisPackingException(
                     "Point or another polyline must precede a polyline"
                 )
-            return AreaNoticePoly(bits=bits, lon=lon, lat=lat)  # type: ignore[name-defined]
+            return AreaNoticePoly(bits=bits, lon=lon, lat=lat)  # type: ignore[name-defined]  # noqa: F821
         if shape == 5:
-            return AreaNoticeText(bits=bits)  # type: ignore[name-defined]
+            return AreaNoticeText(bits=bits)  # type: ignore[name-defined]  # noqa: F821
         raise Error(f"Unsupported area shape: {shape}")
