@@ -302,10 +302,6 @@ class AreaNotice:
 
         sub_areas_bits = bits[start_sub_areas:]
         num_sub_areas = len(sub_areas_bits) // SUB_AREA_BIT_SIZE
-        # if len(sub_areas_bits) % SUB_AREA_BIT_SIZE:
-        #   raise Error('Partial sub area: %d %% %d -> %d',
-        #               len(sub_areas_bits), SUB_AREA_BIT_SIZE,
-        #               len(sub_areas_bits) / SUB_AREA_BIT_SIZE)
         if num_sub_areas > MAX_SUB_AREAS:
             raise Error(f"Sub area overflow: {MAX_SUB_AREAS} {num_sub_areas}")
 
