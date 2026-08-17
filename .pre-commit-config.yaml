@@ -94,12 +94,11 @@ repos:
         args: ["-c", "pyproject.toml"]
         additional_dependencies: ["bandit[toml]"]
 
-  # TODO: Reenable this later. It is slow.
-  # - repo: https://github.com/owenlamont/lychee-pre-commit
-  #   rev: v0.24.2
-  #   hooks:
-  #     - id: lychee
-  #       args: ["--config", ".lychee.toml"]
+  - repo: https://github.com/owenlamont/lychee-pre-commit
+    rev: v0.24.2
+    hooks:
+      - id: lychee
+        args: ["--config", ".lychee.toml"]
 
   - repo: local
     hooks:
