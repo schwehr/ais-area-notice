@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Trying to do a more sane design for AIS BBM message.
 
 https://vislab-ccom.unh.edu/~schwehr/papers/2010-IMO-SN.1-Circ.289.pdf

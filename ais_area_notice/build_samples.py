@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Generate sample data for Area Notice / Zone msg."""
 
 import datetime
