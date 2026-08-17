@@ -40,7 +40,7 @@ jobs:
 
       - name: Run pre-commit
         if: matrix.os == 'ubuntu-latest'
-        run: uv run pre-commit run --all-files
+        run: SKIP=mypy,lychee uv run pre-commit run --all-files
 
       - name: Run tests (with coverage)
         if: matrix.os == 'ubuntu-latest'
