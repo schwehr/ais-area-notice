@@ -199,7 +199,12 @@ class AreaNotice:
             assert when is not None
             # Leave out seconds.
             self.when = datetime.datetime(
-                when.year, when.month, when.day, when.hour, when.minute
+                when.year,
+                when.month,
+                when.day,
+                when.hour,
+                when.minute,
+                tzinfo=when.tzinfo or datetime.UTC,
             )
             self.duration_min = duration_min
             self.link_id = link_id
@@ -287,7 +292,9 @@ class AreaNotice:
         minute = db.get_int(6)
         # TODO(schwehr): Handle year boundary.
         now = datetime.datetime.now(datetime.UTC)
-        self.when = datetime.datetime(now.year, month, day, hour, minute)
+        self.when = datetime.datetime(
+            now.year, month, day, hour, minute, tzinfo=datetime.UTC
+        )
         self.duration_min = db.get_int(18)
         # self.spare2 = db.GetInt(3)
         start_sub_areas = 111

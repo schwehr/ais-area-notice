@@ -61,7 +61,9 @@ def random_date() -> datetime.datetime:
     hour = random.randint(0, 23)
     minute = random.randint(0, 59)
     date_str = f"{year:4d}-{j_day:03d}T{hour:02d}:{minute:02d}"
-    return datetime.datetime.strptime(date_str, "%Y-%jT%H:%M")
+    return datetime.datetime.strptime(date_str, "%Y-%jT%H:%M").replace(
+        tzinfo=datetime.UTC
+    )
 
 
 def random_loc() -> env.SensorReportLocation:
@@ -450,7 +452,7 @@ class TestSensorReports:
             minute=0,
             site_id=0,
         )
-        assert sr.get_date() == datetime.datetime(2011, 1, 1, 0, 0)
+        assert sr.get_date() == datetime.datetime(2011, 1, 1, 0, 0, tzinfo=datetime.UTC)
 
         sr = env.SensorReport(
             report_type,
@@ -461,7 +463,9 @@ class TestSensorReports:
             minute=59,
             site_id=0,
         )
-        assert sr.get_date() == datetime.datetime(2011, 12, 31, 23, 59)
+        assert sr.get_date() == datetime.datetime(
+            2011, 12, 31, 23, 59, tzinfo=datetime.UTC
+        )
 
     def test_sr_eq(self) -> None:
         """SensorReport equality operator"""

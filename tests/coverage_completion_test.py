@@ -30,7 +30,7 @@ from ais_area_notice.imo_001_31_met_hydro import MetHydro31
 from tests.imo_001_22_area_notice_test import assert_almost_equal_geojson
 from tests.imo_001_31_met_hydro_test import random_msg as random_met_hydro
 
-NOW = datetime.datetime(2026, 1, 1, 12, 0, 0)
+NOW = datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.UTC)
 
 
 def test_bbm_base_get_bits_not_implemented() -> None:
