@@ -386,352 +386,346 @@ def main() -> None:
         lat = 42.0
         delta = 0.05
 
-    point(
-        -69.8,
-        lat,
-        zone_type=an.notice_type["cau_mammals_not_obs"],
-        kmlfile=kmlfile,
-    )
-    lat += delta
+        point(
+            -69.8,
+            lat,
+            zone_type=an.notice_type["cau_mammals_not_obs"],
+            kmlfile=kmlfile,
+        )
+        lat += delta
 
-    point(
-        -69.7,
-        lat,
-        zone_type=an.notice_type["cau_mammals_reduce_speed"],
-        kmlfile=kmlfile,
-    )
+        point(
+            -69.7,
+            lat,
+            zone_type=an.notice_type["cau_mammals_reduce_speed"],
+            kmlfile=kmlfile,
+        )
 
-    lat += delta
+        lat += delta
 
-    zone_type = 2
-    circle1 = an.AreaNotice(
-        an.notice_type["cau_mammals_not_obs"],
-        datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
-    circle1.name = "circle-1-no-whales-obs"
+        zone_type = 2
+        circle1 = an.AreaNotice(
+            an.notice_type["cau_mammals_not_obs"],
+            datetime.datetime(2011, 7, 6, 1, 10, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        circle1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=4260))
+        circle1.name = "circle-1-no-whales-obs"
 
-    lat += delta
-    dump_all(circle1, kmlfile)
+        lat += delta
+        dump_all(circle1, kmlfile)
 
-    circle1 = an.AreaNotice(
-        an.notice_type["cau_mammals_reduce_speed"],
-        datetime.datetime(2011, 7, 6, 2, 15, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    circle1.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=4260))
+        circle1 = an.AreaNotice(
+            an.notice_type["cau_mammals_reduce_speed"],
+            datetime.datetime(2011, 7, 6, 2, 15, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        circle1.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=4260))
 
-    lat += delta
-    circle1.name = "circle-1-with-whales"
-    dump_all(circle1, kmlfile)
-    del circle1
+        lat += delta
+        circle1.name = "circle-1-with-whales"
+        dump_all(circle1, kmlfile)
+        del circle1
 
-    # Next two make sure that code can handle both byte aligned test data.
-    circle_aligned = an.AreaNotice(
-        an.notice_type["dis_collision"],
-        datetime.datetime(2011, 2, 6, 2, 15, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=366786,
-    )
-    circle_aligned.name = "circle-byte-aligned"
-    circle_aligned.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=500))
-    # This may cause people's code to explode
-    dump_all(circle_aligned, kmlfile, byte_align=True)
-    del circle_aligned
-    lat += delta
+        # Next two make sure that code can handle both byte aligned test data.
+        circle_aligned = an.AreaNotice(
+            an.notice_type["dis_collision"],
+            datetime.datetime(2011, 2, 6, 2, 15, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=366786,
+        )
+        circle_aligned.name = "circle-byte-aligned"
+        circle_aligned.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=500))
+        # This may cause people's code to explode
+        dump_all(circle_aligned, kmlfile, byte_align=True)
+        del circle_aligned
+        lat += delta
 
-    circles_aligned = an.AreaNotice(
-        an.notice_type["dis_pollution"],
-        datetime.datetime(2011, 2, 6, 2, 15, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=366786,
-    )
-    circles_aligned.name = "circle-byte-aligned-2"
-    circles_aligned.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=500))
-    circles_aligned.add_subarea(an.AreaNoticeCirclePt(-69.1, lat, radius=400))
-    # This may cause people's code to explode
-    dump_all(circles_aligned, kmlfile, byte_align=True)
-    del circles_aligned
-    lat += delta
+        circles_aligned = an.AreaNotice(
+            an.notice_type["dis_pollution"],
+            datetime.datetime(2011, 2, 6, 2, 15, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=366786,
+        )
+        circles_aligned.name = "circle-byte-aligned-2"
+        circles_aligned.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=500))
+        circles_aligned.add_subarea(an.AreaNoticeCirclePt(-69.1, lat, radius=400))
+        # This may cause people's code to explode
+        dump_all(circles_aligned, kmlfile, byte_align=True)
+        del circles_aligned
+        lat += delta
 
-    circles = an.AreaNotice(
-        an.notice_type["res_drifting_mines"],
-        datetime.datetime(2011, 2, 6, 2, 15, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=366786,
-    )
-    circles.name = "circle-drft-mines"
-    circles.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=350))
-    circles.add_subarea(an.AreaNoticeCirclePt(-69.71, lat, radius=300))
-    circles.add_subarea(an.AreaNoticeCirclePt(-69.72, lat, radius=250))
-    circles.add_subarea(an.AreaNoticeCirclePt(-69.73, lat, radius=200))
-    circles.add_subarea(an.AreaNoticeCirclePt(-69.74, lat, radius=150))
-    circles.add_subarea(an.AreaNoticeCirclePt(-69.754532, lat, radius=100))
-    circles.add_subarea(an.AreaNoticeCirclePt(-69.756, lat, radius=50))
-    circles.add_subarea(an.AreaNoticeCirclePt(-69.7565, lat, radius=10))
-    circles.add_subarea(an.AreaNoticeCirclePt(-69.75654, lat, radius=1))
-    dump_all(circles, kmlfile)
-    del circles
-    lat += delta
+        circles = an.AreaNotice(
+            an.notice_type["res_drifting_mines"],
+            datetime.datetime(2011, 2, 6, 2, 15, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=366786,
+        )
+        circles.name = "circle-drft-mines"
+        circles.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=350))
+        circles.add_subarea(an.AreaNoticeCirclePt(-69.71, lat, radius=300))
+        circles.add_subarea(an.AreaNoticeCirclePt(-69.72, lat, radius=250))
+        circles.add_subarea(an.AreaNoticeCirclePt(-69.73, lat, radius=200))
+        circles.add_subarea(an.AreaNoticeCirclePt(-69.74, lat, radius=150))
+        circles.add_subarea(an.AreaNoticeCirclePt(-69.754532, lat, radius=100))
+        circles.add_subarea(an.AreaNoticeCirclePt(-69.756, lat, radius=50))
+        circles.add_subarea(an.AreaNoticeCirclePt(-69.7565, lat, radius=10))
+        circles.add_subarea(an.AreaNoticeCirclePt(-69.75654, lat, radius=1))
+        dump_all(circles, kmlfile)
+        del circles
+        lat += delta
 
-    rect1 = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2011, 7, 6, 5, 31, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    zone_type += 1
-    rect1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 4000, 1000, 0))
-    lat += delta
-    rect1.name = "Rectangle-1"
-    dump_all(rect1, kmlfile)
-    del rect1
+        rect1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 7, 6, 5, 31, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        zone_type += 1
+        rect1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 4000, 1000, 0))
+        lat += delta
+        rect1.name = "Rectangle-1"
+        dump_all(rect1, kmlfile)
+        del rect1
 
-    sec1 = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2011, 7, 6, 12, 49, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    sec1.add_subarea(an.AreaNoticeSector(-69.8, lat, 4000, 10, 50))
-    zone_type += 1
-    lat += delta
-    sec1.name = "Sector-1"
-    dump_all(sec1, kmlfile)
-    del sec1
+        sec1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 7, 6, 12, 49, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        sec1.add_subarea(an.AreaNoticeSector(-69.8, lat, 4000, 10, 50))
+        zone_type += 1
+        lat += delta
+        sec1.name = "Sector-1"
+        dump_all(sec1, kmlfile)
+        del sec1
 
-    line1 = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2011, 7, 6, 15, 1, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    line1.add_subarea(an.AreaNoticePolyline([(10, 2400)], -69.8, lat))
-    zone_type += 1
-    lat += delta
-    line1.name = "line-111"
-    dump_all(line1, kmlfile)
-    del line1
+        line1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 7, 6, 15, 1, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        line1.add_subarea(an.AreaNoticePolyline([(10, 2400)], -69.8, lat))
+        zone_type += 1
+        lat += delta
+        line1.name = "line-111"
+        dump_all(line1, kmlfile)
+        del line1
 
-    poly1 = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2011, 7, 6, 20, 59, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    poly1.add_subarea(an.AreaNoticePolygon([(10, 1400), (90, 1950)], -69.8, lat))
-    zone_type += 1
-    lat += delta
-    poly1.name = "Poly1-2seg-triangle"
-    dump_all(poly1, kmlfile)
-    del poly1
+        poly1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 7, 6, 20, 59, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        poly1.add_subarea(an.AreaNoticePolygon([(10, 1400), (90, 1950)], -69.8, lat))
+        zone_type += 1
+        lat += delta
+        poly1.name = "Poly1-2seg-triangle"
+        dump_all(poly1, kmlfile)
+        del poly1
 
-    text1 = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2011, 7, 6, 23, 59, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    text1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
-    text1.add_subarea(an.AreaNoticeFreeText(text="Explanation"))
-    lat += delta
-    zone_type += 1
-    text1.name = "Text-1-point"
-    dump_all(text1, kmlfile)
-    del text1
+        text1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 7, 6, 23, 59, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        text1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
+        text1.add_subarea(an.AreaNoticeFreeText(text="Explanation"))
+        lat += delta
+        zone_type += 1
+        text1.name = "Text-1-point"
+        dump_all(text1, kmlfile)
+        del text1
 
-    lat += delta  # extra
+        lat += delta  # extra
 
-    one_of_each = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2011, 11, 29, 0, 1, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    one_of_each.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=2000))
-    one_of_each.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
-    one_of_each.add_subarea(an.AreaNoticeRectangle(-69.6, lat, 2000, 1000, 0))
-    one_of_each.add_subarea(an.AreaNoticeSector(-69.4, lat, 6000, 10, 50))
-    one_of_each.add_subarea(an.AreaNoticePolyline([(170, 7400)], -69.2, lat))
-    one_of_each.add_subarea(an.AreaNoticePolygon([(10, 1400), (90, 1950)], -69.0, lat))
-    one_of_each.add_subarea(an.AreaNoticeFreeText(text="Some Text"))
+        one_of_each = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 11, 29, 0, 1, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        one_of_each.add_subarea(an.AreaNoticeCirclePt(-69.7, lat, radius=2000))
+        one_of_each.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))
+        one_of_each.add_subarea(an.AreaNoticeRectangle(-69.6, lat, 2000, 1000, 0))
+        one_of_each.add_subarea(an.AreaNoticeSector(-69.4, lat, 6000, 10, 50))
+        one_of_each.add_subarea(an.AreaNoticePolyline([(170, 7400)], -69.2, lat))
+        one_of_each.add_subarea(
+            an.AreaNoticePolygon([(10, 1400), (90, 1950)], -69.0, lat)
+        )
+        one_of_each.add_subarea(an.AreaNoticeFreeText(text="Some Text"))
 
-    lat += delta * 2
-    zone_type += 1
-    one_of_each.name = "one-of-each"
-    dump_all(one_of_each, kmlfile)
-    del one_of_each
+        lat += delta * 2
+        zone_type += 1
+        one_of_each.name = "one-of-each"
+        dump_all(one_of_each, kmlfile)
+        del one_of_each
 
-    many_sectors = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2011, 12, 31, 0, 0, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 6000, 10, 40))
-    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 5000, 40, 80))
-    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 2000, 80, 110))
-    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 7000, 110, 130))
-    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 6000, 210, 220))
-    many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 9000, 220, 290))
+        many_sectors = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 12, 31, 0, 0, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 6000, 10, 40))
+        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 5000, 40, 80))
+        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 2000, 80, 110))
+        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 7000, 110, 130))
+        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 6000, 210, 220))
+        many_sectors.add_subarea(an.AreaNoticeSector(-69.8, lat, 9000, 220, 290))
 
-    lat += delta * 2
-    zone_type += 1
-    many_sectors.name = "sectors-many"
-    dump_all(many_sectors, kmlfile)
-    del many_sectors
+        lat += delta * 2
+        zone_type += 1
+        many_sectors.name = "sectors-many"
+        dump_all(many_sectors, kmlfile)
+        del many_sectors
 
-    full1 = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2011, 1, 1, 0, 1, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    full1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))  # 1
-    full1.add_subarea(an.AreaNoticeFreeText(text="12345678901234"))  # 2
-    full1.add_subarea(an.AreaNoticeFreeText(text="More text that"))  # 3
-    full1.add_subarea(an.AreaNoticeFreeText(text=" spans across"))  # 4
-    full1.add_subarea(an.AreaNoticeFreeText(text=" multiple lin"))  # 5
-    full1.add_subarea(an.AreaNoticeFreeText(text="es.  The text "))  # 6
-    full1.add_subarea(an.AreaNoticeFreeText(text="is supposed to"))  # 7
-    full1.add_subarea(an.AreaNoticeFreeText(text=" be concatenat"))  # 8
-    full1.add_subarea(an.AreaNoticeFreeText(text="ed together."))  # 9
-    lat += delta
-    zone_type += 1
-    full1.name = "full-text"
-    dump_all(full1, kmlfile)
-    del full1
+        full1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 1, 1, 0, 1, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        full1.add_subarea(an.AreaNoticeCirclePt(-69.8, lat, radius=0))  # 1
+        full1.add_subarea(an.AreaNoticeFreeText(text="12345678901234"))  # 2
+        full1.add_subarea(an.AreaNoticeFreeText(text="More text that"))  # 3
+        full1.add_subarea(an.AreaNoticeFreeText(text=" spans across"))  # 4
+        full1.add_subarea(an.AreaNoticeFreeText(text=" multiple lin"))  # 5
+        full1.add_subarea(an.AreaNoticeFreeText(text="es.  The text "))  # 6
+        full1.add_subarea(an.AreaNoticeFreeText(text="is supposed to"))  # 7
+        full1.add_subarea(an.AreaNoticeFreeText(text=" be concatenat"))  # 8
+        full1.add_subarea(an.AreaNoticeFreeText(text="ed together."))  # 9
+        lat += delta
+        zone_type += 1
+        full1.name = "full-text"
+        dump_all(full1, kmlfile)
+        del full1
 
-    lon_off: float = 0
-    rr = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2010, 9, 8, 17, 0, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=200000000,
-    )
-    zone_type += 1
-    rr.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
-    rr.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 10))
-    lon_off += 0.1
+        lon_off: float = 0
+        rr = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2010, 9, 8, 17, 0, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=200000000,
+        )
+        zone_type += 1
+        rr.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
+        rr.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 10))
+        lon_off += 0.1
 
-    rr.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
-    rr.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 45))
-    lon_off += 0.1
+        rr.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
+        rr.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 45))
+        lon_off += 0.1
 
-    rr.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
-    rr.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 90))
-    lon_off += 0.1
+        rr.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
+        rr.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 90))
+        lon_off += 0.1
 
-    rr.name = "Rect-rotated"
-    dump_all(rr, kmlfile)
-    del rr
+        rr.name = "Rect-rotated"
+        dump_all(rr, kmlfile)
+        del rr
 
-    rr2 = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2010, 9, 8, 17, 0, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=200000000,
-    )
-    zone_type += 1
-    rr2.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
-    rr2.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 135))
-    lon_off += 0.1
+        rr2 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2010, 9, 8, 17, 0, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=200000000,
+        )
+        zone_type += 1
+        rr2.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
+        rr2.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 135))
+        lon_off += 0.1
 
-    rr2.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
-    rr2.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 180))
-    lon_off += 0.1
+        rr2.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
+        rr2.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 180))
+        lon_off += 0.1
 
-    rr2.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
-    rr2.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 225))
-    lon_off += 0.1
+        rr2.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
+        rr2.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 225))
+        lon_off += 0.1
 
-    rr2.name = "rect-rot-2"
-    dump_all(rr2, kmlfile)
-    del rr2
+        rr2.name = "rect-rot-2"
+        dump_all(rr2, kmlfile)
+        del rr2
 
-    rr3 = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2010, 9, 8, 17, 0, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=200000000,
-    )
-    zone_type += 1
-    rr3.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
-    rr3.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 270))
-    lon_off += 0.1
+        rr3 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2010, 9, 8, 17, 0, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=200000000,
+        )
+        zone_type += 1
+        rr3.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
+        rr3.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 270))
+        lon_off += 0.1
 
-    rr3.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
-    rr3.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 315))
-    lon_off += 0.1
+        rr3.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
+        rr3.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 315))
+        lon_off += 0.1
 
-    rr3.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
-    rr3.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 350))
-    lon_off += 0.1
-    rr3.name = "rect-rot 3"
-    dump_all(rr3, kmlfile)
+        rr3.add_subarea(an.AreaNoticeCirclePt(-69.8 + lon_off, lat, radius=0))
+        rr3.add_subarea(an.AreaNoticeRectangle(-69.8 + lon_off, lat, 6000, 1000, 350))
+        lon_off += 0.1
+        rr3.name = "rect-rot 3"
+        dump_all(rr3, kmlfile)
 
-    del rr3
-    lat += delta
+        del rr3
+        lat += delta
 
-    print("\n# rect-multi-scale")
-    rect1 = an.AreaNotice(
-        zone_type,
-        datetime.datetime(2011, 7, 6, 0, 0, 0, tzinfo=datetime.UTC),
-        60,
-        10,
-        source_mmsi=123456789,
-    )
-    zone_type += 1
-    rect1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 3, 3, 0))  # scale 1
-    rect1.add_subarea(an.AreaNoticeRectangle(-69.7, lat, 300, 300, 0))
-    rect1.add_subarea(an.AreaNoticeRectangle(-69.6, lat, 3000, 3000, 0))
-    rect1.add_subarea(an.AreaNoticeRectangle(-69.5, lat, 3000, 15000, 0))
-    rect1.add_subarea(an.AreaNoticeRectangle(-69.4, lat, 3000, 25000, 0))
-    rect1.add_subarea(an.AreaNoticeRectangle(-69.3, lat, 3000, 250000, 0))
-    print("scale:", [getattr(r, "scale_factor", 1) for r in rect1.areas])
+        print("\n# rect-multi-scale")
+        rect1 = an.AreaNotice(
+            zone_type,
+            datetime.datetime(2011, 7, 6, 0, 0, 0, tzinfo=datetime.UTC),
+            60,
+            10,
+            source_mmsi=123456789,
+        )
+        zone_type += 1
+        rect1.add_subarea(an.AreaNoticeRectangle(-69.8, lat, 3, 3, 0))  # scale 1
+        rect1.add_subarea(an.AreaNoticeRectangle(-69.7, lat, 300, 300, 0))
+        rect1.add_subarea(an.AreaNoticeRectangle(-69.6, lat, 3000, 3000, 0))
+        rect1.add_subarea(an.AreaNoticeRectangle(-69.5, lat, 3000, 15000, 0))
+        rect1.add_subarea(an.AreaNoticeRectangle(-69.4, lat, 3000, 25000, 0))
+        rect1.add_subarea(an.AreaNoticeRectangle(-69.3, lat, 3000, 250000, 0))
+        print("scale:", [getattr(r, "scale_factor", 1) for r in rect1.areas])
 
-    rect1.name = "rect-mult-scale"
-    dump_all(rect1, kmlfile)
+        rect1.name = "rect-mult-scale"
+        dump_all(rect1, kmlfile)
 
-    del rect1
-    lat += delta
+        del rect1
+        lat += delta
 
-    sbnms_boundary: tuple[tuple[float, float], ...] = (
-        (-70.21843022378545, 42.76615489511191),
-        (-70.50115721630971, 42.65050054498564),
-        (-70.51967876543651, 42.60272606451101),
-        (-70.57304911621775, 42.57377457462803),
-        (-70.59648154279975, 42.54931636682287),
-        (-70.47022780667521, 42.12880495859612),
-        (-70.27963801765786, 42.11493035173643),
-    )
-
-    with open("samples.kml", "w", encoding="utf-8") as kmlfile:
-        kmlfile.write(an.kml_head)
-        with open("areanotice_styles.kml", encoding="utf-8") as f:
-            kmlfile.write(f.read())
-
-        lat = 42.0
-        delta = 0.05
+        sbnms_boundary: tuple[tuple[float, float], ...] = (
+            (-70.21843022378545, 42.76615489511191),
+            (-70.50115721630971, 42.65050054498564),
+            (-70.51967876543651, 42.60272606451101),
+            (-70.57304911621775, 42.57377457462803),
+            (-70.59648154279975, 42.54931636682287),
+            (-70.47022780667521, 42.12880495859612),
+            (-70.27963801765786, 42.11493035173643),
+        )
 
         point(
             -69.8,
