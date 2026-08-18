@@ -80,6 +80,15 @@ def assert_almost_equal_geojson(
             assert g1[key] == g2[key]
 
 
+def test_vec_add() -> None:
+    """Test the vec_add function."""
+    assert area_notice.vec_add((1.0, 2.0), (3.0, 4.0)) == (4.0, 6.0)
+    assert area_notice.vec_add((-1.0, -2.0), (3.0, 4.0)) == (2.0, 2.0)
+    assert area_notice.vec_add((0.0, 0.0), (3.0, 4.0)) == (3.0, 4.0)
+    assert area_notice.vec_add((1.0, 2.0), (0.0, 0.0)) == (1.0, 2.0)
+    assert area_notice.vec_add((1.5, 2.5), (3.5, 4.5)) == (5.0, 7.0)
+
+
 def test_comparison_helpers_coverage() -> None:
     """Test helper functions delta and verbose parameters for full coverage."""
     assert_almost_equal_series((1.0, 2.0), (1.05, 1.95), delta=0.1)
