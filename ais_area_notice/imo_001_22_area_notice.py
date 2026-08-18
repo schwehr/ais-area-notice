@@ -2208,7 +2208,7 @@ def message_2_fetcherformatter(
         timestamp_int = int(time.time())
     elif isinstance(timestamp, datetime.datetime):
         if timestamp.tzinfo is None:
-            timestamp_int = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
+            timestamp_int = int(timestamp.replace(tzinfo=datetime.UTC).timestamp())
         else:
             timestamp_int = int(timestamp.timestamp())
     else:
