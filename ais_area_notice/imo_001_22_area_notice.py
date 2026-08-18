@@ -14,7 +14,6 @@ TODO(schwehr): Handle polyline and polygons that span multiple subareas.
 TODO(schwehr): Handle text that spans adjacent subareas.
 """
 
-import calendar
 import datetime
 import logging
 import math
@@ -2208,7 +2207,10 @@ def message_2_fetcherformatter(
     if timestamp is None:
         timestamp_int = int(time.time())
     elif isinstance(timestamp, datetime.datetime):
-        timestamp_int = calendar.timegm(datetime.datetime.utctimetuple(timestamp))
+        if timestamp.tzinfo is None:
+            timestamp_int = int(timestamp.replace(tzinfo=datetime.timezone.utc).timestamp())
+        else:
+            timestamp_int = int(timestamp.timestamp())
     else:
         timestamp_int = timestamp
 
