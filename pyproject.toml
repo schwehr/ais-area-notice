@@ -2,6 +2,9 @@
 requires = ["setuptools>=83.0.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.package-data]
+ais_area_notice = ["py.typed"]
+
 [project]
 name = "ais-area-notice"
 version = "0.5"

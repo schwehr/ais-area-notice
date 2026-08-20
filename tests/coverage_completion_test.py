@@ -556,3 +556,10 @@ def test_comparison_helper_mismatch_assertion() -> None:
     """Test assert_almost_equal_geojson with string mismatch for non-numeric comparison."""
     with pytest.raises(AssertionError):
         assert_almost_equal_geojson("foo", "bar")
+
+
+def test_py_typed_marker_exists() -> None:
+    """Test that the py.typed marker file exists in the package directory."""
+    pkg_dir = Path(__file__).resolve().parent.parent / "ais_area_notice"
+    py_typed = pkg_dir / "py.typed"
+    assert py_typed.is_file()
