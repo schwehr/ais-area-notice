@@ -48,6 +48,7 @@ The project repository is structured as a modern Python package:
   - `BitVector.py`: Packed bit array data structure and bitwise manipulation
     utilities.
   - `build_samples.py`: Helper script to generate standard NMEA test datasets.
+  - `py.typed`: Marker file for PEP 561 inline type hints.
 - **`tests/`**: Automated test suite executed via `pytest`.
   - `ais_string_test.py`: Unit tests for AIS 6-bit string operations.
   - `binary_test.py`: Unit tests for 6-bit VDM character armoring and bitvector

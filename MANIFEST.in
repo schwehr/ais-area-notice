@@ -10,5 +10,6 @@ include *.kml
 include *.png
 include *.txt
 
+include ais_area_notice/py.typed
 recursive-include ais_area_notice *.py
 recursive-include tests *.py
