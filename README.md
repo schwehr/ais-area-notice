@@ -36,7 +36,7 @@ uv sync
 Run the test suite using `uv`:
 
 ```sh
-uv run python -m unittest discover -s tests -p "*_test.py"
+uv run pytest
 ```
 
 ### Building
