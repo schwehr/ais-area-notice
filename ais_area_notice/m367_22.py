@@ -706,14 +706,7 @@ class AreaNotice(BBM):
             self.area_type = area_type
             assert when is not None
             # Leave out seconds.
-            self.when = datetime.datetime(
-                when.year,
-                when.month,
-                when.day,
-                when.hour,
-                when.minute,
-                tzinfo=when.tzinfo or datetime.UTC,
-            )
+            self.when = when.replace(second=0, microsecond=0)
             assert duration_min is not None
             self.duration_min = duration_min
             assert link_id is not None
@@ -853,9 +846,13 @@ class AreaNotice(BBM):
         hour = db.get_int(5)
         minute = db.get_int(6)
         # TODO(schwehr): Handle year boundary.
-        now = datetime.datetime.now(datetime.UTC)
-        self.when = datetime.datetime(
-            now.year, month, day, hour, minute, tzinfo=datetime.UTC
+        self.when = datetime.datetime.now(datetime.UTC).replace(
+            month=month,
+            day=day,
+            hour=hour,
+            minute=minute,
+            second=0,
+            microsecond=0,
         )
         self.duration_min = db.get_int(18)
         self.spare2 = db.get_int(3)

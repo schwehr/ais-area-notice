@@ -1842,14 +1842,7 @@ class AreaNotice(BBM):
             assert 0 <= area_type <= 127
             self.area_type = area_type
             assert isinstance(when, datetime.datetime)
-            self.when = datetime.datetime(
-                year=when.year,
-                month=when.month,
-                day=when.day,
-                hour=when.hour,
-                minute=when.minute,
-                tzinfo=when.tzinfo or datetime.UTC,
-            )
+            self.when = when.replace(second=0, microsecond=0)
             assert duration < 2**18 - 1
             self.duration = duration
             self.link_id = link_id
@@ -2091,14 +2084,13 @@ class AreaNotice(BBM):
 
         self.area_type = r["area_type"]
 
-        now = datetime.datetime.now(datetime.UTC)
-        self.when = datetime.datetime(
-            year=now.year,
+        self.when = datetime.datetime.now(datetime.UTC).replace(
             month=r["utc_month"],
             day=r["utc_day"],
             hour=r["utc_hour"],
             minute=r["utc_min"],
-            tzinfo=datetime.UTC,
+            second=0,
+            microsecond=0,
         )
         self.duration = r["duration_min"]
         self.link_id = r["link_id"]
