@@ -501,8 +501,8 @@ class SensorReportLocation(SensorReport):
         )
         return msg.format(
             type_str=sensor_report_lut[self.report_type],
-            owner_str=sensor_owner_lut[self.owner],
-            timeout_str=data_timeout_hrs_lut[self.timeout],
+            owner_str=sensor_owner_lut.get(self.owner, "unknown"),
+            timeout_str=data_timeout_hrs_lut.get(self.timeout, "unknown"),
             **self.__dict__,
         )
 
@@ -801,7 +801,7 @@ class SensorReportWind(SensorReport):
         ]
 
         r.append(
-            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut[self.data_descr]}"'
+            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut.get(self.data_descr, "unknown")}"'
         )
 
         if not (self.speed == 122 and self.dir == 360):
@@ -1011,14 +1011,14 @@ class SensorReportWaterLevel(SensorReport):
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
         ]
         r.append(
-            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut[self.data_descr]}"'
+            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut.get(self.data_descr, "unknown")}"'
         )
 
         if not almost_equal(self.wl, -327.68):
             r.append(
                 "\twl_type={wl_type} wl={wl} m trend={trend} vdatum={vdatum} - "
                 '"{vdatum_str}"'.format(
-                    vdatum_str=vdatum_lut[self.vdatum], **self.__dict__
+                    vdatum_str=vdatum_lut.get(self.vdatum, "unknown"), **self.__dict__
                 )
             )
         if not almost_equal(self.forecast_wl, -327.68):
@@ -1180,7 +1180,7 @@ class SensorReportCurrent2d(SensorReport):
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
         ]
         r.append(
-            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut[self.data_descr]}"'
+            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut.get(self.data_descr, "unknown")}"'
         )
         for c in self.cur:
             if not almost_equal(c["speed"], 24.7):
@@ -1331,7 +1331,7 @@ class SensorReportCurrent3d(SensorReport):
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
         ]
         r.append(
-            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut[self.data_descr]}"'
+            f'\tsensor data description: {self.data_descr} - "{sensor_type_lut.get(self.data_descr, "unknown")}"'
         )
         for c in self.cur:
             if not almost_equal(c["n"], 24.7) or not almost_equal(c["level"], 361):
@@ -1702,8 +1702,8 @@ class SensorReportSeaState(SensorReport):
             "SensorReport SeaState: site_id={site_id} type={report_type} "
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
         ]
-        sea_state_str = beaufort_scale[self.sea_state]
-        swell_data_descr_str = sensor_type_lut[self.swell_data_descr]
+        sea_state_str = beaufort_scale.get(self.sea_state, "unknown")
+        swell_data_descr_str = sensor_type_lut.get(self.swell_data_descr, "unknown")
         r.append(
             "\tswell_height={swell_height} swell_period={swell_period} "
             "swell_dir={swell_dir}".format(**self.__dict__)
@@ -1717,7 +1717,7 @@ class SensorReportSeaState(SensorReport):
             )
         )
         r.append("\ttemp={temp} temp_depth={temp_depth}".format(**self.__dict__))
-        temp_data_descr_str = sensor_type_lut[self.temp_data_descr]
+        temp_data_descr_str = sensor_type_lut.get(self.temp_data_descr, "unknown")
         r.append(
             "\twave_height={wave_height} temp_data_descr={temp_data_descr}"
             ' - "{temp_data_descr_str}"'.format(
@@ -1877,8 +1877,8 @@ class SensorReportSalinity(SensorReport):
             "SensorReport Salinity: site_id={site_id} type={report_type} "
             "d={day} hr={hour} m={minute}".format(**self.__dict__),
         ]
-        data_descr_str = sensor_type_lut[self.data_descr]
-        salinity_type_str = salinity_type_lut[self.salinity_type]
+        data_descr_str = sensor_type_lut.get(self.data_descr, "unknown")
+        salinity_type_str = salinity_type_lut.get(self.salinity_type, "unknown")
         r.append(
             "\ttemp={temp} cond={cond} pres={pres} salinity={salinity}".format(
                 **self.__dict__
@@ -2073,9 +2073,13 @@ class SensorReportWeather(SensorReport):
             "SensorReport Wx: site_id={site_id} type={report_type} d={day} "
             "hr={hour} m={minute}".format(**self.__dict__)
         ]
-        air_temp_data_descr_str = sensor_type_lut[self.air_temp_data_descr]
-        dew_data_descr_str = sensor_type_lut[self.dew_data_descr]
-        air_pres_data_descr_str = sensor_type_lut[self.air_pres_data_descr]
+        air_temp_data_descr_str = sensor_type_lut.get(
+            self.air_temp_data_descr, "unknown"
+        )
+        dew_data_descr_str = sensor_type_lut.get(self.dew_data_descr, "unknown")
+        air_pres_data_descr_str = sensor_type_lut.get(
+            self.air_pres_data_descr, "unknown"
+        )
 
         r.append(
             "\tair_temp={air_temp} air_temp_data_descr={"
@@ -2254,7 +2258,7 @@ class SensorReportAirGap(SensorReport):
 
         r.append(
             "\tdraft={draft} gap={gap} trend={gap_trend} - {trend_str}".format(
-                trend_str=trend_lut[self.gap_trend], **self.__dict__
+                trend_str=trend_lut.get(self.gap_trend, "unknown"), **self.__dict__
             )
         )
         r.append(
