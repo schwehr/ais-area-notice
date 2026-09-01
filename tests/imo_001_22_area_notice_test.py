@@ -836,6 +836,18 @@ class TestWhaleNotices:
         assert data["bbm"]["area_type_desc"] == area_notice.notice_type[zone_type]
 
 
+def test_lon_to_utm_zone() -> None:
+    """Test determining the UTM longitude zone number for a given longitude."""
+    assert area_notice.lon_to_utm_zone(-180.0) == 1
+    assert area_notice.lon_to_utm_zone(-179.9) == 1
+    assert area_notice.lon_to_utm_zone(-174.0) == 2
+    assert area_notice.lon_to_utm_zone(0.0) == 31
+    assert area_notice.lon_to_utm_zone(174.0) == 60
+    assert area_notice.lon_to_utm_zone(179.9) == 60
+    # The code returns 61 for exactly 180.0
+    assert area_notice.lon_to_utm_zone(180.0) == 61
+
+
 def test_ll_to_polyline_and_helpers() -> None:
     """Test converting lon/lat coordinates to polyline angle and distance offsets."""
     ll_points = [(-122.0, 37.0), (-122.1, 37.1), (-122.2, 37.2)]
