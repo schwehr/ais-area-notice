@@ -132,9 +132,8 @@ def encode(string: str, bit_size: int | None = None) -> BitVector:
     """
     if bit_size and bit_size % 6 != 0:
         raise ValueError(f"bit_size must be a multiple of 6, got {bit_size}")
-    bv = BitVector(size=0)
-    for char in string:
-        bv += character_bits[char]
+    bv_seq = [character_bits[char] for char in string]
+    bv = BitVector(bitlist=[bit for bv_item in bv_seq for bit in bv_item])
     if bit_size:
         if bit_size < len(bv):
             raise ValueError(
@@ -142,7 +141,8 @@ def encode(string: str, bit_size: int | None = None) -> BitVector:
                 f" max allowed is {bit_size}"
             )
         extra = bit_size - len(bv)
-        bv += BitVector(size=extra)
+        if extra > 0:
+            bv += BitVector(size=extra)
 
     return bv
 
