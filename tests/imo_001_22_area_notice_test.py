@@ -843,6 +843,28 @@ def test_ll_to_polyline_and_helpers() -> None:
     assert len(offsets) == 2
 
 
+@pytest.mark.parametrize(
+    ("lon", "expected_zone"),
+    [
+        (-180.0, 1),
+        (-179.99, 1),
+        (-174.0, 2),
+        (-122.0, 10),
+        (-71.0, 19),
+        (-0.01, 30),
+        (0.0, 31),
+        (5.99, 31),
+        (6.0, 32),
+        (174.0, 60),
+        (179.99, 60),
+        (180.0, 61),  # Note: 180.0 maps to 61 in formula int((180+180)/6) + 1
+    ],
+)
+def test_lon_to_utm_zone(lon: float, expected_zone: int) -> None:
+    """Test converting longitude in degrees to UTM zone number."""
+    assert area_notice.lon_to_utm_zone(lon) == expected_zone
+
+
 def test_frange_defaults() -> None:
     """Test floating point range generator defaults."""
     r1 = list(area_notice.frange(5))
