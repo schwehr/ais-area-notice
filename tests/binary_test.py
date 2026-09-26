@@ -8,7 +8,40 @@ from BitVector import BitVector
 from ais_area_notice import binary
 
 # TODO(schwehr): Test joinBV.
-# TODO(schwehr): Test setBitVectorSize.
+
+
+@pytest.mark.parametrize(
+    ("input_bits", "size", "expected_bits"),
+    [
+        ("101", 8, "00000101"),
+        ("1010", 10, "0000001010"),
+        ("11001100", 8, "11001100"),
+        ("111100001111", 8, "111100001111"),
+        ("", 5, "00000"),
+    ],
+)
+def test_set_bit_vector_size(input_bits: str, size: int, expected_bits: str) -> None:
+    """Test set_bit_vector_size pads BitVector from left to target size."""
+    bv = BitVector.from_bitstring(input_bits) if input_bits else BitVector(size=0)
+    result = binary.set_bit_vector_size(bv, size)
+    assert str(result) == expected_bits
+    assert len(result) == len(expected_bits)
+
+
+def test_set_bit_vector_size_default_arg() -> None:
+    """Test set_bit_vector_size uses default size 8 when size is omitted."""
+    bv = BitVector.from_bitstring("1")
+    result = binary.set_bit_vector_size(bv)
+    assert str(result) == "00000001"
+    assert len(result) == 8
+
+
+def test_set_bit_vector_size_alias() -> None:
+    """Test setBitVectorSize alias function."""
+    bv = BitVector.from_bitstring("10")
+    result = binary.setBitVectorSize(bv, 4)
+    assert str(result) == "0010"
+    assert len(result) == 4
 
 
 def test_add_one() -> None:
