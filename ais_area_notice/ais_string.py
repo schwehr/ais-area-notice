@@ -87,6 +87,11 @@ character_bits: dict[str, BitVector] = {
     char: BitVector.from_int(code, size=6) for char, code in character_dict.items()
 }
 
+# Pre-computed 6-bit binary string representations for fast string encoding
+character_bitstrings: dict[str, str] = {
+    char: f"{code:06b}" for char, code in character_dict.items()
+}
+
 
 def decode(bits: BitVector, drop_after_first_at: bool = False) -> str:
     """Decode bits as a string.
@@ -132,8 +137,8 @@ def encode(string: str, bit_size: int | None = None) -> BitVector:
     """
     if bit_size and bit_size % 6 != 0:
         raise ValueError(f"bit_size must be a multiple of 6, got {bit_size}")
-    bv_seq = [character_bits[char] for char in string]
-    bv = BitVector(bitlist=[bit for bv_item in bv_seq for bit in bv_item])
+    bitstring = "".join(character_bitstrings[char] for char in string)
+    bv = BitVector.from_bitstring(bitstring)
     if bit_size:
         if bit_size < len(bv):
             raise ValueError(
