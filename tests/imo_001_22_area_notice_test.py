@@ -1402,6 +1402,11 @@ def test_area_notice_decode_nmea_errors() -> None:
     ):
         area_notice.AreaNotice(nmea_strings=["NOT_A_VALID_NMEA_STRING"])
 
+    with pytest.raises(
+        area_notice.AisUnpackingException, match="one or more NMEA lines"
+    ):
+        area_notice.AreaNotice(nmea_strings=[123])  # type: ignore[list-item]
+
 
 def test_subarea_factory_and_get_shapes() -> None:
     """Test subarea factory shape instantiation and sequencing validation."""
