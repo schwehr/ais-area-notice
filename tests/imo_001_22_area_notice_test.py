@@ -881,7 +881,7 @@ def test_ll_to_polyline_and_helpers() -> None:
         (180.0, 61),  # Note: 180.0 maps to 61 in formula int((180+180)/6) + 1
     ],
 )
-def test_lon_to_utm_zone(lon: float, expected_zone: int) -> None:
+def test_lon_to_utm_zone_parametrized(lon: float, expected_zone: int) -> None:
     """Test converting longitude in degrees to UTM zone number."""
     assert area_notice.lon_to_utm_zone(lon) == expected_zone
 
