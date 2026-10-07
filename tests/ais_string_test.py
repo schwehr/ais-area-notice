@@ -20,13 +20,26 @@ def test_strip() -> None:
     assert ais_string.Strip("A@B") == "A"
 
 
-def test_pad() -> None:
+@pytest.mark.parametrize(
+    ("input_str", "length", "expected"),
+    [
+        ("", 0, ""),
+        ("", 1, "@"),
+        ("", 5, "@@@@@"),
+        ("A", 1, "A"),
+        ("A", 2, "A@"),
+        ("A", 5, "A@@@@"),
+        ("MY SHIP NAME", 20, "MY SHIP NAME@@@@@@@@"),
+        ("MY SHIP NAME", 12, "MY SHIP NAME"),
+        ("MY SHIP NAME", 5, "MY SHIP NAME"),
+        ("ABC", 0, "ABC"),
+        ("ABC", -1, "ABC"),
+    ],
+)
+def test_pad(input_str: str, length: int, expected: str) -> None:
     """Test padding AIS strings to a specified character length with '@'."""
-    assert ais_string.Pad("", 0) == ""
-    assert ais_string.Pad("", 1) == "@"
-    assert ais_string.Pad("A", 1) == "A"
-    assert ais_string.Pad("A", 2) == "A@"
-    assert ais_string.Pad("MY SHIP NAME", 20) == "MY SHIP NAME@@@@@@@@"
+    assert ais_string.pad(input_str, length) == expected
+    assert ais_string.Pad(input_str, length) == expected
 
 
 def test_round_trip() -> None:
