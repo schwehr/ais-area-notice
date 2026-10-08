@@ -2420,8 +2420,7 @@ class Environment(BBM):
             bv_list.append(BitVector.from_int(self.dac, size=10))
             bv_list.append(BitVector.from_int(self.fi, size=6))
 
-        for report in self.sensor_reports:
-            bv_list.append(report.get_bits())
+        bv_list.extend(report.get_bits() for report in self.sensor_reports)
 
         # Byte alignment if requested is handled by AIVDM byte_align.
         bv = binary.joinBV(bv_list)
